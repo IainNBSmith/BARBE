@@ -1,5 +1,9 @@
+# DONE/TODO: make the code called in experiments_barbe.py call to barbe.py
+
+from __future__ import print_function
+
 """
-Functions for explaining classifiers that use tabular data (matrices).
+Contains abstract functionality for learning locally linear sparse model.
 """
 import collections
 import copy
@@ -13,106 +17,386 @@ import sklearn
 import sklearn.preprocessing
 from sklearn.utils import check_random_state
 
+# eventually these must be modified into our own versions of the code
+#  that goal is for the end of summer
 from lime.discretize import QuartileDiscretizer
 from lime.discretize import DecileDiscretizer
 from lime.discretize import EntropyDiscretizer
 from lime.discretize import BaseDiscretizer
 from lime.discretize import StatsDiscretizer
-from lime import explanation
-from lime import lime_base
+from . import explanation
+from . import lime_base
+
+import os
+import pickle
+import itertools
+from collections import Counter, defaultdict
+
+import numpy as np
+import scipy as sp
+from sklearn.linear_model import Ridge, lars_path
+from sklearn.utils import check_random_state
+
+from sigdirect import SigDirect
+from lime_tabular import TableDomainMapper
+
+def get_all_rules(neighborhood_data, labels_column, clf):
+    print('CALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
+    clf.fit(neighborhood_data, labels_column)
+    local_pred = clf.predict(neighborhood_data[0].reshape((1, -1)), 2).astype(int)[0]
+
+    all_rules = clf.get_all_rules()
+    return all_rules, local_pred
 
 
-class TableDomainMapper(explanation.DomainMapper):
-    """Maps feature ids to names, generates table views, etc"""
+def get_features_sigdirect(all_rules, true_label):
+    """ use applied rules first, and then the rest of the applicable rules,
+        and then all rules (other labels, rest of them match)
+    """
 
-    def __init__(self, feature_names, feature_values, scaled_row,
-                 categorical_features, discretized_feature_names=None,
-                 feature_indexes=None):
-        """Init.
+    # applied rules,
+    applied_sorted_rules = sorted(all_rules[true_label],
+                                  key=lambda x: (
+                                      len(x[0].get_items()),
+                                      - x[0].get_confidence() * x[0].get_support(),
+                                      x[0].get_log_p(),
+                                      - x[0].get_support(),
+                                      -x[0].get_confidence(),
+                                  ),
+                                  reverse=False)
 
-        Args:
-            feature_names: list of feature names, in order
-            feature_values: list of strings with the values of the original row
-            scaled_row: scaled row
-            categorical_features: list of categorical features ids (ints)
-            feature_indexes: optional feature indexes used in the sparse case
-        """
-        self.exp_feature_names = feature_names
-        self.discretized_feature_names = discretized_feature_names
-        self.feature_names = feature_names
-        self.feature_values = feature_values
-        self.feature_indexes = feature_indexes
-        self.scaled_row = scaled_row
-        if sp.sparse.issparse(scaled_row):
-            self.all_categorical = False
+    # applicable rules, except the ones in applied rules.
+    applicable_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x != true_label]),
+                                     key=lambda x: (
+                                         len(x[0].get_items()),
+                                         - x[0].get_confidence() * x[0].get_support(),
+                                         x[0].get_log_p(),
+                                         - x[0].get_support(),
+                                         -x[0].get_confidence(),
+                                     ),
+                                     reverse=False)
+
+    # all rules, except the ones in applied rules.
+    other_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x != true_label]),
+                                key=lambda x: (
+                                    len(x[0].get_items()),
+                                    - x[0].get_confidence() * x[0].get_support(),
+                                    x[0].get_log_p(),
+                                    - x[0].get_support(),
+                                    -x[0].get_confidence(),
+                                ),
+                                reverse=False)
+
+    counter = len(all_rules)
+    bb_features = defaultdict(int)
+
+    # First add applied rules
+    applied_rules = []
+    for rule, ohe, original_point_sd in applied_sorted_rules:
+        temp = np.zeros(original_point_sd.shape[0]).astype(int)
+        temp[rule.get_items()] = 1
+        if np.sum(temp & original_point_sd.astype(int)) != temp.sum():
+            continue
         else:
-            self.all_categorical = len(categorical_features) == len(scaled_row)
-        self.categorical_features = categorical_features
+            applied_rules.append(rule)
+        rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
+        #         rule_items = temp ## TEXT (uncomment for TEXT)
+        for item, val in enumerate(rule_items):
+            if val is None:
+                continue
+            #                 if val==0: ## TEXT (uncomment for TEXT)
+            #                     continue ## TEXT (uncomment for TEXT)
+            #                 if item not in bb_features:
+            bb_features[item] += rule.get_support()
+        #                     bb_features[item] += counter
+        #                 bb_features[item] = max(bb_features[item],  rule.get_confidence()/len(rule.get_items()))
+        counter -= 1
+    set_size_1 = len(bb_features)
 
-    def map_exp_ids(self, exp):
-        """Maps ids to feature names.
+    # Second, add applicable rules
+    applicable_rules = []
+    for rule, ohe, original_point_sd in applicable_sorted_rules:
+        temp = np.zeros(original_point_sd.shape[0]).astype(int)
+        temp[rule.get_items()] = 1
+        if np.sum(temp & original_point_sd.astype(int)) != temp.sum():
+            continue
+        else:
+            applicable_rules.append(rule)
+        rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
+        #         rule_items = temp ## TEXT (uncomment for TEXT)
+        for item, val in enumerate(rule_items):
+            if val is None:
+                continue
+            if item not in bb_features:
+                #                 bb_features[item] += rule.get_support()
+                bb_features[item] += counter
+        counter -= 1
+
+    # Third, add other rules.
+    other_rules = []
+    for rule, ohe, original_point_sd in other_sorted_rules:
+        temp = np.zeros(original_point_sd.shape[0]).astype(int)
+        temp[rule.get_items()] = 1
+        # avoid applicable rules
+        if np.array_equal(temp, temp & original_point_sd.astype(int)):  # error??? it was orig...[0].astype
+            continue
+        #             elif temp.sum()==1:
+        #                 continue
+        elif temp.sum() - np.sum(temp & original_point_sd.astype(int)) > 1:  # error???
+            continue
+        #             else:
+        rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
+        #         rule_items = temp ## TEXT (uncomment for TEXT)
+        seen_set = 0
+        for item, val in enumerate(rule_items):
+            if val is None:
+                continue
+            if item not in bb_features:
+                #                 bb_features[item] += rule.get_support()
+                #                     bb_features[item] += counter
+                candid_feature = item
+                pass
+            else:
+                seen_set += 1
+        if seen_set == temp.sum() - 1:  # and (item not in bb_features):
+            bb_features[candid_feature] += counter
+            other_rules.append(rule)
+        counter -= 1
+
+    feature_value_pairs = sorted(bb_features.items(), key=lambda x: x[1], reverse=True)
+
+    return feature_value_pairs, None
+
+
+class BarbeBase(object):
+    """Class for learning a locally linear sparse model from perturbed data"""
+
+    def __init__(self,
+                 kernel_fn,
+                 verbose=False,
+                 random_state=None):
+        """Init function
 
         Args:
-            exp: list of tuples [(id, weight), (id,weight)]
+            kernel_fn: function that transforms an array of distances into an
+                        array of proximity values (floats).
+            verbose: if true, print local prediction values from linear model.
+            random_state: an integer or numpy.RandomState that will be used to
+                generate random numbers. If None, the random state will be
+                initialized using the internal numpy seed.
+        """
+        self.kernel_fn = kernel_fn
+        self.verbose = verbose
+        self.random_state = check_random_state(random_state)
+
+    @staticmethod
+    def generate_lars_path(weighted_data, weighted_labels):
+        """Generates the lars path for weighted data.
+
+        Args:
+            weighted_data: data that has been weighted by kernel
+            weighted_label: labels, weighted by kernel
 
         Returns:
-            list of tuples (feature_name, weight)
+            (alphas, coefs), both are arrays corresponding to the
+            regularization parameter and coefficients, respectively
         """
-        names = self.exp_feature_names
-        if self.discretized_feature_names is not None:
-            names = self.discretized_feature_names
-        return [(names[x[0]], x[1]) for x in exp]
+        x_vector = weighted_data
+        alphas, _, coefs = lars_path(x_vector,
+                                     weighted_labels,
+                                     method='lasso',
+                                     verbose=False)
+        return alphas, coefs
 
-    def visualize_instance_html(self,
-                                exp,
-                                label,
-                                div_name,
-                                exp_object_name,
-                                show_table=True,
-                                show_all=False):
-        """Shows the current example in a table format.
+    def forward_selection(self, data, labels, weights, num_features):
+        """Iteratively adds features to the model"""
+        clf = Ridge(alpha=0, fit_intercept=True, random_state=self.random_state)
+        used_features = []
+        for _ in range(min(num_features, data.shape[1])):
+            max_ = -100000000
+            best = 0
+            for feature in range(data.shape[1]):
+                if feature in used_features:
+                    continue
+                clf.fit(data[:, used_features + [feature]], labels,
+                        sample_weight=weights)
+                score = clf.score(data[:, used_features + [feature]],
+                                  labels,
+                                  sample_weight=weights)
+                if score > max_:
+                    best = feature
+                    max_ = score
+            used_features.append(best)
+        return np.array(used_features)
+
+    def feature_selection(self, data, labels, weights, num_features, method):
+        """Selects features for the model. see explain_instance_with_data to
+           understand the parameters."""
+        if method == 'none':
+            return np.array(range(data.shape[1]))
+        elif method == 'forward_selection':
+            return self.forward_selection(data, labels, weights, num_features)
+        elif method == 'highest_weights':
+            clf = Ridge(alpha=0, fit_intercept=True,
+                        random_state=self.random_state)
+            clf.fit(data, labels, sample_weight=weights)
+
+            coef = clf.coef_
+            if sp.sparse.issparse(data):
+                coef = sp.sparse.csr_matrix(clf.coef_)
+                weighted_data = coef.multiply(data[0])
+                # Note: most efficient to slice the data before reversing
+                sdata = len(weighted_data.data)
+                argsort_data = np.abs(weighted_data.data).argsort()
+                # Edge case where data is more sparse than requested number of feature importances
+                # In that case, we just pad with zero-valued features
+                if sdata < num_features:
+                    nnz_indexes = argsort_data[::-1]
+                    indices = weighted_data.indices[nnz_indexes]
+                    num_to_pad = num_features - sdata
+                    indices = np.concatenate((indices, np.zeros(num_to_pad, dtype=indices.dtype)))
+                    indices_set = set(indices)
+                    pad_counter = 0
+                    for i in range(data.shape[1]):
+                        if i not in indices_set:
+                            indices[pad_counter + sdata] = i
+                            pad_counter += 1
+                            if pad_counter >= num_to_pad:
+                                break
+                else:
+                    nnz_indexes = argsort_data[sdata - num_features:sdata][::-1]
+                    indices = weighted_data.indices[nnz_indexes]
+                return indices
+            else:
+                weighted_data = coef * data[0]
+                feature_weights = sorted(
+                    zip(range(data.shape[1]), weighted_data),
+                    key=lambda x: np.abs(x[1]),
+                    reverse=True)
+                return np.array([x[0] for x in feature_weights[:num_features]])
+        elif method == 'lasso_path':
+            weighted_data = ((data - np.average(data, axis=0, weights=weights))
+                             * np.sqrt(weights[:, np.newaxis]))
+            weighted_labels = ((labels - np.average(labels, weights=weights))
+                               * np.sqrt(weights))
+            nonzero = range(weighted_data.shape[1])
+            _, coefs = self.generate_lars_path(weighted_data,
+                                               weighted_labels)
+            for i in range(len(coefs.T) - 1, 0, -1):
+                nonzero = coefs.T[i].nonzero()[0]
+                if len(nonzero) <= num_features:
+                    break
+            used_features = nonzero
+            return used_features
+        elif method == 'auto':
+            if num_features <= 6:
+                n_method = 'forward_selection'
+            else:
+                n_method = 'highest_weights'
+            return self.feature_selection(data, labels, weights,
+                                          num_features, n_method)
+
+    def explain_instance_with_data(self,
+                                   neighborhood_data,
+                                   neighborhood_labels,
+                                   distances,
+                                   label,
+                                   num_features,
+                                   feature_selection='auto',
+                                   model_regressor=None,
+                                   neighborhood_data_sd=None,
+                                   ohe=None):
+        """Takes perturbed data, labels and distances, returns explanation.
 
         Args:
-             exp: list of tuples [(id, weight), (id,weight)]
-             label: label id (integer)
-             div_name: name of div object to be used for rendering(in js)
-             exp_object_name: name of js explanation object
-             show_table: if False, don't show table visualization.
-             show_all: if True, show zero-weighted features in the table.
+            neighborhood_data: perturbed data, 2d array. first element is
+                               assumed to be the original data point.
+            neighborhood_labels: corresponding perturbed labels. should have as
+                                 many columns as the number of possible labels.
+            distances: distances to original data point.
+            label: label for which we want an explanation
+            num_features: maximum number of features in explanation
+            feature_selection: how to select num_features. options are:
+                'forward_selection': iteratively add features to the model.
+                    This is costly when num_features is high
+                'highest_weights': selects the features that have the highest
+                    product of absolute weight * original data point when
+                    learning with all the features
+                'lasso_path': chooses features based on the lasso
+                    regularization path
+                'none': uses all features, ignores num_features
+                'auto': uses forward_selection if num_features <= 6, and
+                    'highest_weights' otherwise.
+            model_regressor: sklearn regressor to use in explanation.
+                Defaults to Ridge regression if None. Must have
+                model_regressor.coef_ and 'sample_weight' as a parameter
+                to model_regressor.fit()
+
+        Returns:
+            (intercept, exp, score, local_pred):
+            intercept is a float.
+            exp is a sorted list of tuples, where each tuple (x,y) corresponds
+            to the feature id (x) and the local weight (y). The list is sorted
+            by decreasing absolute value of y.
+            score is the R^2 value of the returned explanation
+            local_pred is the prediction of the explanation model on the original instance
         """
-        if not show_table:
-            return ''
-        weights = [0] * len(self.feature_names)
-        for x in exp:
-            weights[x[0]] = x[1]
-        if self.feature_indexes is not None:
-            # Sparse case: only display the non-zero values and importances
-            fnames = [self.exp_feature_names[i] for i in self.feature_indexes]
-            fweights = [weights[i] for i in self.feature_indexes]
-            if show_all:
-                out_list = list(zip(fnames,
-                                    self.feature_values,
-                                    fweights))
+
+        weights = self.kernel_fn(distances)
+        labels_column = neighborhood_labels[:, label]
+        used_features = self.feature_selection(neighborhood_data,
+                                               labels_column,
+                                               weights,
+                                               num_features,
+                                               feature_selection)
+
+        if isinstance(model_regressor, SigDirect):
+            print('In Sig')
+            all_rules = defaultdict(list)
+            true_label = neighborhood_labels[0].argmax()
+            labels_column = np.argmax(neighborhood_labels, axis=1)
+            all_raw_rules, predicted_label = get_all_rules(neighborhood_data_sd, labels_column, model_regressor)
+
+            # convert raw rules to rules (one-hot-decoding them)
+            if predicted_label == true_label:
+                for x, y in all_raw_rules.items():
+                    all_rules[x] = [(t, ohe, neighborhood_data_sd[0]) for t in y]
             else:
-                out_dict = dict(map(lambda x: (x[0], (x[1], x[2], x[3])),
-                                zip(self.feature_indexes,
-                                    fnames,
-                                    self.feature_values,
-                                    fweights)))
-                out_list = [out_dict.get(x[0], (str(x[0]), 0.0, 0.0)) for x in exp]
-        else:
-            out_list = list(zip(self.exp_feature_names,
-                                self.feature_values,
-                                weights))
-            if not show_all:
-                out_list = [out_list[x[0]] for x in exp]
-        ret = u'''
-            %s.show_raw_tabular(%s, %d, %s);
-        ''' % (exp_object_name, json.dumps(out_list, ensure_ascii=False), label, div_name)
-        return ret
+                predicted_label = -1  # to show we couldn't predict it correctly
+
+            feature_value_pairs, prediction_score = get_features_sigdirect(all_rules, true_label)
+            return (0, feature_value_pairs, prediction_score, predicted_label)
+        #if model_regressor is None:
+        #    print('In Not Sig')
+
+        #    model_regressor = Ridge(alpha=1, fit_intercept=True,
+        #                            random_state=self.random_state)
+        easy_model = model_regressor
+        easy_model.fit(neighborhood_data[:, used_features],
+                       labels_column, sample_weight=weights)
+        prediction_score = easy_model.score(
+            neighborhood_data[:, used_features],
+            labels_column, sample_weight=weights)
+
+        local_pred = easy_model.predict(neighborhood_data[0, used_features].reshape(1, -1))
+        # print('Intercept', easy_model.intercept_)
+        # print('Prediction_local', local_pred,)
+        # print('Right:', neighborhood_labels[0, label])
+        # exit()
+
+        if self.verbose:
+            print('Intercept', easy_model.intercept_)
+            print('Prediction_local', local_pred, )
+            print('Right:', neighborhood_labels[0, label])
+
+        return (easy_model.intercept_,
+                sorted(zip(used_features, easy_model.coef_),
+                       key=lambda x: np.abs(x[1]), reverse=True),
+                prediction_score, local_pred)
 
 
-class LimeTabularExplainer(object):
+# replace instances of lime tabular explainer with BarbeExplainer
+class BarbeExplainer(object):
     """Explains predictions on tabular (i.e. matrix) data.
     For numerical features, perturb them by sampling from a Normal(0,1) and
     doing the inverse operation of mean-centering and scaling, according to the
@@ -192,8 +476,6 @@ class LimeTabularExplainer(object):
         self.sample_around_instance = sample_around_instance
         self.training_data_stats = training_data_stats
 
-        
-
         # Check and raise proper error in stats are supplied in non-descritized path
         if self.training_data_stats:
             self.validate_training_data_stats(self.training_data_stats)
@@ -202,8 +484,6 @@ class LimeTabularExplainer(object):
             categorical_features = []
         if feature_names is None:
             feature_names = [str(i) for i in range(training_data.shape[1])]
-
-        
 
         self.categorical_features = list(categorical_features)
         self.feature_names = list(feature_names)
@@ -220,17 +500,17 @@ class LimeTabularExplainer(object):
 
             if discretizer == 'quartile':
                 self.discretizer = QuartileDiscretizer(
-                        training_data, self.categorical_features,
-                        self.feature_names, labels=training_labels)
+                    training_data, self.categorical_features,
+                    self.feature_names, labels=training_labels)
             elif discretizer == 'decile':
                 self.discretizer = DecileDiscretizer(
-                        training_data, self.categorical_features,
-                        self.feature_names, labels=training_labels)
+                    training_data, self.categorical_features,
+                    self.feature_names, labels=training_labels)
                 print('Hi There: ', self.discretizer)
             elif discretizer == 'entropy':
                 self.discretizer = EntropyDiscretizer(
-                        training_data, self.categorical_features,
-                        self.feature_names, labels=training_labels)
+                    training_data, self.categorical_features,
+                    self.feature_names, labels=training_labels)
             elif isinstance(discretizer, BaseDiscretizer):
                 self.discretizer = discretizer
             else:
@@ -241,10 +521,10 @@ class LimeTabularExplainer(object):
             print('self.categorical_features = ', self.categorical_features)
 
             # Get the discretized_training_data when the stats are not provided
-            if(self.training_data_stats is None):
-                #print('training_data = ', training_data)
+            if (self.training_data_stats is None):
+                # print('training_data = ', training_data)
                 discretized_training_data = self.discretizer.discretize(training_data)
-                #print('discretized_training_data = ', discretized_training_data)
+                # print('discretized_training_data = ', discretized_training_data)
 
         if kernel_width is None:
             kernel_width = np.sqrt(training_data.shape[1]) * .75
@@ -258,7 +538,7 @@ class LimeTabularExplainer(object):
 
         self.feature_selection = feature_selection
         print('self.feature_selection = ', self.feature_selection)
-        self.base = lime_base.LimeBase(kernel_fn, verbose, random_state=self.random_state)
+        self.base = BarbeBase(kernel_fn, verbose, random_state=self.random_state)
         self.class_names = class_names
         print('self.class_names = ', self.class_names)
 
@@ -271,7 +551,7 @@ class LimeTabularExplainer(object):
 
         for feature in self.categorical_features:
             if training_data_stats is None:
-                if self.discretizer is not None:    ## This code block runs
+                if self.discretizer is not None:  ## This code block runs
                     column = discretized_training_data[:, feature]
                 else:
                     column = training_data[:, feature]
@@ -316,14 +596,14 @@ class LimeTabularExplainer(object):
                          model_regressor=None,
                          barbe_mode=None):
         print('explain_instance', data_row,
-                         predict_fn,
-                         labels,
-                         top_labels,
-                         num_features,
-                         num_samples,
-                         distance_metric,
-                         model_regressor,
-                         barbe_mode)
+              predict_fn,
+              labels,
+              top_labels,
+              num_features,
+              num_samples,
+              distance_metric,
+              model_regressor,
+              barbe_mode)
         """Generates explanations for a prediction.
 
         First, we generate neighborhood data by randomly perturbing features
@@ -356,7 +636,7 @@ class LimeTabularExplainer(object):
             An Explanation object (see explanation.py) with the corresponding
             explanations.
         """
-        if sp.sparse.issparse(data_row) and not sp.sparse.isspmatrix_csr(data_row):     #code does not go here
+        if sp.sparse.issparse(data_row) and not sp.sparse.isspmatrix_csr(data_row):  # code does not go here
             # Preventative code: if sparse, convert to csr format if not in csr format already
             print('okkkkkkkkkkkkkkk')
             data_row = data_row.tocsr()
@@ -368,9 +648,8 @@ class LimeTabularExplainer(object):
             sd_data = None
             ohe = None
             print(data[0:3], inverse[0:3], sp.sparse.issparse(data), data.shape, inverse.shape)
-            
-            
-        if sp.sparse.issparse(data):        #code does not go here
+
+        if sp.sparse.issparse(data):  # code does not go here
             # Note in sparse case we don't subtract mean since data would become dense
             scaled_data = data.multiply(self.scaler.scale_)
             # Multiplying with csr matrix can return a coo sparse matrix
@@ -379,15 +658,15 @@ class LimeTabularExplainer(object):
         else:
             scaled_data = (data - self.scaler.mean_) / self.scaler.scale_
         distances = sklearn.metrics.pairwise_distances(
-                scaled_data,
-                scaled_data[0].reshape(1, -1),
-                metric=distance_metric
+            scaled_data,
+            scaled_data[0].reshape(1, -1),
+            metric=distance_metric
         ).ravel()
 
-        if barbe_mode=="BARBE":
+        if barbe_mode == "BARBE":
             yss = predict_fn(inverse)
-        elif barbe_mode=="TEXT":
-            yss = predict_fn(sd_data) ## TEXT
+        elif barbe_mode == "TEXT":
+            yss = predict_fn(sd_data)  ## TEXT
         else:
             print('Prediction going on')
             yss = predict_fn(inverse)
@@ -401,7 +680,7 @@ class LimeTabularExplainer(object):
                                           "scores. If this conflicts with your "
                                           "use case, please let us know: "
                                           "https://github.com/datascienceinc/lime/issues/16")
-            elif len(yss.shape) == 2:   #code comes here
+            elif len(yss.shape) == 2:  # code comes here
                 if self.class_names is None:
                     self.class_names = [str(x) for x in range(yss[0].shape[0])]
                 else:
@@ -442,12 +721,12 @@ class LimeTabularExplainer(object):
         if sp.sparse.issparse(data_row):
             values = self.convert_and_round(data_row.data)
             feature_indexes = data_row.indices
-        else:   #code comes here
+        else:  # code comes here
             print('I guess')
             values = self.convert_and_round(data_row)
             feature_indexes = None
 
-        print(values,feature_indexes )
+        print(values, feature_indexes)
 
         for i in self.categorical_features:
             if self.discretizer is not None and i in self.discretizer.lambdas:
@@ -459,7 +738,6 @@ class LimeTabularExplainer(object):
             values[i] = 'True'
         categorical_features = self.categorical_features
         print('categorical_features', categorical_features)
-        
 
         discretized_feature_names = None
         if self.discretizer is not None:
@@ -468,7 +746,7 @@ class LimeTabularExplainer(object):
             discretized_feature_names = copy.deepcopy(feature_names)
             for f in self.discretizer.names:
                 discretized_feature_names[f] = self.discretizer.names[f][int(
-                        discretized_instance[f])]
+                    discretized_instance[f])]
 
         domain_mapper = TableDomainMapper(feature_names,
                                           values,
@@ -495,15 +773,15 @@ class LimeTabularExplainer(object):
             (ret_exp.intercept[label],
              ret_exp.local_exp[label],
              ret_exp.score, ret_exp.local_pred) = self.base.explain_instance_with_data(
-                    scaled_data,
-                    yss,
-                    distances,
-                    label,
-                    num_features,
-                    model_regressor=model_regressor,
-                    feature_selection=self.feature_selection,
-                    neighborhood_data_sd=sd_data,
-                    ohe=ohe)
+                scaled_data,
+                yss,
+                distances,
+                label,
+                num_features,
+                model_regressor=model_regressor,
+                feature_selection=self.feature_selection,
+                neighborhood_data_sd=sd_data,
+                ohe=ohe)
 
         if self.mode == "regression":
             ret_exp.intercept[1] = ret_exp.intercept[0]
@@ -541,7 +819,7 @@ class LimeTabularExplainer(object):
         if is_sparse:
             num_cols = data_row.shape[1]
             data = sp.sparse.csr_matrix((num_samples, num_cols), dtype=data_row.dtype)
-        else:   #code comes here
+        else:  # code comes here
             num_cols = data_row.shape[0]
             data = np.zeros((num_samples, num_cols))
             print(data)
@@ -588,32 +866,31 @@ class LimeTabularExplainer(object):
 
         data[0] = data_row.copy()
         inverse = data.copy()
-        #print(data, 'and', inverse)
+        # print(data, 'and', inverse)
         for column in categorical_features:
             values = self.feature_values[column]
             freqs = self.feature_frequencies[column]
             inverse_column = self.random_state.choice(values, size=num_samples,
                                                       replace=True, p=freqs)
-            
+
             binary_column = np.array([1 if x == first_row[column]
                                       else 0 for x in inverse_column])
-            #print(values, '\r\n', freqs, '\r\n', inverse_column, '\r\n', binary_column)
+            # print(values, '\r\n', freqs, '\r\n', inverse_column, '\r\n', binary_column)
             binary_column[0] = 1
             inverse_column[0] = data[0, column]
             data[:, column] = binary_column
             inverse[:, column] = inverse_column
-            #print(data[0:3], 'and', inverse[0:3])
+            # print(data[0:3], 'and', inverse[0:3])
         if self.discretizer is not None:
             inverse[1:] = self.discretizer.undiscretize(inverse[1:])
         inverse[0] = data_row
         return data, inverse
 
-
     def __data_inverse_barbe(self,
-                       data_row,
-                       num_samples,
-                       predict_fn,
-                       barbe_mode=None):
+                             data_row,
+                             num_samples,
+                             predict_fn,
+                             barbe_mode=None):
         """Generates a neighborhood around a prediction for BARBE.
 
         Args:
@@ -679,7 +956,7 @@ class LimeTabularExplainer(object):
             first_row = self.discretizer.discretize(data_row)
         data[0] = data_row.copy()
 
-        if barbe_mode=='BARBE':
+        if barbe_mode == 'BARBE':
             inverse = np.zeros((int(num_samples), first_row.shape[0]))
             for column in categorical_features:
                 values = self.feature_values[column]
@@ -696,166 +973,15 @@ class LimeTabularExplainer(object):
             if self.discretizer is not None:
                 inverse[1:] = self.discretizer.undiscretize(inverse[1:])
             inverse[0] = data_row
-            ohe =  sklearn.preprocessing.OneHotEncoder(categories='auto', handle_unknown='ignore')
+            ohe = sklearn.preprocessing.OneHotEncoder(categories='auto', handle_unknown='ignore')
             sd_values = np.asarray(ohe.fit_transform(sd_values).todense()).astype(int)
-            return data, inverse,sd_values, ohe
-        elif barbe_mode=='TEXT':
+            return data, inverse, sd_values, ohe
+        elif barbe_mode == 'TEXT':
             sd_values = np.zeros((int(num_samples), first_row.shape[0]))
             for idx in np.nonzero(first_row)[0]:
-                t = np.random.choice((0,1), size=num_samples)
-                sd_values[:,idx] = t
+                t = np.random.choice((0, 1), size=num_samples)
+                sd_values[:, idx] = t
             sd_values[0] = first_row
             return data, data, sd_values, None
 
         raise NameError("Wrong value for barbe_mode:", barbe_mode)
-
-
-
-class RecurrentTabularExplainer(LimeTabularExplainer):
-    """
-    An explainer for keras-style recurrent neural networks, where the
-    input shape is (n_samples, n_timesteps, n_features). This class
-    just extends the LimeTabularExplainer class and reshapes the training
-    data and feature names such that they become something like
-
-    (val1_t1, val1_t2, val1_t3, ..., val2_t1, ..., valn_tn)
-
-    Each of the methods that take data reshape it appropriately,
-    so you can pass in the training/testing data exactly as you
-    would to the recurrent neural network.
-
-    """
-
-    def __init__(self, training_data, mode="classification",
-                 training_labels=None, feature_names=None,
-                 categorical_features=None, categorical_names=None,
-                 kernel_width=None, kernel=None, verbose=False, class_names=None,
-                 feature_selection='auto', discretize_continuous=True,
-                 discretizer='quartile', random_state=None):
-        """
-        Args:
-            training_data: numpy 3d array with shape
-                (n_samples, n_timesteps, n_features)
-            mode: "classification" or "regression"
-            training_labels: labels for training data. Not required, but may be
-                used by discretizer.
-            feature_names: list of names (strings) corresponding to the columns
-                in the training data.
-            categorical_features: list of indices (ints) corresponding to the
-                categorical columns. Everything else will be considered
-                continuous. Values in these columns MUST be integers.
-            categorical_names: map from int to list of names, where
-                categorical_names[x][y] represents the name of the yth value of
-                column x.
-            kernel_width: kernel width for the exponential kernel.
-            If None, defaults to sqrt(number of columns) * 0.75
-            kernel: similarity kernel that takes euclidean distances and kernel
-                width as input and outputs weights in (0,1). If None, defaults to
-                an exponential kernel.
-            verbose: if true, print local prediction values from linear model
-            class_names: list of class names, ordered according to whatever the
-                classifier is using. If not present, class names will be '0',
-                '1', ...
-            feature_selection: feature selection method. can be
-                'forward_selection', 'lasso_path', 'none' or 'auto'.
-                See function 'explain_instance_with_data' in lime_base.py for
-                details on what each of the options does.
-            discretize_continuous: if True, all non-categorical features will
-                be discretized into quartiles.
-            discretizer: only matters if discretize_continuous is True. Options
-                are 'quartile', 'decile', 'entropy' or a BaseDiscretizer
-                instance.
-            random_state: an integer or numpy.RandomState that will be used to
-                generate random numbers. If None, the random state will be
-                initialized using the internal numpy seed.
-        """
-
-        # Reshape X
-        n_samples, n_timesteps, n_features = training_data.shape
-        training_data = np.transpose(training_data, axes=(0, 2, 1)).reshape(
-                n_samples, n_timesteps * n_features)
-        self.n_timesteps = n_timesteps
-        self.n_features = n_features
-
-        # Update the feature names
-        feature_names = ['{}_t-{}'.format(n, n_timesteps - (i + 1))
-                         for n in feature_names for i in range(n_timesteps)]
-
-        # Send off the the super class to do its magic.
-        super(RecurrentTabularExplainer, self).__init__(
-                training_data,
-                mode=mode,
-                training_labels=training_labels,
-                feature_names=feature_names,
-                categorical_features=categorical_features,
-                categorical_names=categorical_names,
-                kernel_width=kernel_width,
-                kernel=kernel,
-                verbose=verbose,
-                class_names=class_names,
-                feature_selection=feature_selection,
-                discretize_continuous=discretize_continuous,
-                discretizer=discretizer,
-                random_state=random_state)
-
-    def _make_predict_proba(self, func):
-        """
-        The predict_proba method will expect 3d arrays, but we are reshaping
-        them to 2D so that LIME works correctly. This wraps the function
-        you give in explain_instance to first reshape the data to have
-        the shape the the keras-style network expects.
-        """
-
-        def predict_proba(X):
-            n_samples = X.shape[0]
-            new_shape = (n_samples, self.n_features, self.n_timesteps)
-            X = np.transpose(X.reshape(new_shape), axes=(0, 2, 1))
-            return func(X)
-
-        return predict_proba
-
-    def explain_instance(self, data_row, classifier_fn, labels=(1,),
-                         top_labels=None, num_features=10, num_samples=5000,
-                         distance_metric='euclidean', model_regressor=None):
-        """Generates explanations for a prediction.
-
-        First, we generate neighborhood data by randomly perturbing features
-        from the instance (see __data_inverse). We then learn locally weighted
-        linear models on this neighborhood data to explain each of the classes
-        in an interpretable way (see lime_base.py).
-
-        Args:
-            data_row: 2d numpy array, corresponding to a row
-            classifier_fn: classifier prediction probability function, which
-                takes a numpy array and outputs prediction probabilities. For
-                ScikitClassifiers , this is classifier.predict_proba.
-            labels: iterable with labels to be explained.
-            top_labels: if not None, ignore labels and produce explanations for
-                the K labels with highest prediction probabilities, where K is
-                this parameter.
-            num_features: maximum number of features present in explanation
-            num_samples: size of the neighborhood to learn the linear model
-            distance_metric: the distance metric to use for weights.
-            model_regressor: sklearn regressor to use in explanation. Defaults
-                to Ridge regression in LimeBase. Must have
-                model_regressor.coef_ and 'sample_weight' as a parameter
-                to model_regressor.fit()
-
-        Returns:
-            An Explanation object (see explanation.py) with the corresponding
-            explanations.
-        """
-
-        # Flatten input so that the normal explainer can handle it
-        data_row = data_row.T.reshape(self.n_timesteps * self.n_features)
-
-        # Wrap the classifier to reshape input
-        classifier_fn = self._make_predict_proba(classifier_fn)
-        return super(RecurrentTabularExplainer, self).explain_instance(
-            data_row, classifier_fn,
-            labels=labels,
-            top_labels=top_labels,
-            num_features=num_features,
-            num_samples=num_samples,
-            distance_metric=distance_metric,
-            model_regressor=model_regressor)

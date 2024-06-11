@@ -53,6 +53,7 @@ print(sys.path)
 
 import lime
 import lime.lime_tabular
+import lime.barbe as barbe
 import anchor
 import rbo
 
@@ -598,24 +599,25 @@ def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classif
 #         discretizers = ['decile', 'eightile', 'sixile', 'quartile'] 
 #         for i in range(4):
 #             try:
-        explainer = xlime.lime_tabular.LimeTabularExplainer(train_df2.values, 
-                                                           categorical_features=categorical_feature_indices, 
-                                                           feature_names=all_features,
-                                                           verbose=False, 
-                                                           class_names=ordered_class_labels,
-                                                           mode='classification',
-                                                           random_state=RandomState(seed), 
-                                                           discretizer='decile',
-#                                                            discretizer=discretizers[i],
-    #                                                        training_labels=train_df['class'].values,
-                                                           feature_selection='none'
-                                                          )
+        explainer = barbe.BarbeExplainer(train_df2.values,
+                                         categorical_features=categorical_feature_indices,
+                                         feature_names=all_features,
+                                         verbose=False,
+                                         class_names=ordered_class_labels,
+                                         mode='classification',
+                                         random_state=RandomState(seed),
+                                         discretizer='decile',
+#                                        discretizer=discretizers[i],
+    #                                    training_labels=train_df['class'].values,
+                                         feature_selection='none'
+                                         )
     
     elif method=='LIME':
         print('My method is LIME')
         discretizers = ['decile', 'eightile', 'sixile', 'quartile'] 
         for i in range(1):
             try:
+                # IAIN replaced lime.lime_tabular with lime.barbe ...
                 explainer = lime.lime_tabular.LimeTabularExplainer(train_df2.values,  
                                                        categorical_features=categorical_feature_indices, 
                                                        feature_names=all_features,
