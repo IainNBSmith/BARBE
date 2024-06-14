@@ -1,4 +1,21 @@
-# DONE/TODO: make the code called in experiments_barbe.py call to barbe.py
+# DONE/TODO: separate BARBE code from LIME (Jun 7)
+# DONE/TODO: make the code called in experiments_barbe.py call to barbe.py (Jun 11)
+# DONE/TODO: find locations where lime is used (Jun 11)
+# TODO: create relevant comments indicating execution of BARBE code
+# TODO: modify header comments to my preferred style
+# TODO: ensure that all the options that are possible function correctly (save this to a test file)
+'''
+ Done/TODO: make the code actually use and run sigdirect (it was calling base lime from what I could tell) (Jun 11)
+    - Manually changed settings to set barbe_mode and model_regressor to 'BARBE' and SigDirect()
+      in future these should be obvious defaults or removed entirely to avoid confusion since
+      the other modes are directly lime code.
+    - Add a TODO: remove lime code that will never run with these settings (avoid issues with having lime code)
+        - This has a ways to go as much code is used in options that may never be applied, need to check this.
+        - Add a TODO: is the explain_instance function ever used or is it only explain_instance_with_data? (remove?)
+        - Add a TODO: make the code only call functions from within the object if possible (see get_all_rules)
+
+ TODO: set up the skeleton (in another file) of my task, smallest feature change collection
+'''
 
 from __future__ import print_function
 
@@ -19,12 +36,14 @@ from sklearn.utils import check_random_state
 
 # eventually these must be modified into our own versions of the code
 #  that goal is for the end of summer
+# IAIN I can write this better (all lime Discretizers)
 from lime.discretize import QuartileDiscretizer
 from lime.discretize import DecileDiscretizer
 from lime.discretize import EntropyDiscretizer
 from lime.discretize import BaseDiscretizer
 from lime.discretize import StatsDiscretizer
-from . import explanation
+# IAIN do not know if this is lime or not
+from lime import explanation
 from . import lime_base
 
 import os
@@ -38,8 +57,11 @@ from sklearn.linear_model import Ridge, lars_path
 from sklearn.utils import check_random_state
 
 from sigdirect import SigDirect
+# IAIN need to check what this is and who wrote it
+# IAIN used for discretizing??? if so this should definitely be rewritten
 from lime_tabular import TableDomainMapper
 
+# the next two functions seem like they would be better implemented as part of the explainer
 def get_all_rules(neighborhood_data, labels_column, clf):
     print('CALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
     clf.fit(neighborhood_data, labels_column)
@@ -50,8 +72,12 @@ def get_all_rules(neighborhood_data, labels_column, clf):
 
 
 def get_features_sigdirect(all_rules, true_label):
-    """ use applied rules first, and then the rest of the applicable rules,
-        and then all rules (other labels, rest of them match)
+    """
+    Input: all_rules ()  ->
+           true_label () ->
+    Purpose: use applied rules first, and then the rest of the applicable rules, and then all rules (other labels,
+     rest of them match)
+    Output: feature_value_pairs () ->
     """
 
     # applied rules,
@@ -169,7 +195,10 @@ def get_features_sigdirect(all_rules, true_label):
 
 
 class BarbeBase(object):
-    """Class for learning a locally linear sparse model from perturbed data"""
+    """
+    Purpose: Class for learning association rules indicating important features via SigDirect. Model learns local
+     feature importance through perturbing the input sample.
+    """
 
     def __init__(self,
                  kernel_fn,
@@ -177,29 +206,28 @@ class BarbeBase(object):
                  random_state=None):
         """Init function
 
-        Args:
+        Input:
             kernel_fn: function that transforms an array of distances into an
                         array of proximity values (floats).
-            verbose: if true, print local prediction values from linear model.
+            verbose: if true, print local prediction values from SigDirect model. TODO: verbose
             random_state: an integer or numpy.RandomState that will be used to
                 generate random numbers. If None, the random state will be
                 initialized using the internal numpy seed.
         """
         self.kernel_fn = kernel_fn
         self.verbose = verbose
+        # see what this function does
         self.random_state = check_random_state(random_state)
 
     @staticmethod
     def generate_lars_path(weighted_data, weighted_labels):
-        """Generates the lars path for weighted data.
-
-        Args:
-            weighted_data: data that has been weighted by kernel
-            weighted_label: labels, weighted by kernel
-
-        Returns:
-            (alphas, coefs), both are arrays corresponding to the
-            regularization parameter and coefficients, respectively
+        """
+        Input: weighted_data ()  -> data that has been weighted by kernel
+               weighted_label () -> labels, weighted by kernel
+        Purpose: Generates the lars path for weighted data.
+        Output: alphas () ->
+                coefs ()  -> both are arrays corresponding to the regularization parameter and coefficients,
+                             respectively
         """
         x_vector = weighted_data
         alphas, _, coefs = lars_path(x_vector,
@@ -208,8 +236,16 @@ class BarbeBase(object):
                                      verbose=False)
         return alphas, coefs
 
+    # IAIN check if these are actually used as the Ridge regressor should not be used right now.
     def forward_selection(self, data, labels, weights, num_features):
-        """Iteratively adds features to the model"""
+        '''
+        Input: data ()         ->
+               labels ()       ->
+               weights ()      ->
+               num_features () ->
+        Purpose: Iteratively adds features to the model
+        Output: used_features (numpy Array) ->
+        '''
         clf = Ridge(alpha=0, fit_intercept=True, random_state=self.random_state)
         used_features = []
         for _ in range(min(num_features, data.shape[1])):
@@ -230,11 +266,19 @@ class BarbeBase(object):
         return np.array(used_features)
 
     def feature_selection(self, data, labels, weights, num_features, method):
-        """Selects features for the model. see explain_instance_with_data to
-           understand the parameters."""
+        '''
+        Input: data ()         ->
+               labels ()       ->
+               weights ()      ->
+               num_features () ->
+               method ()       ->
+        Purpose: Selects features for the model. see explain_instance_with_data to understand the parameters.
+        Output: (numpy Array) ->
+        '''
         if method == 'none':
             return np.array(range(data.shape[1]))
         elif method == 'forward_selection':
+            # IAIN this is why we do the testing, to see what we can actually use...
             return self.forward_selection(data, labels, weights, num_features)
         elif method == 'highest_weights':
             clf = Ridge(alpha=0, fit_intercept=True,
@@ -303,7 +347,8 @@ class BarbeBase(object):
                                    label,
                                    num_features,
                                    feature_selection='auto',
-                                   model_regressor=None,
+                                   # IAIN manually set this to always use SigDirect
+                                   model_regressor=SigDirect(),
                                    neighborhood_data_sd=None,
                                    ohe=None):
         """Takes perturbed data, labels and distances, returns explanation.
@@ -344,66 +389,45 @@ class BarbeBase(object):
 
         weights = self.kernel_fn(distances)
         labels_column = neighborhood_labels[:, label]
+        # IAIN we may remove feature_selection and associated code as this is not used...
         used_features = self.feature_selection(neighborhood_data,
                                                labels_column,
                                                weights,
                                                num_features,
                                                feature_selection)
 
-        if isinstance(model_regressor, SigDirect):
-            print('In Sig')
-            all_rules = defaultdict(list)
-            true_label = neighborhood_labels[0].argmax()
-            labels_column = np.argmax(neighborhood_labels, axis=1)
-            all_raw_rules, predicted_label = get_all_rules(neighborhood_data_sd, labels_column, model_regressor)
+        # IAIN removed if and made it into just setting model_regressor here
+        # IAIN TODO: should make this have a notable verbose mode
+        model_regressor = SigDirect()
+        all_rules = defaultdict(list)
+        true_label = neighborhood_labels[0].argmax()
+        labels_column = np.argmax(neighborhood_labels, axis=1)
+        # IAIN model regressor here is sigdirect (within BarbeBase so it should have its own model saved in it)
+        all_raw_rules, predicted_label = get_all_rules(neighborhood_data_sd, labels_column, model_regressor)
 
-            # convert raw rules to rules (one-hot-decoding them)
-            if predicted_label == true_label:
-                for x, y in all_raw_rules.items():
-                    all_rules[x] = [(t, ohe, neighborhood_data_sd[0]) for t in y]
-            else:
-                predicted_label = -1  # to show we couldn't predict it correctly
+        # convert raw rules to rules (one-hot-decoding them)
+        if predicted_label == true_label:
+            for x, y in all_raw_rules.items():
+                all_rules[x] = [(t, ohe, neighborhood_data_sd[0]) for t in y]
+        else:
+            predicted_label = -1  # to show we couldn't predict it correctly
 
-            feature_value_pairs, prediction_score = get_features_sigdirect(all_rules, true_label)
-            return (0, feature_value_pairs, prediction_score, predicted_label)
-        #if model_regressor is None:
-        #    print('In Not Sig')
-
-        #    model_regressor = Ridge(alpha=1, fit_intercept=True,
-        #                            random_state=self.random_state)
-        easy_model = model_regressor
-        easy_model.fit(neighborhood_data[:, used_features],
-                       labels_column, sample_weight=weights)
-        prediction_score = easy_model.score(
-            neighborhood_data[:, used_features],
-            labels_column, sample_weight=weights)
-
-        local_pred = easy_model.predict(neighborhood_data[0, used_features].reshape(1, -1))
-        # print('Intercept', easy_model.intercept_)
-        # print('Prediction_local', local_pred,)
-        # print('Right:', neighborhood_labels[0, label])
-        # exit()
-
-        if self.verbose:
-            print('Intercept', easy_model.intercept_)
-            print('Prediction_local', local_pred, )
-            print('Right:', neighborhood_labels[0, label])
-
-        return (easy_model.intercept_,
-                sorted(zip(used_features, easy_model.coef_),
-                       key=lambda x: np.abs(x[1]), reverse=True),
-                prediction_score, local_pred)
+        feature_value_pairs, prediction_score = get_features_sigdirect(all_rules, true_label)
+        return (0, feature_value_pairs, prediction_score, predicted_label)
 
 
 # replace instances of lime tabular explainer with BarbeExplainer
 class BarbeExplainer(object):
-    """Explains predictions on tabular (i.e. matrix) data.
+    '''
+    Purpose: Explains predictions on tabular data using Sigdirect.
+
     For numerical features, perturb them by sampling from a Normal(0,1) and
     doing the inverse operation of mean-centering and scaling, according to the
     means and stds in the training data. For categorical features, perturb by
     sampling according to the training distribution, and making a binary
     feature that is 1 when the value is the same as the instance being
-    explained."""
+    explained.
+    '''
 
     def __init__(self,
                  training_data,
@@ -494,20 +518,24 @@ class BarbeExplainer(object):
         if discretize_continuous and not sp.sparse.issparse(training_data):
             # Set the discretizer if training data stats are provided
             if self.training_data_stats:
+                # IAIN lime code
                 discretizer = StatsDiscretizer(training_data, self.categorical_features,
                                                self.feature_names, labels=training_labels,
                                                data_stats=self.training_data_stats)
 
             if discretizer == 'quartile':
+                # IAIN lime code
                 self.discretizer = QuartileDiscretizer(
                     training_data, self.categorical_features,
                     self.feature_names, labels=training_labels)
             elif discretizer == 'decile':
+                # IAIN lime code
                 self.discretizer = DecileDiscretizer(
                     training_data, self.categorical_features,
                     self.feature_names, labels=training_labels)
                 print('Hi There: ', self.discretizer)
             elif discretizer == 'entropy':
+                # IAIN lime code
                 self.discretizer = EntropyDiscretizer(
                     training_data, self.categorical_features,
                     self.feature_names, labels=training_labels)
@@ -536,6 +564,7 @@ class BarbeExplainer(object):
 
         kernel_fn = partial(kernel, kernel_width=kernel_width)
 
+        # IAIN again worth checking what is used...
         self.feature_selection = feature_selection
         print('self.feature_selection = ', self.feature_selection)
         self.base = BarbeBase(kernel_fn, verbose, random_state=self.random_state)
@@ -577,7 +606,9 @@ class BarbeExplainer(object):
     @staticmethod
     def validate_training_data_stats(training_data_stats):
         """
-            Method to validate the structure of training data stats
+        Input: training_data_stats () ->
+        Purpose: Method to validate the structure of training data stats
+        Output: None, error on failed validation.
         """
         stat_keys = list(training_data_stats.keys())
         valid_stat_keys = ["means", "mins", "maxs", "stds", "feature_values", "feature_frequencies"]
@@ -585,6 +616,7 @@ class BarbeExplainer(object):
         if len(missing_keys) > 0:
             raise Exception("Missing keys in training_data_stats. Details:" % (missing_keys))
 
+    # IAIN does seem to be used by the experiment_barbe file
     def explain_instance(self,
                          data_row,
                          predict_fn,
@@ -593,8 +625,10 @@ class BarbeExplainer(object):
                          num_features=10,
                          num_samples=5000,
                          distance_metric='euclidean',
-                         model_regressor=None,
-                         barbe_mode=None):
+                         # IAIN never not use sigdirect
+                         model_regressor=SigDirect(),
+                         # IAIN the default is never reset so the old never called BARBE
+                         barbe_mode='BARBE'):
         print('explain_instance', data_row,
               predict_fn,
               labels,
@@ -641,13 +675,8 @@ class BarbeExplainer(object):
             print('okkkkkkkkkkkkkkk')
             data_row = data_row.tocsr()
 
-        if barbe_mode:
-            data, inverse, sd_data, ohe = self.__data_inverse_barbe(data_row, num_samples, predict_fn, barbe_mode)
-        else:
-            data, inverse = self.__data_inverse(data_row, num_samples)
-            sd_data = None
-            ohe = None
-            print(data[0:3], inverse[0:3], sp.sparse.issparse(data), data.shape, inverse.shape)
+        # IAIN define the sd_data that will be used later
+        data, inverse, sd_data, ohe = self.__data_inverse_barbe(data_row, num_samples, predict_fn, barbe_mode)
 
         if sp.sparse.issparse(data):  # code does not go here
             # Note in sparse case we don't subtract mean since data would become dense
@@ -668,18 +697,16 @@ class BarbeExplainer(object):
         elif barbe_mode == "TEXT":
             yss = predict_fn(sd_data)  ## TEXT
         else:
-            print('Prediction going on')
-            yss = predict_fn(inverse)
+            # this should never happen
+            raise ValueError("no barbe mode selected")
 
         # for classification, the model needs to provide a list of tuples - classes
         # along with prediction probabilities
         if self.mode == "classification":
             if len(yss.shape) == 1:
-                raise NotImplementedError("LIME does not currently support "
+                raise NotImplementedError("BARBE does not currently support "
                                           "classifier models without probability "
-                                          "scores. If this conflicts with your "
-                                          "use case, please let us know: "
-                                          "https://github.com/datascienceinc/lime/issues/16")
+                                          "scores.")
             elif len(yss.shape) == 2:  # code comes here
                 if self.class_names is None:
                     self.class_names = [str(x) for x in range(yss[0].shape[0])]
@@ -748,12 +775,15 @@ class BarbeExplainer(object):
                 discretized_feature_names[f] = self.discretizer.names[f][int(
                     discretized_instance[f])]
 
+        # IAIN lime code that we seem not to change
+        print("IAIN using TableDomainMapper")  # it does use this so we must see
         domain_mapper = TableDomainMapper(feature_names,
                                           values,
                                           scaled_data[0],
                                           categorical_features=categorical_features,
                                           discretized_feature_names=discretized_feature_names,
                                           feature_indexes=feature_indexes)
+        # IAIN lime?
         ret_exp = explanation.Explanation(domain_mapper,
                                           mode=self.mode,
                                           class_names=self.class_names)
@@ -770,6 +800,8 @@ class BarbeExplainer(object):
             ret_exp.max_value = max_y
             labels = [0]
         for label in labels:
+            # IAIN what is yss?
+            print("IAIN called from with data")
             (ret_exp.intercept[label],
              ret_exp.local_exp[label],
              ret_exp.score, ret_exp.local_pred) = self.base.explain_instance_with_data(
@@ -780,6 +812,7 @@ class BarbeExplainer(object):
                 num_features,
                 model_regressor=model_regressor,
                 feature_selection=self.feature_selection,
+                # IAIN sd_data is the modified data
                 neighborhood_data_sd=sd_data,
                 ohe=ohe)
 
@@ -790,125 +823,25 @@ class BarbeExplainer(object):
 
         return ret_exp
 
-    def __data_inverse(self,
-                       data_row,
-                       num_samples):
-        """Generates a neighborhood around a prediction.
-
-        For numerical features, perturb them by sampling from a Normal(0,1) and
-        doing the inverse operation of mean-centering and scaling, according to
-        the means and stds in the training data. For categorical features,
-        perturb by sampling according to the training distribution, and making
-        a binary feature that is 1 when the value is the same as the instance
-        being explained.
-
-        Args:
-            data_row: 1d numpy array, corresponding to a row
-            num_samples: size of the neighborhood to learn the linear model
-
-        Returns:
-            A tuple (data, inverse), where:
-                data: dense num_samples * K matrix, where categorical features
-                are encoded with either 0 (not equal to the corresponding value
-                in data_row) or 1. The first row is the original instance.
-                inverse: same as data, except the categorical features are not
-                binary, but categorical (as the original data)
-        """
-        is_sparse = sp.sparse.issparse(data_row)
-        print('inside __data_inverse............ is_sparse = ', is_sparse, data_row.shape)
-        if is_sparse:
-            num_cols = data_row.shape[1]
-            data = sp.sparse.csr_matrix((num_samples, num_cols), dtype=data_row.dtype)
-        else:  # code comes here
-            num_cols = data_row.shape[0]
-            data = np.zeros((num_samples, num_cols))
-            print(data)
-        categorical_features = range(num_cols)
-        if self.discretizer is None:
-            print('111111')
-            instance_sample = data_row
-            scale = self.scaler.scale_
-            mean = self.scaler.mean_
-            if is_sparse:
-                # Perturb only the non-zero values
-                non_zero_indexes = data_row.nonzero()[1]
-                num_cols = len(non_zero_indexes)
-                instance_sample = data_row[:, non_zero_indexes]
-                scale = scale[non_zero_indexes]
-                mean = mean[non_zero_indexes]
-            data = self.random_state.normal(
-                0, 1, num_samples * num_cols).reshape(
-                num_samples, num_cols)
-            if self.sample_around_instance:
-                data = data * scale + instance_sample
-            else:
-                data = data * scale + mean
-            if is_sparse:
-                if num_cols == 0:
-                    data = sp.sparse.csr_matrix((num_samples,
-                                                 data_row.shape[1]),
-                                                dtype=data_row.dtype)
-                else:
-                    indexes = np.tile(non_zero_indexes, num_samples)
-                    indptr = np.array(
-                        range(0, len(non_zero_indexes) * (num_samples + 1),
-                              len(non_zero_indexes)))
-                    data_1d_shape = data.shape[0] * data.shape[1]
-                    data_1d = data.reshape(data_1d_shape)
-                    data = sp.sparse.csr_matrix(
-                        (data_1d, indexes, indptr),
-                        shape=(num_samples, data_row.shape[1]))
-            categorical_features = self.categorical_features
-            first_row = data_row
-        else:
-            first_row = self.discretizer.discretize(data_row)
-            print('first_row as discretizier is none = ', first_row)
-
-        data[0] = data_row.copy()
-        inverse = data.copy()
-        # print(data, 'and', inverse)
-        for column in categorical_features:
-            values = self.feature_values[column]
-            freqs = self.feature_frequencies[column]
-            inverse_column = self.random_state.choice(values, size=num_samples,
-                                                      replace=True, p=freqs)
-
-            binary_column = np.array([1 if x == first_row[column]
-                                      else 0 for x in inverse_column])
-            # print(values, '\r\n', freqs, '\r\n', inverse_column, '\r\n', binary_column)
-            binary_column[0] = 1
-            inverse_column[0] = data[0, column]
-            data[:, column] = binary_column
-            inverse[:, column] = inverse_column
-            # print(data[0:3], 'and', inverse[0:3])
-        if self.discretizer is not None:
-            inverse[1:] = self.discretizer.undiscretize(inverse[1:])
-        inverse[0] = data_row
-        return data, inverse
-
+    # IAIN removed original __data_inverse (did not seem to be used)
     def __data_inverse_barbe(self,
                              data_row,
                              num_samples,
                              predict_fn,
                              barbe_mode=None):
-        """Generates a neighborhood around a prediction for BARBE.
-
-        Args:
-            data_row: 1d numpy array, corresponding to a row
-            num_samples: size of the neighborhood to learn the linear model
-            predict_fn: check the description on explain_instance function.
-            barbe_mode: "BARBE", or "TEXT". the latter is under development.
-
-        Returns:
-            A tuple (data, inverse, sd_values, ohe), where:
-                data: dense num_samples * K matrix, where categorical features
-                are encoded with either 0 (not equal to the corresponding value
-                in data_row) or 1. The first row is the original instance.
-                inverse: same as data, except the categorical features are not
-                binary, but categorical (as the original data)
-                sd_values: data used by sigdirect
-                ohe:  A sklearn.preprocessing.OneHotEncoder object fit on the train data
-        """
+        # IAIN this may indicate some things to remove
+        '''
+        Input: data_row (numpy Array (,n))           -> 1d numpy Array corresponding to a row.
+               num_samples (int [1, inf))            -> size of the neighborhood to learn Sigdirect model.
+               predict_fn ()                         ->
+               barbe_mode (string {'BARBE', 'TEXT'}) -> whether to run numerical barbe or text barbe on data.
+        Purpose: Generates a neighborhood around a prediction for BARBE.
+        Output: data ( (num_samples,K))    -> data with encoded categorical features (0, 1) for match and non-match to
+            `                                 row. First row is original instance.
+                inverse ( (num_samples,K)) -> same as data but categorical features are not binary.
+                sd_values ()               -> data used by Sigdirect.
+                ohe ()                     -> A sklearn.preprocessing.OneHotEncoder object fit on the train data
+        '''
         is_sparse = sp.sparse.issparse(data_row)
         if is_sparse:
             num_cols = data_row.shape[1]
@@ -974,9 +907,11 @@ class BarbeExplainer(object):
                 inverse[1:] = self.discretizer.undiscretize(inverse[1:])
             inverse[0] = data_row
             ohe = sklearn.preprocessing.OneHotEncoder(categories='auto', handle_unknown='ignore')
+            # IAIN this is where the modification of data occurs
             sd_values = np.asarray(ohe.fit_transform(sd_values).todense()).astype(int)
             return data, inverse, sd_values, ohe
         elif barbe_mode == 'TEXT':
+            # IAIN for later this may be what I change to import other stuff for BARBIE
             sd_values = np.zeros((int(num_samples), first_row.shape[0]))
             for idx in np.nonzero(first_row)[0]:
                 t = np.random.choice((0, 1), size=num_samples)
