@@ -520,6 +520,7 @@ def evaluate_instance(args):
     clf_features = get_features(classifier_type, clf, row, {'max_features':max_features, 'num_labels':num_labels, 'predicted_label_index':predicted_label_index})
     print(clf_features)
     if method=="XLIME":
+    # if method == 'BARBE':
 #         my_modes = [["FOURTEEN", "SIXTEEN"], ["SEVENTEEN", "EIGHTEEN"], "FIFTEEN" ]
 #         my_modes = [["FOURTEEN", "SEVENTEEN"]] 
         my_modes = ["FOURTEEN", "SEVENTEEN", "SIXTEEN", "EIGHTEEN"]
@@ -544,10 +545,19 @@ def evaluate_instance(args):
                 break
         
         explainer_features = explainer_features[:max_features]
-    elif method=="LIME":
+    elif method=="LIME": # IAIN
+    # elif method == 'BARBE':
         print('----')
         explainer_features, fidelity = get_nonzero_features_lime(row, clf, num_features, 
                                                   explainer, num_labels, max_features,                                                      
+                                                  predicted_label_index, num_samples, xlime_mode,
+                                                  seed)
+
+    elif method=="BARBE": # IAIN
+    # elif method == 'BARBE':
+        print('----')
+        explainer_features, fidelity = get_nonzero_features_lime(row, clf, num_features,
+                                                  explainer, num_labels, max_features,
                                                   predicted_label_index, num_samples, xlime_mode,
                                                   seed)
 
@@ -577,7 +587,7 @@ def evaluate_instance(args):
     return list(clf_features), list(explainer_features), fidelity
     
 
-def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classifier_type, num_samples, around_instance, seed, max_features, method='LIME', xlime_mode='ONE'):
+def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classifier_type, num_samples, around_instance, seed, max_features, method='BARBE', xlime_mode='ONE'):
     print('Function evaluate_explanations_parallel with params = ', dataset_name, clf, classifier_type, num_samples, around_instance, seed, max_features, method, xlime_mode)
     random.seed(1)
     np.random.seed(1)
@@ -595,29 +605,38 @@ def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classif
     print(all_features)
     fout.write('dataset: {} method: {} seed: {} num_sampes: {} test size: {}\n'.format(dataset_name, method, seed, num_samples, test_df2.shape))
     
-    if method=='XLIME':
-#         discretizers = ['decile', 'eightile', 'sixile', 'quartile'] 
-#         for i in range(4):
-#             try:
-        explainer = barbe.BarbeExplainer(train_df2.values,
-                                         categorical_features=categorical_feature_indices,
-                                         feature_names=all_features,
-                                         verbose=False,
-                                         class_names=ordered_class_labels,
-                                         mode='classification',
-                                         random_state=RandomState(seed),
-                                         discretizer='decile',
-#                                        discretizer=discretizers[i],
-    #                                    training_labels=train_df['class'].values,
-                                         feature_selection='none'
-                                         )
+    if method == 'BARBE':
+        print('My method is BARBE')
+        discretizers = ['decile', 'eightile', 'sixile', 'quartile']
+        for i in range(1):
+            try:
+                # IAIN replaced lime.lime_tabular with lime.barbe ...
+                # IAIN this is left as is because the method is still lime
+                # IAIN, for Moriom this is all you need to run BARBE in the current form
+                explainer = barbe.BarbeExplainer(train_df2.values,
+                                                                   categorical_features=categorical_feature_indices,
+                                                                   feature_names=all_features,
+                                                                   verbose=False,
+                                                                   class_names=ordered_class_labels,
+                                                                   mode='classification',
+                                                                   sample_around_instance=around_instance,
+                                                                   random_state=RandomState(seed),
+                                                                   discretizer=discretizers[i]
+                                                                   )
+                print(explainer)
+                break
+            except Exception as e:
+                print(str(e))
+                pass
     
     elif method=='LIME':
+    # elif method == 'BARBE':
         print('My method is LIME')
         discretizers = ['decile', 'eightile', 'sixile', 'quartile'] 
         for i in range(1):
             try:
                 # IAIN replaced lime.lime_tabular with lime.barbe ...
+                # IAIN this is left as is because the method is still lime
                 explainer = lime.lime_tabular.LimeTabularExplainer(train_df2.values,  
                                                        categorical_features=categorical_feature_indices, 
                                                        feature_names=all_features,
@@ -809,7 +828,11 @@ for i in range(NUM_ITERATIONS):
             
             ## evaluate LIME
             for num_samples in samples_range:
-                ouputs_clf, outputs_exp, fidelities = evaluate_explanations_parallel(dataset, clf, train_df, test_df, classifier_type, num_samples, around_instance, seed, info['max_explanation_size'], 'LIME')
+                ouputs_clf, outputs_exp, fidelities = evaluate_explanations_parallel(dataset, clf, train_df, test_df,
+                                                                                     classifier_type, num_samples,
+                                                                                     around_instance, seed,
+                                                                                     info['max_explanation_size'],
+                                                                                     'BARBE')
                 #analyze_outputs(all_features, ouputs_clf, outputs_exp, fidelities)
 
         except Exception as e:
