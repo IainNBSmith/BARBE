@@ -18,10 +18,11 @@ from lime.discretize import DecileDiscretizer
 from lime.discretize import EntropyDiscretizer
 from lime.discretize import BaseDiscretizer
 from lime.discretize import StatsDiscretizer
-from . import explanation
-from . import lime_base
+from lime import explanation
+from lime import lime_base
 
 
+# IAIN again, do we need this?
 class TableDomainMapper(explanation.DomainMapper):
     """Maps feature ids to names, generates table views, etc"""
 

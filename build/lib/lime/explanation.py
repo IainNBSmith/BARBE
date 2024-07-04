@@ -9,6 +9,7 @@ import json
 import string
 import numpy as np
 
+# IAIN need to write our own error handling code if we use this
 from .exceptions import LimeError
 
 from sklearn.utils import check_random_state
@@ -71,6 +72,7 @@ class DomainMapper(object):
         return ''
 
 
+# IAIN we could rewrite or acknowledge this code not sure may check
 class Explanation(object):
     """Object returned by explainers."""
 

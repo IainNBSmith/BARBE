@@ -693,6 +693,7 @@ class BarbeExplainer(object):
         ).ravel()
 
         if barbe_mode == "BARBE":
+            # IAIN uses inverse for predictions?
             yss = predict_fn(inverse)
         elif barbe_mode == "TEXT":
             yss = predict_fn(sd_data)  ## TEXT
@@ -777,6 +778,7 @@ class BarbeExplainer(object):
 
         # IAIN lime code that we seem not to change
         print("IAIN using TableDomainMapper")  # it does use this so we must see
+        # IAIN uses scaled_data[0]??
         domain_mapper = TableDomainMapper(feature_names,
                                           values,
                                           scaled_data[0],
@@ -802,6 +804,7 @@ class BarbeExplainer(object):
         for label in labels:
             # IAIN what is yss?
             print("IAIN called from with data")
+            # IAIN scaled_data should be perturbations
             (ret_exp.intercept[label],
              ret_exp.local_exp[label],
              ret_exp.score, ret_exp.local_pred) = self.base.explain_instance_with_data(

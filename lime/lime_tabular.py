@@ -22,6 +22,7 @@ from lime import explanation
 from lime import lime_base
 
 
+# IAIN again, do we need this?
 class TableDomainMapper(explanation.DomainMapper):
     """Maps feature ids to names, generates table views, etc"""
 
@@ -479,6 +480,7 @@ class LimeTabularExplainer(object):
         ret_exp = explanation.Explanation(domain_mapper,
                                           mode=self.mode,
                                           class_names=self.class_names)
+        # IAIN from what I can tell this should be None (we open it up and assign it I see)
         ret_exp.scaled_data = scaled_data
         if self.mode == "classification":
             ret_exp.predict_proba = yss[0]

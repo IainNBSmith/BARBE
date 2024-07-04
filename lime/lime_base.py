@@ -345,6 +345,7 @@ class LimeBase(object):
             model_regressor = Ridge(alpha=1, fit_intercept=True,
                                     random_state=self.random_state)
         easy_model = model_regressor
+        print("IAIN fitting easy model")
         easy_model.fit(neighborhood_data[:, used_features],
                        labels_column, sample_weight=weights)
         prediction_score = easy_model.score(

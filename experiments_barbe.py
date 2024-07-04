@@ -588,6 +588,8 @@ def evaluate_instance(args):
     
 
 def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classifier_type, num_samples, around_instance, seed, max_features, method='BARBE', xlime_mode='ONE'):
+
+    # IAIN these steps should be built in? Or is there something I am missing...?
     print('Function evaluate_explanations_parallel with params = ', dataset_name, clf, classifier_type, num_samples, around_instance, seed, max_features, method, xlime_mode)
     random.seed(1)
     np.random.seed(1)
