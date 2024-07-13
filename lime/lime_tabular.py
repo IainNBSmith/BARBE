@@ -699,8 +699,12 @@ class LimeTabularExplainer(object):
                 inverse[1:] = self.discretizer.undiscretize(inverse[1:])
             inverse[0] = data_row
             ohe =  sklearn.preprocessing.OneHotEncoder(categories='auto', handle_unknown='ignore')
+            original_inverse = sd_values
             sd_values = np.asarray(ohe.fit_transform(sd_values).todense()).astype(int)
-            return data, inverse,sd_values, ohe
+            # IAIN TODO: this needs to eventually be changed back (ideally when we use only
+            #  TODO: the other inverse function - ensuring that the data works as intended)
+            # return data, inverse,sd_values, ohe
+            return data, inverse, sd_values, original_inverse
         elif barbe_mode=='TEXT':
             sd_values = np.zeros((int(num_samples), first_row.shape[0]))
             for idx in np.nonzero(first_row)[0]:

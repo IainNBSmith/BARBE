@@ -13,7 +13,7 @@ import scipy as sp
 from sklearn.linear_model import Ridge, lars_path
 from sklearn.utils import check_random_state
 
-from sigdirect import SigDirect
+# from sigdirect import SigDirect
 
 def get_all_rules(neighborhood_data, labels_column, clf):
     print('CALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
@@ -323,22 +323,7 @@ class LimeBase(object):
                                                num_features,
                                                feature_selection)
 
-        if isinstance(model_regressor, SigDirect):
-            print('In Sig')
-            all_rules = defaultdict(list)
-            true_label = neighborhood_labels[0].argmax()
-            labels_column = np.argmax(neighborhood_labels, axis=1)
-            all_raw_rules, predicted_label = get_all_rules(neighborhood_data_sd, labels_column, model_regressor)
 
-            # convert raw rules to rules (one-hot-decoding them)
-            if predicted_label==true_label:
-                for x,y in all_raw_rules.items():
-                    all_rules[x] = [(t,ohe,neighborhood_data_sd[0]) for t in y]
-            else:
-                predicted_label = -1 # to show we couldn't predict it correctly
-
-            feature_value_pairs, prediction_score = get_features_sigdirect(all_rules, true_label)
-            return (0, feature_value_pairs, prediction_score, predicted_label)
         if model_regressor is None:
             print('In Not Sig')
             

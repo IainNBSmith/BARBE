@@ -1,0 +1,1649 @@
+﻿2024-07-06 21:16:34.530 INFO  [3360] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:23:58.122 INFO  [37056] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:25:09.678 INFO  [24876] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:25:55.520 INFO  [34820] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:27:01.945 INFO  [37812] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:28:16.508 INFO  [21576] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:28:16.517 WARN  [21576] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-06 21:29:15.741 INFO  [31228] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:29:15.750 WARN  [31228] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-06 21:30:01.946 INFO  [23304] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:30:01.955 WARN  [23304] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-06 21:32:27.415 INFO  [37760] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:33:30.454 INFO  [37152] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:33:30.457 WARN  [37152] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-06 21:35:17.010 INFO  [37096] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-06 21:35:17.020 WARN  [37096] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-07 02:08:48.153 INFO  [35624] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 02:08:48.159 WARN  [35624] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1181
+2024-07-07 02:08:48.159 WARN  [35624] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3819
+2024-07-07 02:08:48.159 INFO  [35624] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 02:08:48.160 INFO  [35624] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 02:08:48.165 INFO  [35624] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 02:09:32.304 INFO  [21180] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 02:09:32.309 WARN  [21180] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 775
+2024-07-07 02:09:32.309 WARN  [21180] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4225
+2024-07-07 02:09:32.309 INFO  [21180] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 02:09:32.310 INFO  [21180] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 02:09:32.314 INFO  [21180] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 02:11:59.350 INFO  [36020] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 02:11:59.355 WARN  [36020] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1354
+2024-07-07 02:11:59.355 WARN  [36020] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3646
+2024-07-07 02:11:59.356 INFO  [36020] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 02:11:59.357 INFO  [36020] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 02:11:59.361 INFO  [36020] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 02:12:24.070 INFO  [37868] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 02:12:24.075 WARN  [37868] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 773
+2024-07-07 02:12:24.075 WARN  [37868] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4227
+2024-07-07 02:12:24.076 INFO  [37868] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 02:12:24.077 INFO  [37868] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 02:12:24.081 INFO  [37868] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 12:03:22.581 INFO  [37912] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 12:03:22.587 WARN  [37912] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 12:03:22.587 WARN  [37912] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-07 12:03:22.587 INFO  [37912] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 3
+2024-07-07 12:03:22.589 INFO  [37912] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 3
+2024-07-07 12:03:22.593 INFO  [37912] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 3
+2024-07-07 20:06:14.705 INFO  [25380] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:06:14.710 WARN  [25380] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:06:14.710 WARN  [25380] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 902
+2024-07-07 20:06:14.710 WARN  [25380] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 2
+2024-07-07 20:06:14.710 INFO  [25380] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 6 rules: 5
+2024-07-07 20:06:14.712 INFO  [25380] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 9 rules: 5
+2024-07-07 20:06:14.716 INFO  [25380] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 12 rules: 5
+2024-07-07 20:06:57.044 INFO  [33784] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:06:57.049 WARN  [33784] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:06:57.049 WARN  [33784] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 887
+2024-07-07 20:06:57.049 WARN  [33784] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 17
+2024-07-07 20:06:57.050 INFO  [33784] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 6 rules: 5
+2024-07-07 20:06:57.051 INFO  [33784] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 9 rules: 5
+2024-07-07 20:06:57.055 INFO  [33784] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 12 rules: 5
+2024-07-07 20:08:27.684 INFO  [17280] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:08:27.689 WARN  [17280] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3492
+2024-07-07 20:08:27.689 WARN  [17280] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1508
+2024-07-07 20:08:27.690 INFO  [17280] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 20:08:27.691 INFO  [17280] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 20:08:27.695 INFO  [17280] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 20:09:52.587 INFO  [28700] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:09:52.592 WARN  [28700] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3437
+2024-07-07 20:09:52.592 WARN  [28700] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1563
+2024-07-07 20:09:52.592 INFO  [28700] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 20:09:52.594 INFO  [28700] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 20:09:52.598 INFO  [28700] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 20:10:44.775 INFO  [14816] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:10:44.780 WARN  [14816] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:10:44.780 WARN  [14816] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 889
+2024-07-07 20:10:44.780 WARN  [14816] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 11
+2024-07-07 20:10:44.780 WARN  [14816] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 4
+2024-07-07 20:10:44.780 INFO  [14816] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 8 rules: 7
+2024-07-07 20:10:44.782 INFO  [14816] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 12 rules: 7
+2024-07-07 20:10:44.786 INFO  [14816] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 16 rules: 7
+2024-07-07 20:11:42.815 INFO  [36268] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:11:42.821 WARN  [36268] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:11:42.821 WARN  [36268] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 902
+2024-07-07 20:11:42.821 WARN  [36268] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 2
+2024-07-07 20:11:42.821 INFO  [36268] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 6 rules: 5
+2024-07-07 20:11:42.823 INFO  [36268] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 9 rules: 5
+2024-07-07 20:11:42.827 INFO  [36268] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 12 rules: 5
+2024-07-07 20:13:14.914 INFO  [35140] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:13:14.919 WARN  [35140] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:13:14.919 WARN  [35140] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-07 20:13:14.920 INFO  [35140] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 3
+2024-07-07 20:13:14.921 INFO  [35140] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 3
+2024-07-07 20:13:14.925 INFO  [35140] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 3
+2024-07-07 20:14:03.701 INFO  [37204] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:14:03.707 WARN  [37204] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3452
+2024-07-07 20:14:03.707 WARN  [37204] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1548
+2024-07-07 20:14:03.707 INFO  [37204] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 20:14:03.708 INFO  [37204] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 20:14:03.713 INFO  [37204] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 20:14:31.577 INFO  [30928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:14:31.582 WARN  [30928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:14:31.582 WARN  [30928] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 840
+2024-07-07 20:14:31.582 WARN  [30928] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 41
+2024-07-07 20:14:31.582 WARN  [30928] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 23
+2024-07-07 20:14:31.583 INFO  [30928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 8 rules: 7
+2024-07-07 20:14:31.585 INFO  [30928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 12 rules: 7
+2024-07-07 20:14:31.589 INFO  [30928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 15 rules: 7
+2024-07-07 20:14:56.729 INFO  [27380] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:14:56.734 WARN  [27380] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4038
+2024-07-07 20:14:56.734 WARN  [27380] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 893
+2024-07-07 20:14:56.734 WARN  [27380] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 68
+2024-07-07 20:14:56.734 WARN  [27380] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 1
+2024-07-07 20:14:56.734 INFO  [27380] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 8 rules: 7
+2024-07-07 20:14:56.736 INFO  [27380] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 12 rules: 7
+2024-07-07 20:14:56.740 INFO  [27380] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 16 rules: 7
+2024-07-07 20:18:44.268 INFO  [36372] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:18:44.274 WARN  [36372] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3492
+2024-07-07 20:18:44.274 WARN  [36372] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1504
+2024-07-07 20:18:44.274 WARN  [36372] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 4
+2024-07-07 20:18:44.274 INFO  [36372] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 6 rules: 6
+2024-07-07 20:18:44.275 INFO  [36372] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 9 rules: 6
+2024-07-07 20:18:44.280 INFO  [36372] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 12 rules: 6
+2024-07-07 20:20:15.332 INFO  [25424] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:20:15.338 WARN  [25424] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3606
+2024-07-07 20:20:15.338 WARN  [25424] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1394
+2024-07-07 20:20:15.338 INFO  [25424] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 20:20:15.339 INFO  [25424] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 20:20:15.343 INFO  [25424] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 20:20:45.944 INFO  [13548] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:20:45.949 WARN  [13548] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:20:45.949 WARN  [13548] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 828
+2024-07-07 20:20:45.949 WARN  [13548] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 55
+2024-07-07 20:20:45.949 WARN  [13548] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 19
+2024-07-07 20:20:45.949 WARN  [13548] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 2
+2024-07-07 20:20:45.950 INFO  [13548] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 10 rules: 9
+2024-07-07 20:20:45.951 INFO  [13548] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 15 rules: 9
+2024-07-07 20:20:45.955 INFO  [13548] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 20 rules: 9
+2024-07-07 20:22:03.164 INFO  [25500] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:22:03.169 WARN  [25500] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:22:03.169 WARN  [25500] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 894
+2024-07-07 20:22:03.169 WARN  [25500] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 10
+2024-07-07 20:22:03.170 INFO  [25500] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 6 rules: 5
+2024-07-07 20:22:03.171 INFO  [25500] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 9 rules: 5
+2024-07-07 20:22:03.175 INFO  [25500] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 12 rules: 5
+2024-07-07 20:22:09.032 INFO  [19984] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:22:09.037 WARN  [19984] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:22:09.037 WARN  [19984] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 851
+2024-07-07 20:22:09.037 WARN  [19984] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 49
+2024-07-07 20:22:09.037 WARN  [19984] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 4
+2024-07-07 20:22:09.038 INFO  [19984] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 8 rules: 7
+2024-07-07 20:22:09.039 INFO  [19984] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 12 rules: 7
+2024-07-07 20:22:09.043 INFO  [19984] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 16 rules: 7
+2024-07-07 20:23:00.005 INFO  [38504] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:23:00.010 WARN  [38504] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:23:00.010 WARN  [38504] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 902
+2024-07-07 20:23:00.010 WARN  [38504] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 2
+2024-07-07 20:23:00.011 INFO  [38504] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 6 rules: 5
+2024-07-07 20:23:00.012 INFO  [38504] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 9 rules: 5
+2024-07-07 20:23:00.016 INFO  [38504] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 12 rules: 5
+2024-07-07 20:23:21.001 INFO  [33180] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:23:21.007 WARN  [33180] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-07 20:23:21.007 WARN  [33180] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-07 20:23:21.007 INFO  [33180] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 3
+2024-07-07 20:23:21.009 INFO  [33180] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 3
+2024-07-07 20:23:21.013 INFO  [33180] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 3
+2024-07-07 20:25:37.044 INFO  [26220] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:25:37.049 WARN  [26220] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3312
+2024-07-07 20:25:37.049 WARN  [26220] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1635
+2024-07-07 20:25:37.049 WARN  [26220] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 47
+2024-07-07 20:25:37.049 WARN  [26220] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 6
+2024-07-07 20:25:37.050 INFO  [26220] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 8 rules: 8
+2024-07-07 20:25:37.051 INFO  [26220] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 12 rules: 8
+2024-07-07 20:25:37.055 INFO  [26220] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 15 rules: 8
+2024-07-07 20:31:38.455 INFO  [24028] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:31:38.460 WARN  [24028] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:31:38.461 INFO  [24028] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:31:38.462 INFO  [24028] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:31:38.462 INFO  [24028] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:33:43.365 INFO  [21344] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:33:43.370 WARN  [21344] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:33:43.371 INFO  [21344] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:33:43.372 INFO  [21344] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:33:43.373 INFO  [21344] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:34:33.831 INFO  [14140] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:34:33.836 WARN  [14140] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:34:33.836 INFO  [14140] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:34:33.838 INFO  [14140] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:34:33.838 INFO  [14140] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:35:45.124 INFO  [34424] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:35:45.130 WARN  [34424] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:35:45.130 INFO  [34424] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:35:45.132 INFO  [34424] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:35:45.132 INFO  [34424] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:40:04.724 INFO  [37252] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:40:04.729 WARN  [37252] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:40:04.730 INFO  [37252] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:40:04.731 INFO  [37252] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:40:04.731 INFO  [37252] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:51:27.264 INFO  [19940] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:51:27.269 WARN  [19940] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:51:27.269 INFO  [19940] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:51:27.271 INFO  [19940] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:51:27.271 INFO  [19940] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:52:00.538 INFO  [27572] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:52:00.544 WARN  [27572] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:52:00.544 INFO  [27572] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:52:00.545 INFO  [27572] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:52:00.546 INFO  [27572] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:53:33.299 INFO  [38460] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:53:33.304 WARN  [38460] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:53:33.305 INFO  [38460] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:53:33.306 INFO  [38460] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:53:33.306 INFO  [38460] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:55:06.739 INFO  [37376] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:55:06.744 WARN  [37376] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:55:06.744 INFO  [37376] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:55:06.746 INFO  [37376] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:55:06.746 INFO  [37376] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:55:33.483 INFO  [33008] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:55:33.488 WARN  [33008] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:55:33.489 INFO  [33008] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:55:33.490 INFO  [33008] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:55:33.490 INFO  [33008] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:56:43.044 INFO  [6780] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:56:43.049 WARN  [6780] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:56:43.050 INFO  [6780] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:56:43.051 INFO  [6780] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:56:43.051 INFO  [6780] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:57:07.804 INFO  [38072] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:57:07.809 WARN  [38072] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:57:07.809 INFO  [38072] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:57:07.810 INFO  [38072] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:57:07.811 INFO  [38072] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:57:56.640 INFO  [35232] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:57:56.645 WARN  [35232] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:57:56.646 INFO  [35232] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:57:56.647 INFO  [35232] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:57:56.647 INFO  [35232] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:58:22.316 INFO  [4472] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:58:22.321 WARN  [4472] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:58:22.321 INFO  [4472] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:58:22.322 INFO  [4472] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:58:22.323 INFO  [4472] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 20:58:46.449 INFO  [816] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 20:58:46.454 WARN  [816] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 20:58:46.454 INFO  [816] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 20:58:46.456 INFO  [816] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 20:58:46.456 INFO  [816] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:00:25.133 INFO  [38176] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:00:25.138 WARN  [38176] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:00:25.139 INFO  [38176] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:00:25.140 INFO  [38176] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:00:25.140 INFO  [38176] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:00:59.439 INFO  [29048] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:00:59.444 WARN  [29048] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:00:59.444 INFO  [29048] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:00:59.445 INFO  [29048] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:00:59.446 INFO  [29048] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:01:39.980 INFO  [38612] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:01:39.985 WARN  [38612] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:01:39.985 INFO  [38612] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:01:39.987 INFO  [38612] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:01:39.987 INFO  [38612] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:02:49.622 INFO  [36972] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:02:49.628 WARN  [36972] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:02:49.628 INFO  [36972] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:02:49.629 INFO  [36972] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:02:49.630 INFO  [36972] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:03:13.648 INFO  [32756] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:03:13.657 WARN  [32756] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:03:13.658 INFO  [32756] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:03:13.660 INFO  [32756] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:03:13.661 INFO  [32756] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:04:49.685 INFO  [38536] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:04:49.690 WARN  [38536] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:04:49.691 INFO  [38536] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:04:49.692 INFO  [38536] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:04:49.693 INFO  [38536] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:07:33.827 INFO  [31680] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:07:33.832 WARN  [31680] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:07:33.833 INFO  [31680] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:07:33.834 INFO  [31680] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:07:33.835 INFO  [31680] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:08:10.226 INFO  [34596] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:08:10.232 WARN  [34596] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:08:10.232 INFO  [34596] [CPPSigDirect::build_tree@317] 1 ---new nodes: 3 new rule_nodes: 3 rules: 1
+2024-07-07 21:08:10.233 INFO  [34596] [CPPSigDirect::build_tree@317] 2 ---new nodes: 5 new rule_nodes: 5 rules: 1
+2024-07-07 21:08:10.234 INFO  [34596] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 1
+2024-07-07 21:12:26.110 INFO  [19324] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:12:26.124 WARN  [19324] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:12:26.126 INFO  [19324] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:12:26.210 INFO  [19324] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:12:26.212 INFO  [19324] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:12:44.430 INFO  [12060] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:12:44.446 WARN  [12060] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:12:44.448 INFO  [12060] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:12:44.530 INFO  [12060] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:12:44.533 INFO  [12060] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:13:42.369 INFO  [35952] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:13:42.384 WARN  [35952] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:13:42.386 INFO  [35952] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:13:42.471 INFO  [35952] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:13:42.474 INFO  [35952] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:14:28.039 INFO  [38116] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:14:28.054 WARN  [38116] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:14:28.056 INFO  [38116] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:14:28.138 INFO  [38116] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:14:28.141 INFO  [38116] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:15:04.688 INFO  [38536] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:15:04.702 WARN  [38536] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:15:04.704 INFO  [38536] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:15:04.786 INFO  [38536] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:15:04.789 INFO  [38536] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:15:23.716 INFO  [28592] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:15:23.731 WARN  [28592] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:15:23.733 INFO  [28592] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:15:23.816 INFO  [28592] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:15:23.819 INFO  [28592] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:15:45.561 INFO  [15200] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:15:45.581 WARN  [15200] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:15:45.583 INFO  [15200] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:15:45.668 INFO  [15200] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:15:45.671 INFO  [15200] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:16:17.272 INFO  [15848] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:16:17.292 WARN  [15848] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:16:17.294 INFO  [15848] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:16:17.377 INFO  [15848] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:16:17.380 INFO  [15848] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:17:55.693 INFO  [35556] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:17:55.711 WARN  [35556] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-07 21:17:55.714 INFO  [35556] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 2 rules: 2
+2024-07-07 21:17:55.796 INFO  [35556] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 3 rules: 2
+2024-07-07 21:17:55.799 INFO  [35556] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 2
+2024-07-07 21:18:14.703 INFO  [31308] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:18:14.718 WARN  [31308] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-07 21:18:14.718 WARN  [31308] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-07 21:18:14.721 INFO  [31308] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 21:18:14.805 INFO  [31308] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 21:18:16.904 INFO  [31308] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 21:18:36.065 INFO  [35228] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:18:36.079 WARN  [35228] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-07 21:18:36.079 WARN  [35228] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-07 21:18:36.082 INFO  [35228] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 21:18:36.165 INFO  [35228] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 21:18:38.248 INFO  [35228] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 21:18:53.529 INFO  [24028] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:18:53.544 WARN  [24028] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-07 21:18:53.544 WARN  [24028] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-07 21:18:53.547 INFO  [24028] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 21:18:53.631 INFO  [24028] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 21:18:55.711 INFO  [24028] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 21:21:20.273 INFO  [23308] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:21:20.288 WARN  [23308] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-07 21:21:20.288 WARN  [23308] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-07 21:21:20.290 INFO  [23308] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 4 rules: 4
+2024-07-07 21:21:20.373 INFO  [23308] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 6 rules: 4
+2024-07-07 21:21:22.465 INFO  [23308] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 4
+2024-07-07 21:31:56.458 INFO  [25192] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:31:56.473 WARN  [25192] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1108
+2024-07-07 21:31:56.473 WARN  [25192] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1425
+2024-07-07 21:31:56.473 WARN  [25192] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 1557
+2024-07-07 21:31:56.473 WARN  [25192] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 905
+2024-07-07 21:31:56.473 WARN  [25192] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 5
+2024-07-07 21:31:56.475 INFO  [25192] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 10 rules: 10
+2024-07-07 21:31:56.558 INFO  [25192] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 15 rules: 10
+2024-07-07 21:31:57.532 INFO  [25192] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 17 rules: 10
+2024-07-07 21:34:34.361 INFO  [27952] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:34:34.376 WARN  [27952] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2044
+2024-07-07 21:34:34.376 WARN  [27952] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1535
+2024-07-07 21:34:34.376 WARN  [27952] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 1110
+2024-07-07 21:34:34.376 WARN  [27952] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 222
+2024-07-07 21:34:34.376 WARN  [27952] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 19
+2024-07-07 21:34:34.376 WARN  [27952] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 70
+2024-07-07 21:34:34.378 INFO  [27952] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-07 21:34:34.460 INFO  [27952] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-07 21:34:36.040 INFO  [27952] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 22 rules: 12
+2024-07-07 21:35:11.986 INFO  [12900] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:35:12.003 WARN  [12900] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3505
+2024-07-07 21:35:12.003 WARN  [12900] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1092
+2024-07-07 21:35:12.003 WARN  [12900] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 68
+2024-07-07 21:35:12.003 WARN  [12900] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 120
+2024-07-07 21:35:12.003 WARN  [12900] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 174
+2024-07-07 21:35:12.003 WARN  [12900] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 41
+2024-07-07 21:35:12.006 INFO  [12900] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-07 21:35:12.090 INFO  [12900] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-07 21:35:13.172 INFO  [12900] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 23 rules: 12
+2024-07-07 21:36:40.736 INFO  [33096] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:36:40.751 WARN  [33096] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3452
+2024-07-07 21:36:40.751 WARN  [33096] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 997
+2024-07-07 21:36:40.751 WARN  [33096] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 190
+2024-07-07 21:36:40.751 WARN  [33096] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 186
+2024-07-07 21:36:40.751 WARN  [33096] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 116
+2024-07-07 21:36:40.751 WARN  [33096] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 59
+2024-07-07 21:36:40.753 INFO  [33096] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-07 21:36:40.836 INFO  [33096] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-07 21:36:41.822 INFO  [33096] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 21 rules: 12
+2024-07-07 21:37:00.615 INFO  [4472] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:37:00.630 WARN  [4472] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2954
+2024-07-07 21:37:00.630 WARN  [4472] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1234
+2024-07-07 21:37:00.630 WARN  [4472] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 417
+2024-07-07 21:37:00.630 WARN  [4472] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 395
+2024-07-07 21:37:00.633 INFO  [4472] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 8 rules: 8
+2024-07-07 21:37:00.717 INFO  [4472] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 12 rules: 8
+2024-07-07 21:37:02.213 INFO  [4472] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 13 rules: 8
+2024-07-07 21:37:20.358 INFO  [7492] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:37:20.377 WARN  [7492] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3012
+2024-07-07 21:37:20.377 WARN  [7492] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 732
+2024-07-07 21:37:20.377 WARN  [7492] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 1146
+2024-07-07 21:37:20.377 WARN  [7492] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 100
+2024-07-07 21:37:20.377 WARN  [7492] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 10
+2024-07-07 21:37:20.380 INFO  [7492] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 10 rules: 10
+2024-07-07 21:37:20.462 INFO  [7492] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 15 rules: 10
+2024-07-07 21:37:22.008 INFO  [7492] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 18 rules: 10
+2024-07-07 21:37:34.711 INFO  [35148] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:37:34.727 WARN  [35148] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1129
+2024-07-07 21:37:34.727 WARN  [35148] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1205
+2024-07-07 21:37:34.727 WARN  [35148] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 978
+2024-07-07 21:37:34.727 WARN  [35148] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 123
+2024-07-07 21:37:34.727 WARN  [35148] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 1549
+2024-07-07 21:37:34.727 WARN  [35148] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 16
+2024-07-07 21:37:34.729 INFO  [35148] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 11
+2024-07-07 21:37:34.812 INFO  [35148] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-07 21:37:36.107 INFO  [35148] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 22 rules: 12
+2024-07-07 21:37:49.484 INFO  [31088] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:37:49.500 WARN  [31088] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3397
+2024-07-07 21:37:49.500 WARN  [31088] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 402
+2024-07-07 21:37:49.500 WARN  [31088] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 872
+2024-07-07 21:37:49.500 WARN  [31088] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 325
+2024-07-07 21:37:49.500 WARN  [31088] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 3
+2024-07-07 21:37:49.500 WARN  [31088] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 1
+2024-07-07 21:37:49.502 INFO  [31088] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-07 21:37:49.585 INFO  [31088] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-07 21:37:50.236 INFO  [31088] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 20 rules: 12
+2024-07-07 21:38:38.296 INFO  [36928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-07 21:38:38.311 WARN  [36928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2559
+2024-07-07 21:38:38.311 WARN  [36928] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 918
+2024-07-07 21:38:38.311 WARN  [36928] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 1339
+2024-07-07 21:38:38.311 WARN  [36928] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 114
+2024-07-07 21:38:38.311 WARN  [36928] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 49
+2024-07-07 21:38:38.311 WARN  [36928] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 21
+2024-07-07 21:38:38.313 INFO  [36928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-07 21:38:38.399 INFO  [36928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-07 21:38:39.104 INFO  [36928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 21 rules: 12
+2024-07-08 17:29:22.609 INFO  [12684] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:29:22.626 WARN  [12684] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1694
+2024-07-08 17:29:22.626 WARN  [12684] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1740
+2024-07-08 17:29:22.626 WARN  [12684] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 1066
+2024-07-08 17:29:22.626 WARN  [12684] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 385
+2024-07-08 17:29:22.626 WARN  [12684] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 99
+2024-07-08 17:29:22.626 WARN  [12684] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 16
+2024-07-08 17:29:22.629 INFO  [12684] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:29:22.712 INFO  [12684] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:29:23.698 INFO  [12684] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 21 rules: 12
+2024-07-08 17:29:48.784 INFO  [8640] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:29:48.799 WARN  [8640] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2254
+2024-07-08 17:29:48.800 WARN  [8640] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1000
+2024-07-08 17:29:48.800 WARN  [8640] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 122
+2024-07-08 17:29:48.800 WARN  [8640] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 1311
+2024-07-08 17:29:48.800 WARN  [8640] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 302
+2024-07-08 17:29:48.800 WARN  [8640] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 11
+2024-07-08 17:29:48.802 INFO  [8640] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:29:48.909 INFO  [8640] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:29:49.935 INFO  [8640] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 21 rules: 12
+2024-07-08 17:30:04.058 INFO  [26356] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:30:04.075 WARN  [26356] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2196
+2024-07-08 17:30:04.075 WARN  [26356] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1664
+2024-07-08 17:30:04.075 WARN  [26356] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 147
+2024-07-08 17:30:04.075 WARN  [26356] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 894
+2024-07-08 17:30:04.075 WARN  [26356] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 80
+2024-07-08 17:30:04.075 WARN  [26356] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 19
+2024-07-08 17:30:04.078 INFO  [26356] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:30:04.168 INFO  [26356] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:30:05.085 INFO  [26356] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 21 rules: 12
+2024-07-08 17:30:33.915 INFO  [16588] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:30:33.932 WARN  [16588] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2196
+2024-07-08 17:30:33.932 WARN  [16588] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1095
+2024-07-08 17:30:33.932 WARN  [16588] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 128
+2024-07-08 17:30:33.932 WARN  [16588] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 1505
+2024-07-08 17:30:33.932 WARN  [16588] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 14
+2024-07-08 17:30:33.932 WARN  [16588] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 62
+2024-07-08 17:30:33.934 INFO  [16588] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:30:34.020 INFO  [16588] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:30:35.061 INFO  [16588] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 22 rules: 12
+2024-07-08 17:32:52.639 INFO  [20288] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:32:52.655 WARN  [20288] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1825
+2024-07-08 17:32:52.655 WARN  [20288] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1127
+2024-07-08 17:32:52.655 WARN  [20288] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 175
+2024-07-08 17:32:52.655 WARN  [20288] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 1707
+2024-07-08 17:32:52.655 WARN  [20288] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 149
+2024-07-08 17:32:52.655 WARN  [20288] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 17
+2024-07-08 17:32:52.657 INFO  [20288] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:32:52.741 INFO  [20288] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:32:53.823 INFO  [20288] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 22 rules: 12
+2024-07-08 17:34:39.025 INFO  [37708] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:34:39.040 WARN  [37708] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2554
+2024-07-08 17:34:39.040 WARN  [37708] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 757
+2024-07-08 17:34:39.040 WARN  [37708] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 264
+2024-07-08 17:34:39.040 WARN  [37708] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 1307
+2024-07-08 17:34:39.040 WARN  [37708] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 101
+2024-07-08 17:34:39.040 WARN  [37708] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 17
+2024-07-08 17:34:39.042 INFO  [37708] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:34:39.125 INFO  [37708] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:34:39.817 INFO  [37708] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 20 rules: 12
+2024-07-08 17:35:08.847 INFO  [23192] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 17:35:08.862 WARN  [23192] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1725
+2024-07-08 17:35:08.862 WARN  [23192] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1498
+2024-07-08 17:35:08.862 WARN  [23192] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 1498
+2024-07-08 17:35:08.862 WARN  [23192] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 182
+2024-07-08 17:35:08.862 WARN  [23192] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 68
+2024-07-08 17:35:08.862 WARN  [23192] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 29
+2024-07-08 17:35:08.865 INFO  [23192] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+2024-07-08 17:35:08.947 INFO  [23192] [CPPSigDirect::build_tree@317] 2 ---new nodes: 3 new rule_nodes: 18 rules: 12
+2024-07-08 17:35:09.624 INFO  [23192] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 20 rules: 12
+2024-07-08 20:09:06.406 INFO  [17692] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 20:11:37.380 INFO  [38532] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-08 20:11:48.650 WARN  [38532] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 2469
+2024-07-08 20:11:48.650 WARN  [38532] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 155
+2024-07-08 20:11:48.650 WARN  [38532] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 873
+2024-07-08 20:11:48.650 WARN  [38532] [CPPSigDirect::set_label_support@231] LABEL SIZE 3: 1422
+2024-07-08 20:11:48.650 WARN  [38532] [CPPSigDirect::set_label_support@231] LABEL SIZE 4: 67
+2024-07-08 20:11:48.650 WARN  [38532] [CPPSigDirect::set_label_support@231] LABEL SIZE 5: 14
+2024-07-08 20:11:49.835 INFO  [38532] [CPPSigDirect::build_tree@317] 1 ---new nodes: 2 new rule_nodes: 12 rules: 12
+forrtl: error (200): program aborting due to control-C event
+Image              PC                Routine            Line        Source             
+libifcoremd.dll    00007FF80105DF54  Unknown               Unknown  Unknown
+KERNELBASE.dll     00007FF83AAD2D17  Unknown               Unknown  Unknown
+KERNEL32.DLL       00007FF83CF7257D  Unknown               Unknown  Unknown
+ntdll.dll          00007FF83D6AAF28  Unknown               Unknown  Unknown
+2024-07-10 15:44:05.969 INFO  [26400] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 15:44:05.986 WARN  [26400] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-10 15:44:05.986 WARN  [26400] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-10 15:44:05.988 INFO  [26400] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-10 15:44:05.999 INFO  [26400] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 134 rules: 6
+2024-07-10 15:44:06.029 INFO  [26400] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 393 rules: 7
+2024-07-10 15:44:13.126 INFO  [26092] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 15:44:13.142 WARN  [26092] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4095
+2024-07-10 15:44:13.142 WARN  [26092] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 905
+2024-07-10 15:44:13.144 INFO  [26092] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 15:44:13.157 INFO  [26092] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 143 rules: 6
+2024-07-10 15:44:13.194 INFO  [26092] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 443 rules: 7
+2024-07-10 15:44:19.089 INFO  [21252] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 15:44:19.106 WARN  [21252] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-10 15:44:19.106 WARN  [21252] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-10 15:44:19.108 INFO  [21252] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-10 15:44:19.120 INFO  [21252] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 134 rules: 6
+2024-07-10 15:44:19.152 INFO  [21252] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 393 rules: 7
+2024-07-10 15:44:30.235 INFO  [22572] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 15:44:30.249 WARN  [22572] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3492
+2024-07-10 15:44:30.249 WARN  [22572] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1508
+2024-07-10 15:44:30.251 INFO  [22572] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 15:44:30.267 INFO  [22572] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 145 rules: 5
+2024-07-10 15:44:30.313 INFO  [22572] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 458 rules: 5
+2024-07-10 16:15:47.981 INFO  [21380] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:15:47.996 WARN  [21380] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3399
+2024-07-10 16:15:47.996 WARN  [21380] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1601
+2024-07-10 16:15:47.998 INFO  [21380] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 16:15:48.013 INFO  [21380] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 144 rules: 5
+2024-07-10 16:15:48.058 INFO  [21380] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 451 rules: 5
+2024-07-10 16:16:21.657 INFO  [1836] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:16:21.671 WARN  [1836] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3515
+2024-07-10 16:16:21.671 WARN  [1836] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1485
+2024-07-10 16:16:21.673 INFO  [1836] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 16:16:21.688 INFO  [1836] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 144 rules: 5
+2024-07-10 16:16:21.732 INFO  [1836] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 451 rules: 5
+2024-07-10 16:19:58.089 INFO  [17616] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:19:58.103 WARN  [17616] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 761
+2024-07-10 16:19:58.103 WARN  [17616] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4239
+2024-07-10 16:19:58.105 INFO  [17616] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 6
+2024-07-10 16:19:58.116 INFO  [17616] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 147 rules: 8
+2024-07-10 16:19:58.153 INFO  [17616] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 475 rules: 8
+2024-07-10 16:20:09.448 INFO  [13516] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:20:09.462 WARN  [13516] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4070
+2024-07-10 16:20:09.462 WARN  [13516] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 930
+2024-07-10 16:20:09.464 INFO  [13516] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 16:20:09.476 INFO  [13516] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 147 rules: 5
+2024-07-10 16:20:09.515 INFO  [13516] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 475 rules: 5
+2024-07-10 16:20:17.098 INFO  [4232] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:20:17.112 WARN  [4232] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4116
+2024-07-10 16:20:17.112 WARN  [4232] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 884
+2024-07-10 16:20:17.113 INFO  [4232] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-10 16:20:17.124 INFO  [4232] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 9
+2024-07-10 16:20:17.153 INFO  [4232] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 415 rules: 10
+2024-07-10 16:20:23.058 INFO  [24936] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:20:23.074 WARN  [24936] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-10 16:20:23.074 WARN  [24936] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-10 16:20:23.075 INFO  [24936] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-10 16:20:23.086 INFO  [24936] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 134 rules: 6
+2024-07-10 16:20:23.114 INFO  [24936] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 393 rules: 7
+2024-07-10 16:20:28.773 INFO  [3896] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:20:28.786 WARN  [3896] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4158
+2024-07-10 16:20:28.786 WARN  [3896] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 842
+2024-07-10 16:20:28.788 INFO  [3896] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-10 16:20:28.798 INFO  [3896] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 9
+2024-07-10 16:20:28.827 INFO  [3896] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 417 rules: 10
+2024-07-10 16:21:19.696 INFO  [8072] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:21:19.710 WARN  [8072] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3495
+2024-07-10 16:21:19.710 WARN  [8072] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1505
+2024-07-10 16:21:19.713 INFO  [8072] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 16:21:19.727 INFO  [8072] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 144 rules: 5
+2024-07-10 16:21:19.772 INFO  [8072] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 451 rules: 5
+2024-07-10 16:35:40.113 INFO  [6888] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:35:40.126 WARN  [6888] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4051
+2024-07-10 16:35:40.126 WARN  [6888] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 949
+2024-07-10 16:35:40.128 INFO  [6888] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 16:35:40.140 INFO  [6888] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 143 rules: 7
+2024-07-10 16:35:40.177 INFO  [6888] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 443 rules: 7
+2024-07-10 16:39:40.736 INFO  [15420] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:39:40.750 WARN  [15420] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4121
+2024-07-10 16:39:40.750 WARN  [15420] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 879
+2024-07-10 16:39:40.752 INFO  [15420] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 16:39:40.764 INFO  [15420] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 146 rules: 7
+2024-07-10 16:39:40.800 INFO  [15420] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 465 rules: 8
+2024-07-10 16:40:14.521 INFO  [14748] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:40:14.535 WARN  [14748] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4096
+2024-07-10 16:40:14.535 WARN  [14748] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 904
+2024-07-10 16:40:14.536 INFO  [14748] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-10 16:40:14.546 INFO  [14748] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 134 rules: 6
+2024-07-10 16:40:14.575 INFO  [14748] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 393 rules: 7
+2024-07-10 16:40:20.568 INFO  [2480] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:40:20.582 WARN  [2480] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3506
+2024-07-10 16:40:20.582 WARN  [2480] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1494
+2024-07-10 16:40:20.585 INFO  [2480] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 6
+2024-07-10 16:40:20.599 INFO  [2480] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 144 rules: 7
+2024-07-10 16:40:20.644 INFO  [2480] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 451 rules: 7
+2024-07-10 16:43:06.129 INFO  [22188] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:43:06.143 WARN  [22188] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4169
+2024-07-10 16:43:06.143 WARN  [22188] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 831
+2024-07-10 16:43:06.145 INFO  [22188] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-10 16:43:06.154 INFO  [22188] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 6
+2024-07-10 16:43:06.183 INFO  [22188] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 417 rules: 7
+2024-07-10 16:43:12.167 INFO  [14832] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 16:43:12.182 WARN  [14832] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4108
+2024-07-10 16:43:12.182 WARN  [14832] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 892
+2024-07-10 16:43:12.184 INFO  [14832] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 6
+2024-07-10 16:43:12.195 INFO  [14832] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 145 rules: 10
+2024-07-10 16:43:12.230 INFO  [14832] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 458 rules: 11
+2024-07-10 20:26:27.535 INFO  [27764] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 20:26:27.548 WARN  [27764] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1432
+2024-07-10 20:26:27.548 WARN  [27764] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3568
+2024-07-10 20:26:27.550 INFO  [27764] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-10 20:26:27.564 INFO  [27764] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 144 rules: 5
+2024-07-10 20:26:27.607 INFO  [27764] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 451 rules: 5
+2024-07-10 20:35:37.468 INFO  [8556] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 20:35:37.482 WARN  [8556] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 886
+2024-07-10 20:35:37.482 WARN  [8556] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4114
+2024-07-10 20:35:37.483 INFO  [8556] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-10 20:35:37.494 INFO  [8556] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 9
+2024-07-10 20:35:37.522 INFO  [8556] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 408 rules: 10
+2024-07-10 20:35:43.565 INFO  [23480] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 20:35:43.579 WARN  [23480] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-10 20:35:43.579 WARN  [23480] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-10 20:35:43.581 INFO  [23480] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 24 rules: 4
+2024-07-10 20:35:43.590 INFO  [23480] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 126 rules: 6
+2024-07-10 20:35:43.614 INFO  [23480] [CPPSigDirect::build_tree@317] 3 ---new nodes: 184 new rule_nodes: 322 rules: 7
+2024-07-10 20:35:49.397 INFO  [28560] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-10 20:35:49.411 WARN  [28560] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 927
+2024-07-10 20:35:49.411 WARN  [28560] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4073
+2024-07-10 20:35:49.413 INFO  [28560] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-10 20:35:49.424 INFO  [28560] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 7
+2024-07-10 20:35:49.456 INFO  [28560] [CPPSigDirect::build_tree@317] 3 ---new nodes: 199 new rule_nodes: 379 rules: 8
+2024-07-13 13:47:23.939 INFO  [22316] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:47:23.956 WARN  [22316] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 885
+2024-07-13 13:47:23.956 WARN  [22316] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4115
+2024-07-13 13:47:23.959 INFO  [22316] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-13 13:47:23.969 INFO  [22316] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 9
+2024-07-13 13:47:23.999 INFO  [22316] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 408 rules: 10
+2024-07-13 13:47:31.876 INFO  [5352] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:47:31.890 WARN  [5352] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 13:47:31.890 WARN  [5352] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 13:47:31.891 INFO  [5352] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 24 rules: 4
+2024-07-13 13:47:31.900 INFO  [5352] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 126 rules: 6
+2024-07-13 13:47:31.923 INFO  [5352] [CPPSigDirect::build_tree@317] 3 ---new nodes: 184 new rule_nodes: 322 rules: 7
+2024-07-13 13:47:45.369 INFO  [29924] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:47:45.383 WARN  [29924] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 904
+2024-07-13 13:47:45.383 WARN  [29924] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4096
+2024-07-13 13:47:45.384 INFO  [29924] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 13:47:45.394 INFO  [29924] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 134 rules: 6
+2024-07-13 13:47:45.422 INFO  [29924] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 393 rules: 7
+2024-07-13 13:47:50.914 INFO  [13472] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:47:50.928 WARN  [13472] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 884
+2024-07-13 13:47:50.928 WARN  [13472] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4116
+2024-07-13 13:47:50.929 INFO  [13472] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-13 13:47:50.939 INFO  [13472] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 9
+2024-07-13 13:47:50.967 INFO  [13472] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 408 rules: 10
+2024-07-13 13:47:56.949 INFO  [27508] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:47:56.963 WARN  [27508] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1430
+2024-07-13 13:47:56.963 WARN  [27508] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3570
+2024-07-13 13:47:56.965 INFO  [27508] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-13 13:47:56.978 INFO  [27508] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 7
+2024-07-13 13:47:57.017 INFO  [27508] [CPPSigDirect::build_tree@317] 3 ---new nodes: 199 new rule_nodes: 380 rules: 7
+2024-07-13 13:52:07.089 INFO  [29476] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:52:07.103 WARN  [29476] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 13:52:07.103 WARN  [29476] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 13:52:07.104 INFO  [29476] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 13:52:07.105 INFO  [29476] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 13:52:07.108 INFO  [29476] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 13:54:26.414 INFO  [30120] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:54:26.425 WARN  [30120] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3876
+2024-07-13 13:54:26.425 WARN  [30120] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1124
+2024-07-13 13:54:26.425 INFO  [30120] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 13:54:26.426 INFO  [30120] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 13:54:26.426 INFO  [30120] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 13:54:26.854 INFO  [30120] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 13:54:26.868 WARN  [30120] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 13:54:26.868 WARN  [30120] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 13:54:26.868 INFO  [30120] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 13:54:26.870 INFO  [30120] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 13:54:26.872 INFO  [30120] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 13:55:49.128 INFO  [12400] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:55:49.140 WARN  [12400] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 13:55:49.140 INFO  [12400] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 13:55:49.140 INFO  [12400] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 13:55:49.140 INFO  [12400] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 13:55:49.574 INFO  [12400] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 13:55:49.587 WARN  [12400] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 13:55:49.587 WARN  [12400] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 13:55:49.588 INFO  [12400] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 13:55:49.589 INFO  [12400] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 13:55:49.591 INFO  [12400] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 13:58:02.730 INFO  [25420] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:58:02.742 WARN  [25420] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 13:58:02.742 INFO  [25420] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 13:58:02.742 INFO  [25420] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 13:58:02.742 INFO  [25420] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 13:58:03.177 INFO  [25420] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 13:58:03.191 WARN  [25420] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 13:58:03.191 WARN  [25420] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 13:58:03.191 INFO  [25420] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 13:58:03.193 INFO  [25420] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 13:58:03.195 INFO  [25420] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 13:59:12.852 INFO  [25936] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 13:59:12.863 WARN  [25936] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 13:59:12.863 INFO  [25936] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 13:59:12.863 INFO  [25936] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 13:59:12.864 INFO  [25936] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 13:59:13.289 INFO  [25936] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 13:59:13.304 WARN  [25936] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 13:59:13.304 WARN  [25936] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 13:59:13.304 INFO  [25936] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 13:59:13.305 INFO  [25936] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 13:59:13.308 INFO  [25936] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 14:00:09.661 INFO  [23832] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:00:09.672 WARN  [23832] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3876
+2024-07-13 14:00:09.672 WARN  [23832] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1124
+2024-07-13 14:00:09.673 INFO  [23832] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:00:09.673 INFO  [23832] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 14:00:09.673 INFO  [23832] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:00:10.103 INFO  [23832] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 14:00:10.117 WARN  [23832] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:00:10.117 WARN  [23832] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:00:10.117 INFO  [23832] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 14:00:10.119 INFO  [23832] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 14:00:10.121 INFO  [23832] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 14:00:16.391 INFO  [29684] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:00:16.403 WARN  [29684] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 14:00:16.403 INFO  [29684] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 14:00:16.403 INFO  [29684] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 14:00:16.403 INFO  [29684] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 14:00:16.828 INFO  [29684] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 14:00:16.842 WARN  [29684] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:00:16.842 WARN  [29684] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:00:16.842 INFO  [29684] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 14:00:16.844 INFO  [29684] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 14:00:16.846 INFO  [29684] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 14:00:22.654 INFO  [25928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:00:22.665 WARN  [25928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 14:00:22.665 INFO  [25928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 14:00:22.666 INFO  [25928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 14:00:22.666 INFO  [25928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 14:00:23.091 INFO  [25928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 14:00:23.105 WARN  [25928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:00:23.105 WARN  [25928] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:00:23.105 INFO  [25928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 14:00:23.107 INFO  [25928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 14:00:23.109 INFO  [25928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 14:03:17.649 INFO  [28880] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:03:17.660 WARN  [28880] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3876
+2024-07-13 14:03:17.661 WARN  [28880] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1124
+2024-07-13 14:03:17.661 INFO  [28880] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:03:17.661 INFO  [28880] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 14:03:17.661 INFO  [28880] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:03:18.081 INFO  [28880] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 2
+2024-07-13 14:03:18.094 WARN  [28880] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:03:18.094 WARN  [28880] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:03:18.094 INFO  [28880] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 22 rules: 0
+2024-07-13 14:03:18.096 INFO  [28880] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 110 rules: 1
+2024-07-13 14:03:18.098 INFO  [28880] [CPPSigDirect::build_tree@317] 3 ---new nodes: 98 new rule_nodes: 182 rules: 3
+2024-07-13 14:04:32.013 INFO  [14868] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:04:32.025 WARN  [14868] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 14:04:32.025 INFO  [14868] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 14:04:32.025 INFO  [14868] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 14:04:32.025 INFO  [14868] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 14:04:44.451 INFO  [10772] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:04:44.463 WARN  [10772] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 14:04:44.463 INFO  [10772] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 14:04:44.463 INFO  [10772] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 14:04:44.463 INFO  [10772] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 14:04:56.167 INFO  [22048] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:04:56.179 WARN  [22048] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3876
+2024-07-13 14:04:56.179 WARN  [22048] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1124
+2024-07-13 14:04:56.179 INFO  [22048] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:04:56.179 INFO  [22048] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 14:04:56.179 INFO  [22048] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:05:30.096 INFO  [5328] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:05:30.107 WARN  [5328] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 5000
+2024-07-13 14:05:30.107 INFO  [5328] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 4 rules: 0
+2024-07-13 14:05:30.108 INFO  [5328] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 6 rules: 0
+2024-07-13 14:05:30.108 INFO  [5328] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 0
+2024-07-13 14:05:40.619 INFO  [8656] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:05:40.631 WARN  [8656] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:05:40.631 WARN  [8656] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:05:40.631 INFO  [8656] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:05:40.631 INFO  [8656] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 14:05:40.632 INFO  [8656] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:05:54.212 INFO  [3624] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:05:54.223 WARN  [3624] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:05:54.223 WARN  [3624] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:05:54.223 INFO  [3624] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:05:54.224 INFO  [3624] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 14:05:54.224 INFO  [3624] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:06:00.024 INFO  [27272] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:06:00.036 WARN  [27272] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:06:00.036 WARN  [27272] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:06:00.036 INFO  [27272] [CPPSigDirect::build_tree@317] 1 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:06:00.037 INFO  [27272] [CPPSigDirect::build_tree@317] 2 ---new nodes: 6 new rule_nodes: 12 rules: 0
+2024-07-13 14:06:00.037 INFO  [27272] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 8 rules: 0
+2024-07-13 14:07:12.810 INFO  [5076] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:07:12.822 WARN  [5076] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:07:12.822 WARN  [5076] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:07:12.823 INFO  [5076] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:07:12.825 INFO  [5076] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:07:12.825 INFO  [5076] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:07:18.833 INFO  [5444] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:07:18.844 WARN  [5444] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:07:18.844 WARN  [5444] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:07:18.845 INFO  [5444] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:07:18.845 INFO  [5444] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:07:18.845 INFO  [5444] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:08:36.255 INFO  [12704] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:08:36.266 WARN  [12704] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:08:36.266 WARN  [12704] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:08:36.267 INFO  [12704] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:08:36.268 INFO  [12704] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:08:36.269 INFO  [12704] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:08:54.367 INFO  [8432] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:08:54.379 WARN  [8432] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:08:54.379 WARN  [8432] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:08:54.379 INFO  [8432] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:08:54.379 INFO  [8432] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:08:54.379 INFO  [8432] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:10:21.237 INFO  [12048] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:10:21.249 WARN  [12048] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:10:21.249 WARN  [12048] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:10:21.250 INFO  [12048] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:10:21.251 INFO  [12048] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:10:21.252 INFO  [12048] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:10:34.047 INFO  [10580] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:10:34.059 WARN  [10580] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:10:34.059 WARN  [10580] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:10:34.059 INFO  [10580] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:10:34.060 INFO  [10580] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:10:34.060 INFO  [10580] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:12:27.469 INFO  [30336] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:12:27.481 WARN  [30336] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:12:27.481 WARN  [30336] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:12:27.481 INFO  [30336] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:12:27.481 INFO  [30336] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:12:27.481 INFO  [30336] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:13:12.620 INFO  [27860] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:13:12.631 WARN  [27860] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:13:12.631 WARN  [27860] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:13:12.632 INFO  [27860] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:13:12.634 INFO  [27860] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:13:12.634 INFO  [27860] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:13:22.613 INFO  [28016] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:13:22.626 WARN  [28016] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:13:22.626 WARN  [28016] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:13:22.626 INFO  [28016] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:13:22.626 INFO  [28016] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:13:22.627 INFO  [28016] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:14:17.754 INFO  [8444] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:14:17.766 WARN  [8444] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:14:17.766 WARN  [8444] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:14:17.767 INFO  [8444] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:14:17.768 INFO  [8444] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:14:17.769 INFO  [8444] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:14:31.981 INFO  [27224] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:14:31.993 WARN  [27224] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:14:31.993 WARN  [27224] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:14:31.993 INFO  [27224] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:14:31.993 INFO  [27224] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:14:31.993 INFO  [27224] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:16:26.575 INFO  [13796] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:16:26.586 WARN  [13796] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:16:26.586 WARN  [13796] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:16:26.587 INFO  [13796] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:16:26.587 INFO  [13796] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:16:26.587 INFO  [13796] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:17:23.517 INFO  [28068] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:17:23.531 WARN  [28068] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 901
+2024-07-13 14:17:23.531 WARN  [28068] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4099
+2024-07-13 14:17:23.533 INFO  [28068] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 2
+2024-07-13 14:17:23.548 INFO  [28068] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 305 rules: 12
+2024-07-13 14:17:23.587 INFO  [28068] [CPPSigDirect::build_tree@317] 3 ---new nodes: 650 new rule_nodes: 1138 rules: 52
+2024-07-13 14:17:34.927 INFO  [15064] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:17:34.942 WARN  [15064] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 955
+2024-07-13 14:17:34.942 WARN  [15064] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4045
+2024-07-13 14:17:34.944 INFO  [15064] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 6
+2024-07-13 14:17:34.959 INFO  [15064] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 301 rules: 22
+2024-07-13 14:17:34.999 INFO  [15064] [CPPSigDirect::build_tree@317] 3 ---new nodes: 636 new rule_nodes: 1102 rules: 54
+2024-07-13 14:17:41.109 INFO  [13640] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:17:41.124 WARN  [13640] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 14:17:41.124 WARN  [13640] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:17:41.126 INFO  [13640] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 2
+2024-07-13 14:17:41.139 INFO  [13640] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 12
+2024-07-13 14:17:41.173 INFO  [13640] [CPPSigDirect::build_tree@317] 3 ---new nodes: 615 new rule_nodes: 1046 rules: 55
+2024-07-13 14:17:47.346 INFO  [3252] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:17:47.361 WARN  [3252] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1383
+2024-07-13 14:17:47.361 WARN  [3252] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3617
+2024-07-13 14:17:47.364 INFO  [3252] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 45 rules: 16
+2024-07-13 14:17:47.381 INFO  [3252] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 314 rules: 43
+2024-07-13 14:17:47.432 INFO  [3252] [CPPSigDirect::build_tree@317] 3 ---new nodes: 671 new rule_nodes: 1195 rules: 81
+2024-07-13 14:18:31.987 INFO  [17528] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:18:32.001 WARN  [17528] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 14:18:32.001 WARN  [17528] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:18:32.003 INFO  [17528] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 2
+2024-07-13 14:18:32.017 INFO  [17528] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 12
+2024-07-13 14:18:32.052 INFO  [17528] [CPPSigDirect::build_tree@317] 3 ---new nodes: 615 new rule_nodes: 1046 rules: 55
+2024-07-13 14:18:43.971 INFO  [10640] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:18:43.985 WARN  [10640] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 855
+2024-07-13 14:18:43.985 WARN  [10640] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:18:43.985 WARN  [10640] [CPPSigDirect::set_label_support@231] LABEL SIZE 2: 50
+2024-07-13 14:18:43.987 INFO  [10640] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 55 rules: 13
+2024-07-13 14:18:44.001 INFO  [10640] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 352 rules: 52
+2024-07-13 14:18:44.037 INFO  [10640] [CPPSigDirect::build_tree@317] 3 ---new nodes: 650 new rule_nodes: 1247 rules: 124
+2024-07-13 14:18:49.857 INFO  [18228] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:18:49.872 WARN  [18228] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 14:18:49.872 WARN  [18228] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:18:49.874 INFO  [18228] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 2
+2024-07-13 14:18:49.887 INFO  [18228] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 12
+2024-07-13 14:18:49.921 INFO  [18228] [CPPSigDirect::build_tree@317] 3 ---new nodes: 615 new rule_nodes: 1046 rules: 55
+2024-07-13 14:18:59.034 INFO  [29716] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:18:59.048 WARN  [29716] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 893
+2024-07-13 14:18:59.048 WARN  [29716] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4107
+2024-07-13 14:18:59.050 INFO  [29716] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 6
+2024-07-13 14:18:59.065 INFO  [29716] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 301 rules: 22
+2024-07-13 14:18:59.102 INFO  [29716] [CPPSigDirect::build_tree@317] 3 ---new nodes: 650 new rule_nodes: 1116 rules: 61
+2024-07-13 14:19:26.253 INFO  [28276] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:19:26.268 WARN  [28276] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3961
+2024-07-13 14:19:26.268 WARN  [28276] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1039
+2024-07-13 14:19:26.270 INFO  [28276] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 12
+2024-07-13 14:19:26.285 INFO  [28276] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 307 rules: 24
+2024-07-13 14:19:26.330 INFO  [28276] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1153 rules: 28
+2024-07-13 14:19:32.239 INFO  [28532] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:19:32.253 WARN  [28532] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 14:19:32.253 WARN  [28532] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:19:32.255 INFO  [28532] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 4
+2024-07-13 14:19:32.268 INFO  [28532] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 17
+2024-07-13 14:19:32.299 INFO  [28532] [CPPSigDirect::build_tree@317] 3 ---new nodes: 616 new rule_nodes: 1038 rules: 48
+2024-07-13 14:19:51.856 INFO  [14124] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:19:51.868 WARN  [14124] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:19:51.868 WARN  [14124] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:19:51.869 INFO  [14124] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:19:51.870 INFO  [14124] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:19:51.871 INFO  [14124] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:19:58.201 INFO  [8924] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:19:58.213 WARN  [8924] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:19:58.213 WARN  [8924] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:19:58.214 INFO  [8924] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:19:58.215 INFO  [8924] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:19:58.216 INFO  [8924] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:20:03.967 INFO  [27148] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:20:03.979 WARN  [27148] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:20:03.979 WARN  [27148] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:20:03.979 INFO  [27148] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:20:03.980 INFO  [27148] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:20:03.980 INFO  [27148] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:21:27.215 INFO  [22424] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:21:27.227 WARN  [22424] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:21:27.227 WARN  [22424] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:21:27.228 INFO  [22424] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:21:27.229 INFO  [22424] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:21:27.230 INFO  [22424] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:21:33.252 INFO  [27432] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:21:33.263 WARN  [27432] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:21:33.263 WARN  [27432] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:21:33.264 INFO  [27432] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:21:33.266 INFO  [27432] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:21:33.266 INFO  [27432] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:21:39.258 INFO  [29584] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:21:39.269 WARN  [29584] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:21:39.269 WARN  [29584] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:21:39.270 INFO  [29584] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:21:39.272 INFO  [29584] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:21:39.272 INFO  [29584] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:21:45.086 INFO  [1772] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:21:45.098 WARN  [1772] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:21:45.098 WARN  [1772] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:21:45.099 INFO  [1772] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:21:45.099 INFO  [1772] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:21:45.099 INFO  [1772] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:26:05.127 INFO  [28920] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:26:05.139 WARN  [28920] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:26:05.139 WARN  [28920] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:26:05.139 INFO  [28920] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:26:05.139 INFO  [28920] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:26:05.139 INFO  [28920] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:26:43.207 INFO  [27744] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:26:43.219 WARN  [27744] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:26:43.219 WARN  [27744] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:26:43.219 INFO  [27744] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:26:43.220 INFO  [27744] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:26:43.220 INFO  [27744] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:30:48.995 INFO  [15260] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:30:49.007 WARN  [15260] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:30:49.007 WARN  [15260] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:30:49.007 INFO  [15260] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:30:49.007 INFO  [15260] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:30:49.007 INFO  [15260] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:31:38.750 INFO  [28752] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:31:38.761 WARN  [28752] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:31:38.761 WARN  [28752] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:31:38.762 INFO  [28752] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:31:38.762 INFO  [28752] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:31:38.762 INFO  [28752] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:32:31.058 INFO  [28464] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:32:31.070 WARN  [28464] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:32:31.070 WARN  [28464] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:32:31.070 INFO  [28464] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:32:31.071 INFO  [28464] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:32:31.071 INFO  [28464] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:33:35.756 INFO  [7696] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:33:35.768 WARN  [7696] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 14:33:35.768 WARN  [7696] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 14:33:35.769 INFO  [7696] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 18 rules: 4
+2024-07-13 14:33:35.771 INFO  [7696] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 42 rules: 6
+2024-07-13 14:33:35.771 INFO  [7696] [CPPSigDirect::build_tree@317] 3 ---new nodes: 26 new rule_nodes: 33 rules: 6
+2024-07-13 14:33:41.685 INFO  [7316] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:33:41.697 WARN  [7316] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:33:41.697 WARN  [7316] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:33:41.697 INFO  [7316] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:33:41.697 INFO  [7316] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:33:41.697 INFO  [7316] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:34:55.127 INFO  [26912] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:34:55.139 WARN  [26912] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:34:55.139 WARN  [26912] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:34:55.139 INFO  [26912] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:34:55.140 INFO  [26912] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:34:55.140 INFO  [26912] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:39:36.476 INFO  [28408] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:39:36.488 WARN  [28408] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:39:36.488 WARN  [28408] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:39:36.488 INFO  [28408] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:39:36.488 INFO  [28408] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:39:36.488 INFO  [28408] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:43:38.556 INFO  [27724] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:43:38.568 WARN  [27724] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 14:43:38.568 WARN  [27724] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 14:43:38.568 INFO  [27724] [CPPSigDirect::build_tree@317] 1 ---new nodes: 12 new rule_nodes: 12 rules: 6
+2024-07-13 14:43:38.568 INFO  [27724] [CPPSigDirect::build_tree@317] 2 ---new nodes: 30 new rule_nodes: 30 rules: 6
+2024-07-13 14:43:38.568 INFO  [27724] [CPPSigDirect::build_tree@317] 3 ---new nodes: 0 new rule_nodes: 0 rules: 6
+2024-07-13 14:44:35.323 INFO  [2396] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:44:35.338 WARN  [2396] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1222
+2024-07-13 14:44:35.338 WARN  [2396] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3778
+2024-07-13 14:44:35.340 INFO  [2396] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 45 rules: 12
+2024-07-13 14:44:35.357 INFO  [2396] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 319 rules: 27
+2024-07-13 14:44:35.406 INFO  [2396] [CPPSigDirect::build_tree@317] 3 ---new nodes: 672 new rule_nodes: 1228 rules: 40
+2024-07-13 14:45:22.470 INFO  [6412] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:45:22.485 WARN  [6412] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 904
+2024-07-13 14:45:22.485 WARN  [6412] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4096
+2024-07-13 14:45:22.487 INFO  [6412] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 4
+2024-07-13 14:45:22.501 INFO  [6412] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 300 rules: 17
+2024-07-13 14:45:22.534 INFO  [6412] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1093 rules: 48
+2024-07-13 14:45:43.753 INFO  [6480] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:45:43.767 WARN  [6480] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 820
+2024-07-13 14:45:43.767 WARN  [6480] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4180
+2024-07-13 14:45:43.769 INFO  [6480] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 5
+2024-07-13 14:45:43.783 INFO  [6480] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 304 rules: 13
+2024-07-13 14:45:43.819 INFO  [6480] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1121 rules: 25
+2024-07-13 14:45:49.395 INFO  [27380] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:45:49.410 WARN  [27380] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1138
+2024-07-13 14:45:49.410 WARN  [27380] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3862
+2024-07-13 14:45:49.412 INFO  [27380] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 16
+2024-07-13 14:45:49.427 INFO  [27380] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 305 rules: 46
+2024-07-13 14:45:49.470 INFO  [27380] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1130 rules: 86
+2024-07-13 14:45:55.024 INFO  [28592] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:45:55.039 WARN  [28592] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 895
+2024-07-13 14:45:55.039 WARN  [28592] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4105
+2024-07-13 14:45:55.041 INFO  [28592] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 6
+2024-07-13 14:45:55.055 INFO  [28592] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 300 rules: 24
+2024-07-13 14:45:55.089 INFO  [28592] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1093 rules: 59
+2024-07-13 14:46:27.997 INFO  [3880] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:46:28.011 WARN  [3880] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 14:46:28.011 WARN  [3880] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:46:28.013 INFO  [3880] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 24 rules: 4
+2024-07-13 14:46:28.021 INFO  [3880] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 126 rules: 6
+2024-07-13 14:46:28.045 INFO  [3880] [CPPSigDirect::build_tree@317] 3 ---new nodes: 184 new rule_nodes: 322 rules: 7
+2024-07-13 14:49:57.040 INFO  [30236] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:49:57.054 WARN  [30236] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 839
+2024-07-13 14:49:57.055 WARN  [30236] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4161
+2024-07-13 14:49:57.056 INFO  [30236] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 14:49:57.066 INFO  [30236] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 7
+2024-07-13 14:49:57.095 INFO  [30236] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 417 rules: 9
+2024-07-13 14:52:48.575 INFO  [12236] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:52:48.589 WARN  [12236] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 14:52:48.589 WARN  [12236] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 14:52:48.591 INFO  [12236] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 24 rules: 4
+2024-07-13 14:52:48.600 INFO  [12236] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 126 rules: 6
+2024-07-13 14:52:48.623 INFO  [12236] [CPPSigDirect::build_tree@317] 3 ---new nodes: 184 new rule_nodes: 322 rules: 7
+2024-07-13 14:54:25.017 INFO  [28996] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:54:25.406 WARN  [28996] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1169
+2024-07-13 14:54:25.406 WARN  [28996] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3831
+2024-07-13 14:54:25.454 INFO  [28996] [CPPSigDirect::build_tree@317] 1 ---new nodes: 35903 new rule_nodes: 35907 rules: 3
+2024-07-13 14:54:25.654 INFO  [28996] [CPPSigDirect::build_tree@317] 2 ---new nodes: 174616 new rule_nodes: 174621 rules: 4
+2024-07-13 14:54:25.716 INFO  [28996] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 6 rules: 4
+2024-07-13 14:54:41.265 INFO  [6624] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:54:41.655 WARN  [6624] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1139
+2024-07-13 14:54:41.655 WARN  [6624] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3861
+2024-07-13 14:54:41.704 INFO  [6624] [CPPSigDirect::build_tree@317] 1 ---new nodes: 35903 new rule_nodes: 35907 rules: 3
+2024-07-13 14:54:41.911 INFO  [6624] [CPPSigDirect::build_tree@317] 2 ---new nodes: 174616 new rule_nodes: 174621 rules: 4
+2024-07-13 14:54:41.974 INFO  [6624] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 6 rules: 4
+2024-07-13 14:54:54.150 INFO  [13532] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:54:54.164 WARN  [13532] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 894
+2024-07-13 14:54:54.164 WARN  [13532] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4106
+2024-07-13 14:54:54.165 INFO  [13532] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 14:54:54.176 INFO  [13532] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 7
+2024-07-13 14:54:54.204 INFO  [13532] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 407 rules: 8
+2024-07-13 14:57:16.861 INFO  [30336] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:57:16.875 WARN  [30336] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 900
+2024-07-13 14:57:16.875 WARN  [30336] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4100
+2024-07-13 14:57:16.876 INFO  [30336] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 14:57:16.887 INFO  [30336] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 6
+2024-07-13 14:57:16.917 INFO  [30336] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 414 rules: 7
+2024-07-13 14:59:06.470 INFO  [26668] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 14:59:06.484 WARN  [26668] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1193
+2024-07-13 14:59:06.484 WARN  [26668] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3807
+2024-07-13 14:59:06.485 INFO  [26668] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-13 14:59:06.498 INFO  [26668] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 8
+2024-07-13 14:59:06.534 INFO  [26668] [CPPSigDirect::build_tree@317] 3 ---new nodes: 199 new rule_nodes: 380 rules: 8
+2024-07-13 15:01:23.226 INFO  [14100] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:01:23.240 WARN  [14100] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 904
+2024-07-13 15:01:23.240 WARN  [14100] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4096
+2024-07-13 15:01:23.242 INFO  [14100] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:01:23.252 INFO  [14100] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 134 rules: 6
+2024-07-13 15:01:23.280 INFO  [14100] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 393 rules: 7
+2024-07-13 15:02:36.606 INFO  [5956] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:02:36.620 WARN  [5956] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1165
+2024-07-13 15:02:36.620 WARN  [5956] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3835
+2024-07-13 15:02:36.622 INFO  [5956] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:02:36.634 INFO  [5956] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 7
+2024-07-13 15:02:36.670 INFO  [5956] [CPPSigDirect::build_tree@317] 3 ---new nodes: 199 new rule_nodes: 380 rules: 7
+2024-07-13 15:02:52.142 INFO  [11572] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:02:52.156 WARN  [11572] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 902
+2024-07-13 15:02:52.156 WARN  [11572] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4098
+2024-07-13 15:02:52.157 INFO  [11572] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:02:52.168 INFO  [11572] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 135 rules: 6
+2024-07-13 15:02:52.196 INFO  [11572] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 400 rules: 7
+2024-07-13 15:03:06.309 INFO  [29272] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:03:06.323 WARN  [29272] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 864
+2024-07-13 15:03:06.323 WARN  [29272] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4136
+2024-07-13 15:03:06.324 INFO  [29272] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:03:06.334 INFO  [29272] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 8
+2024-07-13 15:03:06.365 INFO  [29272] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 417 rules: 9
+2024-07-13 15:05:44.173 INFO  [14076] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:05:44.188 WARN  [14076] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 900
+2024-07-13 15:05:44.188 WARN  [14076] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4100
+2024-07-13 15:05:44.190 INFO  [14076] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:05:44.200 INFO  [14076] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 6
+2024-07-13 15:05:44.229 INFO  [14076] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 408 rules: 7
+2024-07-13 15:06:11.732 INFO  [30128] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:06:11.746 WARN  [30128] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 930
+2024-07-13 15:06:11.746 WARN  [30128] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4070
+2024-07-13 15:06:11.748 INFO  [30128] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-13 15:06:11.759 INFO  [30128] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 9
+2024-07-13 15:06:11.791 INFO  [30128] [CPPSigDirect::build_tree@317] 3 ---new nodes: 199 new rule_nodes: 379 rules: 10
+2024-07-13 15:06:22.009 INFO  [28928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:06:22.023 WARN  [28928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 836
+2024-07-13 15:06:22.023 WARN  [28928] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4164
+2024-07-13 15:06:22.024 INFO  [28928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 26 rules: 4
+2024-07-13 15:06:22.037 INFO  [28928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 145 rules: 6
+2024-07-13 15:06:22.072 INFO  [28928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 242 new rule_nodes: 460 rules: 8
+2024-07-13 15:06:30.881 INFO  [30336] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:06:30.906 WARN  [30336] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:06:30.906 WARN  [30336] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:06:30.907 INFO  [30336] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 24 rules: 4
+2024-07-13 15:06:30.916 INFO  [30336] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 126 rules: 6
+2024-07-13 15:06:30.940 INFO  [30336] [CPPSigDirect::build_tree@317] 3 ---new nodes: 184 new rule_nodes: 322 rules: 7
+2024-07-13 15:07:20.525 INFO  [23052] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:07:20.538 WARN  [23052] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 890
+2024-07-13 15:07:20.538 WARN  [23052] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4110
+2024-07-13 15:07:20.540 INFO  [23052] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:07:20.550 INFO  [23052] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 6
+2024-07-13 15:07:20.580 INFO  [23052] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 416 rules: 7
+2024-07-13 15:07:57.480 INFO  [29536] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:07:57.494 WARN  [29536] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:07:57.494 WARN  [29536] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:07:57.496 INFO  [29536] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 24 rules: 4
+2024-07-13 15:07:57.504 INFO  [29536] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 126 rules: 6
+2024-07-13 15:07:57.528 INFO  [29536] [CPPSigDirect::build_tree@317] 3 ---new nodes: 184 new rule_nodes: 322 rules: 7
+2024-07-13 15:08:27.425 INFO  [14100] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:08:27.439 WARN  [14100] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1114
+2024-07-13 15:08:27.439 WARN  [14100] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3886
+2024-07-13 15:08:27.441 INFO  [14100] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 6
+2024-07-13 15:08:27.453 INFO  [14100] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 136 rules: 9
+2024-07-13 15:08:27.489 INFO  [14100] [CPPSigDirect::build_tree@317] 3 ---new nodes: 199 new rule_nodes: 380 rules: 10
+2024-07-13 15:08:55.327 INFO  [13660] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:08:55.341 WARN  [13660] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:08:55.341 WARN  [13660] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:08:55.343 INFO  [13660] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 4
+2024-07-13 15:08:55.356 INFO  [13660] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 17
+2024-07-13 15:08:55.387 INFO  [13660] [CPPSigDirect::build_tree@317] 3 ---new nodes: 616 new rule_nodes: 1038 rules: 48
+2024-07-13 15:09:07.379 INFO  [3392] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:09:07.393 WARN  [3392] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:09:07.393 WARN  [3392] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:09:07.395 INFO  [3392] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 4
+2024-07-13 15:09:07.408 INFO  [3392] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 17
+2024-07-13 15:09:07.439 INFO  [3392] [CPPSigDirect::build_tree@317] 3 ---new nodes: 616 new rule_nodes: 1038 rules: 48
+2024-07-13 15:09:12.963 INFO  [4136] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:09:12.977 WARN  [4136] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 862
+2024-07-13 15:09:12.977 WARN  [4136] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4138
+2024-07-13 15:09:12.980 INFO  [4136] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 7
+2024-07-13 15:09:12.994 INFO  [4136] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 303 rules: 28
+2024-07-13 15:09:13.030 INFO  [4136] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1113 rules: 65
+2024-07-13 15:09:18.266 INFO  [19664] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:09:18.281 WARN  [19664] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:09:18.281 WARN  [19664] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:09:18.283 INFO  [19664] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 43 rules: 4
+2024-07-13 15:09:18.296 INFO  [19664] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 292 rules: 17
+2024-07-13 15:09:18.329 INFO  [19664] [CPPSigDirect::build_tree@317] 3 ---new nodes: 616 new rule_nodes: 1038 rules: 48
+2024-07-13 15:09:25.032 INFO  [2752] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:09:25.047 WARN  [2752] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 904
+2024-07-13 15:09:25.047 WARN  [2752] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4096
+2024-07-13 15:09:25.049 INFO  [2752] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 4
+2024-07-13 15:09:25.063 INFO  [2752] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 300 rules: 18
+2024-07-13 15:09:25.096 INFO  [2752] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1094 rules: 49
+2024-07-13 15:09:59.501 INFO  [28208] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:09:59.515 WARN  [28208] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 899
+2024-07-13 15:09:59.515 WARN  [28208] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4101
+2024-07-13 15:09:59.517 INFO  [28208] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 4
+2024-07-13 15:09:59.531 INFO  [28208] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 303 rules: 19
+2024-07-13 15:09:59.567 INFO  [28208] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1111 rules: 55
+2024-07-13 15:10:16.218 INFO  [27108] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:10:16.232 WARN  [27108] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 898
+2024-07-13 15:10:16.232 WARN  [27108] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4102
+2024-07-13 15:10:16.235 INFO  [27108] [CPPSigDirect::build_tree@317] 1 ---new nodes: 27 new rule_nodes: 44 rules: 2
+2024-07-13 15:10:16.248 INFO  [27108] [CPPSigDirect::build_tree@317] 2 ---new nodes: 180 new rule_nodes: 300 rules: 15
+2024-07-13 15:10:16.283 INFO  [27108] [CPPSigDirect::build_tree@317] 3 ---new nodes: 644 new rule_nodes: 1094 rules: 67
+2024-07-13 15:14:05.174 INFO  [4824] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:14:05.570 WARN  [4824] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 902
+2024-07-13 15:14:05.570 WARN  [4824] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4098
+2024-07-13 15:14:05.619 INFO  [4824] [CPPSigDirect::build_tree@317] 1 ---new nodes: 35903 new rule_nodes: 35906 rules: 2
+2024-07-13 15:14:05.806 INFO  [4824] [CPPSigDirect::build_tree@317] 2 ---new nodes: 174616 new rule_nodes: 174619 rules: 3
+2024-07-13 15:14:05.870 INFO  [4824] [CPPSigDirect::build_tree@317] 3 ---new nodes: 4 new rule_nodes: 5 rules: 3
+2024-07-13 15:15:26.939 INFO  [29872] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:15:26.952 WARN  [29872] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 865
+2024-07-13 15:15:26.952 WARN  [29872] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4135
+2024-07-13 15:15:26.954 INFO  [29872] [CPPSigDirect::build_tree@317] 1 ---new nodes: 13 new rule_nodes: 25 rules: 4
+2024-07-13 15:15:26.964 INFO  [29872] [CPPSigDirect::build_tree@317] 2 ---new nodes: 74 new rule_nodes: 137 rules: 8
+2024-07-13 15:15:26.993 INFO  [29872] [CPPSigDirect::build_tree@317] 3 ---new nodes: 227 new rule_nodes: 417 rules: 10
+2024-07-13 15:18:54.508 INFO  [26880] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:18:54.523 WARN  [26880] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1348
+2024-07-13 15:18:54.523 WARN  [26880] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3652
+2024-07-13 15:18:54.531 INFO  [26880] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 21
+2024-07-13 15:18:54.575 INFO  [26880] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1372 rules: 61
+2024-07-13 15:18:54.713 INFO  [26880] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6579 new rule_nodes: 12954 rules: 195
+2024-07-13 15:22:26.056 INFO  [26792] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:22:26.071 WARN  [26792] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:22:26.071 WARN  [26792] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:22:26.078 INFO  [26792] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 6
+2024-07-13 15:22:26.121 INFO  [26792] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1373 rules: 95
+2024-07-13 15:22:26.258 INFO  [26792] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 12939 rules: 531
+2024-07-13 15:28:00.413 INFO  [2488] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:28:00.427 WARN  [2488] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:28:00.427 WARN  [2488] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:28:00.435 INFO  [2488] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 6
+2024-07-13 15:28:00.477 INFO  [2488] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 87
+2024-07-13 15:28:00.613 INFO  [2488] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12965 rules: 546
+2024-07-13 15:28:53.151 INFO  [5888] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:28:53.166 WARN  [5888] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 862
+2024-07-13 15:28:53.166 WARN  [5888] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4138
+2024-07-13 15:28:53.173 INFO  [5888] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 9
+2024-07-13 15:28:53.215 INFO  [5888] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1385 rules: 87
+2024-07-13 15:28:53.354 INFO  [5888] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7117 new rule_nodes: 13478 rules: 481
+2024-07-13 15:29:41.777 INFO  [2660] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:29:41.792 WARN  [2660] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 867
+2024-07-13 15:29:41.792 WARN  [2660] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4133
+2024-07-13 15:29:41.799 INFO  [2660] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 9
+2024-07-13 15:29:41.842 INFO  [2660] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1394 rules: 78
+2024-07-13 15:29:41.980 INFO  [2660] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7113 new rule_nodes: 13531 rules: 465
+2024-07-13 15:35:59.148 INFO  [12532] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:35:59.163 WARN  [12532] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:35:59.163 WARN  [12532] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:35:59.170 INFO  [12532] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 9
+2024-07-13 15:35:59.213 INFO  [12532] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 97
+2024-07-13 15:35:59.349 INFO  [12532] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 12971 rules: 538
+2024-07-13 15:36:19.717 INFO  [13992] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:36:19.732 WARN  [13992] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 901
+2024-07-13 15:36:19.732 WARN  [13992] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4099
+2024-07-13 15:36:19.740 INFO  [13992] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 9
+2024-07-13 15:36:19.783 INFO  [13992] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1371 rules: 101
+2024-07-13 15:36:19.919 INFO  [13992] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6576 new rule_nodes: 12845 rules: 554
+2024-07-13 15:38:14.224 INFO  [26980] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:38:14.238 WARN  [26980] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 904
+2024-07-13 15:38:14.238 WARN  [26980] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4096
+2024-07-13 15:38:14.246 INFO  [26980] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 9
+2024-07-13 15:38:14.289 INFO  [26980] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 92
+2024-07-13 15:38:14.426 INFO  [26980] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 12970 rules: 566
+2024-07-13 15:44:48.277 INFO  [8808] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:44:48.293 WARN  [8808] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 930
+2024-07-13 15:44:48.293 WARN  [8808] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4070
+2024-07-13 15:44:48.301 INFO  [8808] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 13
+2024-07-13 15:44:48.343 INFO  [8808] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 90
+2024-07-13 15:44:48.480 INFO  [8808] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6573 new rule_nodes: 12941 rules: 459
+2024-07-13 15:45:31.470 INFO  [13984] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:45:31.485 WARN  [13984] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1195
+2024-07-13 15:45:31.485 WARN  [13984] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3805
+2024-07-13 15:45:31.493 INFO  [13984] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 15
+2024-07-13 15:45:31.537 INFO  [13984] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 81
+2024-07-13 15:45:31.675 INFO  [13984] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12962 rules: 304
+2024-07-13 15:46:31.906 INFO  [12004] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:46:31.920 WARN  [12004] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 896
+2024-07-13 15:46:31.920 WARN  [12004] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4104
+2024-07-13 15:46:31.928 INFO  [12004] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 11
+2024-07-13 15:46:31.970 INFO  [12004] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1380 rules: 93
+2024-07-13 15:46:32.106 INFO  [12004] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7094 new rule_nodes: 13457 rules: 536
+2024-07-13 15:47:29.273 INFO  [28404] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:47:29.288 WARN  [28404] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 897
+2024-07-13 15:47:29.288 WARN  [28404] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4103
+2024-07-13 15:47:29.296 INFO  [28404] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 7
+2024-07-13 15:47:29.339 INFO  [28404] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1372 rules: 93
+2024-07-13 15:47:29.478 INFO  [28404] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6576 new rule_nodes: 12901 rules: 521
+2024-07-13 15:47:56.335 INFO  [2736] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:47:56.350 WARN  [2736] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1283
+2024-07-13 15:47:56.350 WARN  [2736] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3717
+2024-07-13 15:47:56.358 INFO  [2736] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 16
+2024-07-13 15:47:56.401 INFO  [2736] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 73
+2024-07-13 15:47:56.538 INFO  [2736] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 13040 rules: 253
+2024-07-13 15:48:23.884 INFO  [30052] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:48:23.899 WARN  [30052] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 901
+2024-07-13 15:48:23.899 WARN  [30052] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4099
+2024-07-13 15:48:23.906 INFO  [30052] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 9
+2024-07-13 15:48:23.949 INFO  [30052] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 82
+2024-07-13 15:48:24.085 INFO  [30052] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6575 new rule_nodes: 12931 rules: 496
+2024-07-13 15:49:04.194 INFO  [19444] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:49:04.209 WARN  [19444] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 932
+2024-07-13 15:49:04.209 WARN  [19444] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4068
+2024-07-13 15:49:04.217 INFO  [19444] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 10
+2024-07-13 15:49:04.260 INFO  [19444] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1381 rules: 79
+2024-07-13 15:49:04.395 INFO  [19444] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7113 new rule_nodes: 13499 rules: 435
+2024-07-13 15:50:06.602 INFO  [24808] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:50:06.617 WARN  [24808] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4116
+2024-07-13 15:50:06.617 WARN  [24808] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 884
+2024-07-13 15:50:06.624 INFO  [24808] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 20
+2024-07-13 15:50:06.667 INFO  [24808] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1384 rules: 63
+2024-07-13 15:50:06.800 INFO  [24808] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7130 new rule_nodes: 13224 rules: 181
+2024-07-13 15:50:19.124 INFO  [28420] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:50:19.139 WARN  [28420] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 890
+2024-07-13 15:50:19.139 WARN  [28420] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4110
+2024-07-13 15:50:19.146 INFO  [28420] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 6
+2024-07-13 15:50:19.189 INFO  [28420] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1381 rules: 88
+2024-07-13 15:50:19.327 INFO  [28420] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7091 new rule_nodes: 13545 rules: 527
+2024-07-13 15:52:42.143 INFO  [7128] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:52:42.159 WARN  [7128] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1106
+2024-07-13 15:52:42.159 WARN  [7128] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3894
+2024-07-13 15:52:42.169 INFO  [7128] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 15
+2024-07-13 15:52:42.212 INFO  [7128] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1382 rules: 73
+2024-07-13 15:52:42.351 INFO  [7128] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7124 new rule_nodes: 13514 rules: 298
+2024-07-13 15:53:00.623 INFO  [30512] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:53:00.637 WARN  [30512] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 897
+2024-07-13 15:53:00.637 WARN  [30512] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4103
+2024-07-13 15:53:00.645 INFO  [30512] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 11
+2024-07-13 15:53:00.688 INFO  [30512] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1386 rules: 98
+2024-07-13 15:53:00.827 INFO  [30512] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7121 new rule_nodes: 13500 rules: 515
+2024-07-13 15:55:08.975 INFO  [17940] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:55:08.990 WARN  [17940] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:55:08.990 WARN  [17940] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:55:08.997 INFO  [17940] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 8
+2024-07-13 15:55:09.040 INFO  [17940] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 82
+2024-07-13 15:55:09.176 INFO  [17940] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6573 new rule_nodes: 12950 rules: 479
+2024-07-13 15:55:39.006 INFO  [11400] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:55:39.021 WARN  [11400] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1286
+2024-07-13 15:55:39.021 WARN  [11400] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3714
+2024-07-13 15:55:39.029 INFO  [11400] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 20
+2024-07-13 15:55:39.073 INFO  [11400] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 76
+2024-07-13 15:55:39.209 INFO  [11400] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 13031 rules: 259
+2024-07-13 15:56:20.211 INFO  [8208] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:56:20.226 WARN  [8208] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 15:56:20.226 WARN  [8208] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 15:56:20.233 INFO  [8208] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 6
+2024-07-13 15:56:20.276 INFO  [8208] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1373 rules: 83
+2024-07-13 15:56:20.414 INFO  [8208] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12943 rules: 521
+2024-07-13 15:57:25.165 INFO  [13752] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 15:57:25.180 WARN  [13752] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 855
+2024-07-13 15:57:25.180 WARN  [13752] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4145
+2024-07-13 15:57:25.187 INFO  [13752] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 8
+2024-07-13 15:57:25.230 INFO  [13752] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1387 rules: 84
+2024-07-13 15:57:25.367 INFO  [13752] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7083 new rule_nodes: 13482 rules: 426
+2024-07-13 16:00:25.012 INFO  [19260] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:00:25.026 WARN  [19260] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:00:25.026 WARN  [19260] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:00:25.034 INFO  [19260] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 8
+2024-07-13 16:00:25.076 INFO  [19260] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 92
+2024-07-13 16:00:25.212 INFO  [19260] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6580 new rule_nodes: 12980 rules: 502
+2024-07-13 16:01:33.603 INFO  [15700] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:01:33.617 WARN  [15700] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 931
+2024-07-13 16:01:33.617 WARN  [15700] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4069
+2024-07-13 16:01:33.625 INFO  [15700] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 7
+2024-07-13 16:01:33.668 INFO  [15700] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1373 rules: 94
+2024-07-13 16:01:33.803 INFO  [15700] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12972 rules: 507
+2024-07-13 16:01:54.034 INFO  [29564] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:01:54.048 WARN  [29564] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 925
+2024-07-13 16:01:54.048 WARN  [29564] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4075
+2024-07-13 16:01:54.056 INFO  [29564] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 11
+2024-07-13 16:01:54.099 INFO  [29564] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 94
+2024-07-13 16:01:54.237 INFO  [29564] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6580 new rule_nodes: 12922 rules: 502
+2024-07-13 16:02:39.508 INFO  [4704] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:02:39.523 WARN  [4704] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 862
+2024-07-13 16:02:39.523 WARN  [4704] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4138
+2024-07-13 16:02:39.531 INFO  [4704] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 8
+2024-07-13 16:02:39.573 INFO  [4704] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1384 rules: 85
+2024-07-13 16:02:39.711 INFO  [4704] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7051 new rule_nodes: 13452 rules: 436
+2024-07-13 16:03:10.670 INFO  [1992] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:03:10.685 WARN  [1992] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1353
+2024-07-13 16:03:10.685 WARN  [1992] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3647
+2024-07-13 16:03:10.693 INFO  [1992] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 21
+2024-07-13 16:03:10.737 INFO  [1992] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1373 rules: 71
+2024-07-13 16:03:10.877 INFO  [1992] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 13008 rules: 216
+2024-07-13 16:04:02.946 INFO  [21900] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:04:02.960 WARN  [21900] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1130
+2024-07-13 16:04:02.961 WARN  [21900] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3870
+2024-07-13 16:04:02.969 INFO  [21900] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 14
+2024-07-13 16:04:03.012 INFO  [21900] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1381 rules: 69
+2024-07-13 16:04:03.152 INFO  [21900] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7122 new rule_nodes: 13547 rules: 276
+2024-07-13 16:07:57.219 INFO  [14916] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:07:57.234 WARN  [14916] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:07:57.234 WARN  [14916] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:07:57.241 INFO  [14916] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 10
+2024-07-13 16:07:57.284 INFO  [14916] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 95
+2024-07-13 16:07:57.418 INFO  [14916] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6576 new rule_nodes: 12968 rules: 515
+2024-07-13 16:08:29.658 INFO  [23480] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:08:29.673 WARN  [23480] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:08:29.673 WARN  [23480] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:08:29.681 INFO  [23480] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 8
+2024-07-13 16:08:29.723 INFO  [23480] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1373 rules: 91
+2024-07-13 16:08:29.860 INFO  [23480] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6574 new rule_nodes: 12926 rules: 505
+2024-07-13 16:11:01.163 INFO  [7052] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:11:01.180 WARN  [7052] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:11:01.180 WARN  [7052] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:11:01.187 INFO  [7052] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 8
+2024-07-13 16:11:01.230 INFO  [7052] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1373 rules: 97
+2024-07-13 16:11:01.365 INFO  [7052] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6577 new rule_nodes: 12903 rules: 521
+2024-07-13 16:12:14.710 INFO  [23392] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:12:14.736 WARN  [23392] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1129
+2024-07-13 16:12:14.736 WARN  [23392] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3871
+2024-07-13 16:12:14.743 INFO  [23392] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 88 rules: 19
+2024-07-13 16:12:14.787 INFO  [23392] [CPPSigDirect::build_tree@317] 2 ---new nodes: 889 new rule_nodes: 1603 rules: 67
+2024-07-13 16:12:14.905 INFO  [23392] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7828 new rule_nodes: 12820 rules: 187
+2024-07-13 16:12:31.863 INFO  [29628] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:12:31.890 WARN  [29628] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1134
+2024-07-13 16:12:31.890 WARN  [29628] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3866
+2024-07-13 16:12:31.897 INFO  [29628] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 88 rules: 18
+2024-07-13 16:12:31.940 INFO  [29628] [CPPSigDirect::build_tree@317] 2 ---new nodes: 897 new rule_nodes: 1627 rules: 63
+2024-07-13 16:12:32.054 INFO  [29628] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7884 new rule_nodes: 12930 rules: 221
+2024-07-13 16:12:40.446 INFO  [7124] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:12:40.472 WARN  [7124] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 829
+2024-07-13 16:12:40.472 WARN  [7124] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4171
+2024-07-13 16:12:40.478 INFO  [7124] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 90 rules: 10
+2024-07-13 16:12:40.520 INFO  [7124] [CPPSigDirect::build_tree@317] 2 ---new nodes: 897 new rule_nodes: 1689 rules: 72
+2024-07-13 16:12:40.636 INFO  [7124] [CPPSigDirect::build_tree@317] 3 ---new nodes: 8691 new rule_nodes: 13891 rules: 283
+2024-07-13 16:13:03.913 INFO  [27912] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:13:03.928 WARN  [27912] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4149
+2024-07-13 16:13:03.928 WARN  [27912] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 851
+2024-07-13 16:13:03.932 INFO  [27912] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 86 rules: 24
+2024-07-13 16:13:03.963 INFO  [27912] [CPPSigDirect::build_tree@317] 2 ---new nodes: 873 new rule_nodes: 1485 rules: 61
+2024-07-13 16:13:04.058 INFO  [27912] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6104 new rule_nodes: 9756 rules: 111
+2024-07-13 16:13:13.703 INFO  [19664] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:13:13.718 WARN  [19664] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1195
+2024-07-13 16:13:13.718 WARN  [19664] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3805
+2024-07-13 16:13:13.723 INFO  [19664] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 87 rules: 19
+2024-07-13 16:13:13.757 INFO  [19664] [CPPSigDirect::build_tree@317] 2 ---new nodes: 879 new rule_nodes: 1550 rules: 64
+2024-07-13 16:13:13.860 INFO  [19664] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6603 new rule_nodes: 10933 rules: 151
+2024-07-13 16:14:36.845 INFO  [29928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:14:36.864 WARN  [29928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 846
+2024-07-13 16:14:36.864 WARN  [29928] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4154
+2024-07-13 16:14:36.869 INFO  [29928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 25 new rule_nodes: 50 rules: 8
+2024-07-13 16:14:36.903 INFO  [29928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 277 new rule_nodes: 542 rules: 48
+2024-07-13 16:14:37.007 INFO  [29928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 1771 new rule_nodes: 3364 rules: 149
+2024-07-13 16:16:42.140 INFO  [28224] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:16:42.154 WARN  [28224] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 3263
+2024-07-13 16:16:42.154 WARN  [28224] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 1737
+2024-07-13 16:16:42.163 INFO  [28224] [CPPSigDirect::build_tree@317] 1 ---new nodes: 26 new rule_nodes: 51 rules: 23
+2024-07-13 16:16:42.203 INFO  [28224] [CPPSigDirect::build_tree@317] 2 ---new nodes: 299 new rule_nodes: 575 rules: 46
+2024-07-13 16:16:42.308 INFO  [28224] [CPPSigDirect::build_tree@317] 3 ---new nodes: 1764 new rule_nodes: 3528 rules: 48
+2024-07-13 16:16:54.478 INFO  [28548] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:16:54.493 WARN  [28548] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1087
+2024-07-13 16:16:54.493 WARN  [28548] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3913
+2024-07-13 16:16:54.499 INFO  [28548] [CPPSigDirect::build_tree@317] 1 ---new nodes: 26 new rule_nodes: 52 rules: 11
+2024-07-13 16:16:54.536 INFO  [28548] [CPPSigDirect::build_tree@317] 2 ---new nodes: 300 new rule_nodes: 592 rules: 33
+2024-07-13 16:16:54.641 INFO  [28548] [CPPSigDirect::build_tree@317] 3 ---new nodes: 2007 new rule_nodes: 3840 rules: 83
+2024-07-13 16:17:22.267 INFO  [2420] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:17:22.281 WARN  [2420] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:17:22.281 WARN  [2420] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:17:22.287 INFO  [2420] [CPPSigDirect::build_tree@317] 1 ---new nodes: 26 new rule_nodes: 51 rules: 3
+2024-07-13 16:17:22.323 INFO  [2420] [CPPSigDirect::build_tree@317] 2 ---new nodes: 300 new rule_nodes: 576 rules: 33
+2024-07-13 16:17:22.428 INFO  [2420] [CPPSigDirect::build_tree@317] 3 ---new nodes: 1764 new rule_nodes: 3518 rules: 162
+2024-07-13 16:17:39.460 INFO  [28112] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:17:39.474 WARN  [28112] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 864
+2024-07-13 16:17:39.474 WARN  [28112] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4136
+2024-07-13 16:17:39.479 INFO  [28112] [CPPSigDirect::build_tree@317] 1 ---new nodes: 26 new rule_nodes: 52 rules: 4
+2024-07-13 16:17:39.515 INFO  [28112] [CPPSigDirect::build_tree@317] 2 ---new nodes: 300 new rule_nodes: 598 rules: 38
+2024-07-13 16:17:39.620 INFO  [28112] [CPPSigDirect::build_tree@317] 3 ---new nodes: 2002 new rule_nodes: 3873 rules: 190
+2024-07-13 16:18:00.314 INFO  [792] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:18:00.328 WARN  [792] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:18:00.328 WARN  [792] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:18:00.333 INFO  [792] [CPPSigDirect::build_tree@317] 1 ---new nodes: 25 new rule_nodes: 49 rules: 6
+2024-07-13 16:18:00.366 INFO  [792] [CPPSigDirect::build_tree@317] 2 ---new nodes: 277 new rule_nodes: 531 rules: 33
+2024-07-13 16:18:00.466 INFO  [792] [CPPSigDirect::build_tree@317] 3 ---new nodes: 1554 new rule_nodes: 3101 rules: 154
+2024-07-13 16:18:16.462 INFO  [24120] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:18:16.476 WARN  [24120] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 856
+2024-07-13 16:18:16.476 WARN  [24120] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4144
+2024-07-13 16:18:16.481 INFO  [24120] [CPPSigDirect::build_tree@317] 1 ---new nodes: 26 new rule_nodes: 52 rules: 7
+2024-07-13 16:18:16.517 INFO  [24120] [CPPSigDirect::build_tree@317] 2 ---new nodes: 300 new rule_nodes: 594 rules: 30
+2024-07-13 16:18:16.622 INFO  [24120] [CPPSigDirect::build_tree@317] 3 ---new nodes: 2002 new rule_nodes: 3854 rules: 125
+2024-07-13 16:23:13.829 INFO  [3176] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:23:13.843 WARN  [3176] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 924
+2024-07-13 16:23:13.843 WARN  [3176] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4076
+2024-07-13 16:23:13.851 INFO  [3176] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 10
+2024-07-13 16:23:13.893 INFO  [3176] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 110
+2024-07-13 16:23:14.029 INFO  [3176] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12949 rules: 552
+2024-07-13 16:23:40.318 INFO  [26744] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:23:40.333 WARN  [26744] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1614
+2024-07-13 16:23:40.333 WARN  [26744] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3386
+2024-07-13 16:23:40.341 INFO  [26744] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 25
+2024-07-13 16:23:40.384 INFO  [26744] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 56
+2024-07-13 16:23:40.520 INFO  [26744] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6574 new rule_nodes: 13001 rules: 130
+2024-07-13 16:28:46.618 INFO  [9156] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:28:46.632 WARN  [9156] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1144
+2024-07-13 16:28:46.632 WARN  [9156] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3856
+2024-07-13 16:28:46.640 INFO  [9156] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 14
+2024-07-13 16:28:46.684 INFO  [9156] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 77
+2024-07-13 16:28:46.820 INFO  [9156] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6575 new rule_nodes: 12997 rules: 313
+2024-07-13 16:32:33.496 INFO  [27716] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:32:33.510 WARN  [27716] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 4124
+2024-07-13 16:32:33.511 WARN  [27716] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 876
+2024-07-13 16:32:33.519 INFO  [27716] [CPPSigDirect::build_tree@317] 1 ---new nodes: 76 new rule_nodes: 150 rules: 39
+2024-07-13 16:32:33.576 INFO  [27716] [CPPSigDirect::build_tree@317] 2 ---new nodes: 2538 new rule_nodes: 4888 rules: 189
+2024-07-13 16:32:33.713 INFO  [27716] [CPPSigDirect::build_tree@317] 3 ---new nodes: 45816 new rule_nodes: 67498 rules: 657
+2024-07-13 16:32:44.540 INFO  [14236] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:32:44.555 WARN  [14236] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 853
+2024-07-13 16:32:44.555 WARN  [14236] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4147
+2024-07-13 16:32:44.564 INFO  [14236] [CPPSigDirect::build_tree@317] 1 ---new nodes: 76 new rule_nodes: 151 rules: 15
+2024-07-13 16:32:44.623 INFO  [14236] [CPPSigDirect::build_tree@317] 2 ---new nodes: 2540 new rule_nodes: 4982 rules: 249
+2024-07-13 16:32:44.778 INFO  [14236] [CPPSigDirect::build_tree@317] 3 ---new nodes: 45892 new rule_nodes: 72869 rules: 1252
+2024-07-13 16:33:21.589 INFO  [17484] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:33:21.602 WARN  [17484] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 16:33:21.602 WARN  [17484] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 16:33:21.605 INFO  [17484] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 72 rules: 17
+2024-07-13 16:33:21.613 INFO  [17484] [CPPSigDirect::build_tree@317] 2 ---new nodes: 600 new rule_nodes: 960 rules: 49
+2024-07-13 16:33:21.616 INFO  [17484] [CPPSigDirect::build_tree@317] 3 ---new nodes: 3778 new rule_nodes: 4630 rules: 77
+2024-07-13 16:35:00.690 INFO  [28568] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:35:00.702 WARN  [28568] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:35:00.702 WARN  [28568] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:35:00.702 INFO  [28568] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 44 rules: 0
+2024-07-13 16:35:00.703 INFO  [28568] [CPPSigDirect::build_tree@317] 2 ---new nodes: 600 new rule_nodes: 606 rules: 6
+2024-07-13 16:35:00.704 INFO  [28568] [CPPSigDirect::build_tree@317] 3 ---new nodes: 1074 new rule_nodes: 1078 rules: 10
+2024-07-13 16:36:00.654 INFO  [27840] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:36:00.675 WARN  [27840] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:36:00.675 WARN  [27840] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:36:00.676 INFO  [27840] [CPPSigDirect::build_tree@317] 1 ---new nodes: 20 new rule_nodes: 24 rules: 0
+2024-07-13 16:36:00.677 INFO  [27840] [CPPSigDirect::build_tree@317] 2 ---new nodes: 150 new rule_nodes: 156 rules: 6
+2024-07-13 16:36:00.677 INFO  [27840] [CPPSigDirect::build_tree@317] 3 ---new nodes: 31 new rule_nodes: 35 rules: 10
+2024-07-13 16:37:13.284 INFO  [14928] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:37:13.296 WARN  [14928] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 16:37:13.296 WARN  [14928] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 16:37:13.298 INFO  [14928] [CPPSigDirect::build_tree@317] 1 ---new nodes: 20 new rule_nodes: 36 rules: 8
+2024-07-13 16:37:13.304 INFO  [14928] [CPPSigDirect::build_tree@317] 2 ---new nodes: 150 new rule_nodes: 239 rules: 19
+2024-07-13 16:37:13.307 INFO  [14928] [CPPSigDirect::build_tree@317] 3 ---new nodes: 395 new rule_nodes: 571 rules: 25
+2024-07-13 16:38:59.020 INFO  [7792] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:38:59.032 WARN  [7792] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 692
+2024-07-13 16:38:59.032 WARN  [7792] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4308
+2024-07-13 16:38:59.034 INFO  [7792] [CPPSigDirect::build_tree@317] 1 ---new nodes: 20 new rule_nodes: 36 rules: 6
+2024-07-13 16:38:59.039 INFO  [7792] [CPPSigDirect::build_tree@317] 2 ---new nodes: 150 new rule_nodes: 240 rules: 11
+2024-07-13 16:38:59.042 INFO  [7792] [CPPSigDirect::build_tree@317] 3 ---new nodes: 395 new rule_nodes: 576 rules: 15
+2024-07-13 16:39:40.121 INFO  [29076] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:39:40.133 WARN  [29076] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:39:40.133 WARN  [29076] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:39:40.133 INFO  [29076] [CPPSigDirect::build_tree@317] 1 ---new nodes: 20 new rule_nodes: 24 rules: 0
+2024-07-13 16:39:40.134 INFO  [29076] [CPPSigDirect::build_tree@317] 2 ---new nodes: 150 new rule_nodes: 156 rules: 4
+2024-07-13 16:39:40.134 INFO  [29076] [CPPSigDirect::build_tree@317] 3 ---new nodes: 34 new rule_nodes: 38 rules: 8
+2024-07-13 16:40:32.221 INFO  [14156] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:40:32.233 WARN  [14156] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:40:32.233 WARN  [14156] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:40:32.234 INFO  [14156] [CPPSigDirect::build_tree@317] 1 ---new nodes: 20 new rule_nodes: 24 rules: 0
+2024-07-13 16:40:32.234 INFO  [14156] [CPPSigDirect::build_tree@317] 2 ---new nodes: 150 new rule_nodes: 156 rules: 5
+2024-07-13 16:40:32.234 INFO  [14156] [CPPSigDirect::build_tree@317] 3 ---new nodes: 38 new rule_nodes: 42 rules: 9
+2024-07-13 16:41:20.857 INFO  [9940] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:41:20.870 WARN  [9940] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:41:20.870 WARN  [9940] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:41:20.870 INFO  [9940] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 44 rules: 1
+2024-07-13 16:41:20.871 INFO  [9940] [CPPSigDirect::build_tree@317] 2 ---new nodes: 597 new rule_nodes: 603 rules: 7
+2024-07-13 16:41:20.871 INFO  [9940] [CPPSigDirect::build_tree@317] 3 ---new nodes: 183 new rule_nodes: 187 rules: 11
+2024-07-13 16:42:11.332 INFO  [27988] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:42:11.354 WARN  [27988] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:42:11.354 WARN  [27988] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:42:11.354 INFO  [27988] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 44 rules: 1
+2024-07-13 16:42:11.355 INFO  [27988] [CPPSigDirect::build_tree@317] 2 ---new nodes: 600 new rule_nodes: 606 rules: 7
+2024-07-13 16:42:11.355 INFO  [27988] [CPPSigDirect::build_tree@317] 3 ---new nodes: 152 new rule_nodes: 156 rules: 11
+2024-07-13 16:44:21.378 INFO  [15320] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:44:21.391 WARN  [15320] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1
+2024-07-13 16:44:21.391 WARN  [15320] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4999
+2024-07-13 16:44:21.391 INFO  [15320] [CPPSigDirect::build_tree@317] 1 ---new nodes: 20 new rule_nodes: 24 rules: 1
+2024-07-13 16:44:21.392 INFO  [15320] [CPPSigDirect::build_tree@317] 2 ---new nodes: 150 new rule_nodes: 156 rules: 7
+2024-07-13 16:44:21.392 INFO  [15320] [CPPSigDirect::build_tree@317] 3 ---new nodes: 38 new rule_nodes: 42 rules: 11
+2024-07-13 16:45:21.805 INFO  [13348] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:45:21.819 WARN  [13348] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:45:21.819 WARN  [13348] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:45:21.824 INFO  [13348] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 86 rules: 12
+2024-07-13 16:45:21.855 INFO  [13348] [CPPSigDirect::build_tree@317] 2 ---new nodes: 869 new rule_nodes: 1499 rules: 72
+2024-07-13 16:45:21.951 INFO  [13348] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6169 new rule_nodes: 10080 rules: 286
+2024-07-13 16:45:31.446 INFO  [29652] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:45:31.460 WARN  [29652] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:45:31.460 WARN  [29652] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:45:31.465 INFO  [29652] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 86 rules: 10
+2024-07-13 16:45:31.496 INFO  [29652] [CPPSigDirect::build_tree@317] 2 ---new nodes: 873 new rule_nodes: 1519 rules: 77
+2024-07-13 16:45:31.592 INFO  [29652] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6200 new rule_nodes: 10186 rules: 311
+2024-07-13 16:45:38.884 INFO  [22556] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:45:38.898 WARN  [22556] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1140
+2024-07-13 16:45:38.898 WARN  [22556] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3860
+2024-07-13 16:45:38.904 INFO  [22556] [CPPSigDirect::build_tree@317] 1 ---new nodes: 45 new rule_nodes: 86 rules: 19
+2024-07-13 16:45:38.937 INFO  [22556] [CPPSigDirect::build_tree@317] 2 ---new nodes: 865 new rule_nodes: 1517 rules: 59
+2024-07-13 16:45:39.041 INFO  [22556] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6140 new rule_nodes: 10298 rules: 156
+2024-07-13 16:46:02.567 INFO  [12356] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:46:02.582 WARN  [12356] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 905
+2024-07-13 16:46:02.582 WARN  [12356] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4095
+2024-07-13 16:46:02.589 INFO  [12356] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 7
+2024-07-13 16:46:02.632 INFO  [12356] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1374 rules: 94
+2024-07-13 16:46:02.771 INFO  [12356] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12929 rules: 520
+2024-07-13 16:46:31.419 INFO  [9920] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:46:31.434 WARN  [9920] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 1147
+2024-07-13 16:46:31.434 WARN  [9920] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 3853
+2024-07-13 16:46:31.442 INFO  [9920] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 80 rules: 12
+2024-07-13 16:46:31.487 INFO  [9920] [CPPSigDirect::build_tree@317] 2 ---new nodes: 706 new rule_nodes: 1392 rules: 72
+2024-07-13 16:46:31.628 INFO  [9920] [CPPSigDirect::build_tree@317] 3 ---new nodes: 7104 new rule_nodes: 13538 rules: 298
+2024-07-13 16:48:05.581 INFO  [13472] [CPPSigDirect::CPPSigDirect@45] NEW RUN: 1
+2024-07-13 16:48:05.595 WARN  [13472] [CPPSigDirect::set_label_support@231] LABEL SIZE 0: 874
+2024-07-13 16:48:05.595 WARN  [13472] [CPPSigDirect::set_label_support@231] LABEL SIZE 1: 4126
+2024-07-13 16:48:05.603 INFO  [13472] [CPPSigDirect::build_tree@317] 1 ---new nodes: 40 new rule_nodes: 79 rules: 8
+2024-07-13 16:48:05.645 INFO  [13472] [CPPSigDirect::build_tree@317] 2 ---new nodes: 705 new rule_nodes: 1373 rules: 87
+2024-07-13 16:48:05.782 INFO  [13472] [CPPSigDirect::build_tree@317] 3 ---new nodes: 6578 new rule_nodes: 12886 rules: 461

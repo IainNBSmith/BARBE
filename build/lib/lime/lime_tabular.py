@@ -480,6 +480,7 @@ class LimeTabularExplainer(object):
         ret_exp = explanation.Explanation(domain_mapper,
                                           mode=self.mode,
                                           class_names=self.class_names)
+        # IAIN from what I can tell this should be None (we open it up and assign it I see)
         ret_exp.scaled_data = scaled_data
         if self.mode == "classification":
             ret_exp.predict_proba = yss[0]
@@ -698,8 +699,10 @@ class LimeTabularExplainer(object):
                 inverse[1:] = self.discretizer.undiscretize(inverse[1:])
             inverse[0] = data_row
             ohe =  sklearn.preprocessing.OneHotEncoder(categories='auto', handle_unknown='ignore')
+            original_inverse = sd_values
             sd_values = np.asarray(ohe.fit_transform(sd_values).todense()).astype(int)
-            return data, inverse,sd_values, ohe
+            # return data, inverse,sd_values, ohe
+            return data, inverse, sd_values, original_inverse
         elif barbe_mode=='TEXT':
             sd_values = np.zeros((int(num_samples), first_row.shape[0]))
             for idx in np.nonzero(first_row)[0]:

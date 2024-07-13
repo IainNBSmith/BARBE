@@ -29,7 +29,7 @@ import numpy as np
 from collections import Counter, defaultdict
 
 # Python class Rule
-import rule
+import sigdirect.rule
 
 # enum heuristics
 cdef extern from "include/sigdirect.h":
@@ -101,7 +101,7 @@ cdef class SigDirect:
         self._other_info = other_info
 
     def fit(self, X, y):
-        cobj = new CPPSigDirect(self._clf_version, 
+        cobj = new CPPSigDirect(self._clf_version,
                                 self._alpha, 
                                 self._early_stopping, 
                                 self._confidence_threshold)

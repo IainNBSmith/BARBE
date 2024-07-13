@@ -4,31 +4,29 @@
 {
     "distutils": {
         "depends": [
-            "sigdirect\\include\\sigdirect.h",
-            "sigdirect\\src\\rule.h"
+            "include\\sigdirect.h",
+            "src\\rule.h"
         ],
         "extra_compile_args": [
             "-O3",
             "-std=c++17"
         ],
         "include_dirs": [
-            "sigdirect",
             ".",
-            "./sigdirect",
-            "./sigdirect/include",
-            "./sigdirect/src",
-            "./sigdirect/lib",
-            "./sigdirect/tests",
-            "./sigdirect/lib/plog/include"
+            "include",
+            "src",
+            "lib",
+            "tests",
+            "lib/plog/include"
         ],
         "language": "c++",
         "name": "sigdirect",
         "sources": [
-            "sigdirect/mysigdirect.pyx",
-            "sigdirect/src/sigdirect.cpp",
-            "sigdirect/src/rule.cpp",
-            "sigdirect/src/node.cpp",
-            "sigdirect/src/rule_node.cpp"
+            "mysigdirect.pyx",
+            "src/sigdirect.cpp",
+            "src/rule.cpp",
+            "src/node.cpp",
+            "src/rule_node.cpp"
         ]
     },
     "module_name": "sigdirect"
@@ -1536,7 +1534,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "sigdirect\\\\mysigdirect.pyx",
+  "mysigdirect.pyx",
   "<stringsource>",
 };
 /* #### Code section: utility_code_proto_before_types ### */
@@ -2695,6 +2693,7 @@ static const char __pyx_k_get_confidence[] = "get_confidence";
 static const char __pyx_k_get_importance[] = "get_importance";
 static const char __pyx_k_local_id2words[] = "local_id2words";
 static const char __pyx_k_heuristic_funcs[] = "heuristic_funcs";
+static const char __pyx_k_mysigdirect_pyx[] = "mysigdirect.pyx";
 static const char __pyx_k_pyx_PickleError[] = "__pyx_PickleError";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_SigDirect__hrs_1[] = "SigDirect._hrs_1";
@@ -2715,7 +2714,6 @@ static const char __pyx_k_SigDirect_get_all_rules[] = "SigDirect.get_all_rules";
 static const char __pyx_k_get_similarity_to_label[] = "_get_similarity_to_label";
 static const char __pyx_k_2_d_numpy_array_expected[] = "2-d numpy array expected";
 static const char __pyx_k_SigDirect___reduce_cython[] = "SigDirect.__reduce_cython__";
-static const char __pyx_k_sigdirect_mysigdirect_pyx[] = "sigdirect\\mysigdirect.pyx";
 static const char __pyx_k_SigDirect___setstate_cython[] = "SigDirect.__setstate_cython__";
 static const char __pyx_k_SigDirect__predict_instance[] = "SigDirect._predict_instance";
 static const char __pyx_k_SigDirect__get_best_match_label[] = "SigDirect._get_best_match_label";
@@ -2873,6 +2871,7 @@ typedef struct {
   PyObject *__pyx_n_s_max_2;
   PyObject *__pyx_n_s_min;
   PyObject *__pyx_n_s_min_2;
+  PyObject *__pyx_kp_s_mysigdirect_pyx;
   PyObject *__pyx_n_s_name;
   PyObject *__pyx_n_s_ndarray;
   PyObject *__pyx_n_s_new;
@@ -2906,7 +2905,6 @@ typedef struct {
   PyObject *__pyx_n_s_setstate_cython;
   PyObject *__pyx_n_s_shape;
   PyObject *__pyx_n_s_sigdirect;
-  PyObject *__pyx_kp_s_sigdirect_mysigdirect_pyx;
   PyObject *__pyx_n_s_spec;
   PyObject *__pyx_n_s_state;
   PyObject *__pyx_n_s_staticmethod;
@@ -3087,6 +3085,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_max_2);
   Py_CLEAR(clear_module_state->__pyx_n_s_min);
   Py_CLEAR(clear_module_state->__pyx_n_s_min_2);
+  Py_CLEAR(clear_module_state->__pyx_kp_s_mysigdirect_pyx);
   Py_CLEAR(clear_module_state->__pyx_n_s_name);
   Py_CLEAR(clear_module_state->__pyx_n_s_ndarray);
   Py_CLEAR(clear_module_state->__pyx_n_s_new);
@@ -3120,7 +3119,6 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_setstate_cython);
   Py_CLEAR(clear_module_state->__pyx_n_s_shape);
   Py_CLEAR(clear_module_state->__pyx_n_s_sigdirect);
-  Py_CLEAR(clear_module_state->__pyx_kp_s_sigdirect_mysigdirect_pyx);
   Py_CLEAR(clear_module_state->__pyx_n_s_spec);
   Py_CLEAR(clear_module_state->__pyx_n_s_state);
   Py_CLEAR(clear_module_state->__pyx_n_s_staticmethod);
@@ -3279,6 +3277,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_max_2);
   Py_VISIT(traverse_module_state->__pyx_n_s_min);
   Py_VISIT(traverse_module_state->__pyx_n_s_min_2);
+  Py_VISIT(traverse_module_state->__pyx_kp_s_mysigdirect_pyx);
   Py_VISIT(traverse_module_state->__pyx_n_s_name);
   Py_VISIT(traverse_module_state->__pyx_n_s_ndarray);
   Py_VISIT(traverse_module_state->__pyx_n_s_new);
@@ -3312,7 +3311,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_setstate_cython);
   Py_VISIT(traverse_module_state->__pyx_n_s_shape);
   Py_VISIT(traverse_module_state->__pyx_n_s_sigdirect);
-  Py_VISIT(traverse_module_state->__pyx_kp_s_sigdirect_mysigdirect_pyx);
   Py_VISIT(traverse_module_state->__pyx_n_s_spec);
   Py_VISIT(traverse_module_state->__pyx_n_s_state);
   Py_VISIT(traverse_module_state->__pyx_n_s_staticmethod);
@@ -3493,6 +3491,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_max_2 __pyx_mstate_global->__pyx_n_s_max_2
 #define __pyx_n_s_min __pyx_mstate_global->__pyx_n_s_min
 #define __pyx_n_s_min_2 __pyx_mstate_global->__pyx_n_s_min_2
+#define __pyx_kp_s_mysigdirect_pyx __pyx_mstate_global->__pyx_kp_s_mysigdirect_pyx
 #define __pyx_n_s_name __pyx_mstate_global->__pyx_n_s_name
 #define __pyx_n_s_ndarray __pyx_mstate_global->__pyx_n_s_ndarray
 #define __pyx_n_s_new __pyx_mstate_global->__pyx_n_s_new
@@ -3526,7 +3525,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_setstate_cython __pyx_mstate_global->__pyx_n_s_setstate_cython
 #define __pyx_n_s_shape __pyx_mstate_global->__pyx_n_s_shape
 #define __pyx_n_s_sigdirect __pyx_mstate_global->__pyx_n_s_sigdirect
-#define __pyx_kp_s_sigdirect_mysigdirect_pyx __pyx_mstate_global->__pyx_kp_s_sigdirect_mysigdirect_pyx
 #define __pyx_n_s_spec __pyx_mstate_global->__pyx_n_s_spec
 #define __pyx_n_s_state __pyx_mstate_global->__pyx_n_s_state
 #define __pyx_n_s_staticmethod __pyx_mstate_global->__pyx_n_s_staticmethod
@@ -9966,6 +9964,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_max_2, __pyx_k_max_2, sizeof(__pyx_k_max_2), 0, 0, 1, 1},
     {&__pyx_n_s_min, __pyx_k_min, sizeof(__pyx_k_min), 0, 0, 1, 1},
     {&__pyx_n_s_min_2, __pyx_k_min_2, sizeof(__pyx_k_min_2), 0, 0, 1, 1},
+    {&__pyx_kp_s_mysigdirect_pyx, __pyx_k_mysigdirect_pyx, sizeof(__pyx_k_mysigdirect_pyx), 0, 0, 1, 0},
     {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
     {&__pyx_n_s_ndarray, __pyx_k_ndarray, sizeof(__pyx_k_ndarray), 0, 0, 1, 1},
     {&__pyx_n_s_new, __pyx_k_new, sizeof(__pyx_k_new), 0, 0, 1, 1},
@@ -9999,7 +9998,6 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_setstate_cython, __pyx_k_setstate_cython, sizeof(__pyx_k_setstate_cython), 0, 0, 1, 1},
     {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
     {&__pyx_n_s_sigdirect, __pyx_k_sigdirect, sizeof(__pyx_k_sigdirect), 0, 0, 1, 1},
-    {&__pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_k_sigdirect_mysigdirect_pyx, sizeof(__pyx_k_sigdirect_mysigdirect_pyx), 0, 0, 1, 0},
     {&__pyx_n_s_spec, __pyx_k_spec, sizeof(__pyx_k_spec), 0, 0, 1, 1},
     {&__pyx_n_s_state, __pyx_k_state, sizeof(__pyx_k_state), 0, 0, 1, 1},
     {&__pyx_n_s_staticmethod, __pyx_k_staticmethod, sizeof(__pyx_k_staticmethod), 0, 0, 1, 1},
@@ -10088,7 +10086,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__7 = PyTuple_Pack(11, __pyx_n_s_self, __pyx_n_s_X, __pyx_n_s_y, __pyx_n_s_cobj, __pyx_n_s_input_X, __pyx_n_s_i, __pyx_n_s_ret, __pyx_n_s_rules_cpp, __pyx_n_s_it, __pyx_n_s_p, __pyx_n_s_new_rule); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 103, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_fit, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_fit, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 103, __pyx_L1_error)
 
   /* "sigdirect.pyx":152
  *         return ret
@@ -10100,7 +10098,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__9 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 152, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
-  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_get_all_rules, 152, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_get_all_rules, 152, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 152, __pyx_L1_error)
 
   /* "sigdirect.pyx":155
  *         return self._all_rules
@@ -10112,7 +10110,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__11 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_X, __pyx_n_s_hrs, __pyx_n_s_predictions); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 155, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_predict, 155, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_predict, 155, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 155, __pyx_L1_error)
   __pyx_tuple__13 = PyTuple_Pack(1, __pyx_int_1); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 155, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
@@ -10127,7 +10125,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__14 = PyTuple_Pack(7, __pyx_n_s_self, __pyx_n_s_instance, __pyx_n_s_hrs, __pyx_n_s_all_labels, __pyx_n_s_scores, __pyx_n_s_x, __pyx_n_s_x); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 186, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
-  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_predict_instance, 186, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 186, __pyx_L1_error)
+  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_predict_instance, 186, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 186, __pyx_L1_error)
 
   /* "sigdirect.pyx":202
  *         return self._get_best_match_label(scores)
@@ -10139,7 +10137,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__16 = PyTuple_Pack(7, __pyx_n_s_self, __pyx_n_s_instance, __pyx_n_s_label, __pyx_n_s_hrs, __pyx_n_s_heuristic_funcs, __pyx_n_s_sum_2, __pyx_n_s_rule); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 202, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
-  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_get_similarity_to_label, 202, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 202, __pyx_L1_error)
+  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_get_similarity_to_label, 202, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 202, __pyx_L1_error)
 
   /* "sigdirect.pyx":214
  *         return sum_
@@ -10151,7 +10149,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__18 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_scores, __pyx_n_s_hrs, __pyx_n_s_min_2, __pyx_n_s_max_2); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 214, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_get_best_match_label, 214, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 214, __pyx_L1_error)
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_get_best_match_label, 214, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 214, __pyx_L1_error)
 
   /* "sigdirect.pyx":225
  *             return max_[1]
@@ -10163,7 +10161,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__20 = PyTuple_Pack(4, __pyx_n_s_instance, __pyx_n_s_rule, __pyx_n_s_instance_items_set, __pyx_n_s_id_item); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 225, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__20);
   __Pyx_GIVEREF(__pyx_tuple__20);
-  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_rule_matches, 225, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 225, __pyx_L1_error)
+  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_rule_matches, 225, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 225, __pyx_L1_error)
 
   /* "sigdirect.pyx":233
  *         return True
@@ -10175,7 +10173,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__22 = PyTuple_Pack(1, __pyx_n_s_rule); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 233, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
-  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_hrs_1, 233, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 233, __pyx_L1_error)
+  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_hrs_1, 233, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 233, __pyx_L1_error)
 
   /* "sigdirect.pyx":244
  *         #     return -float('inf')
@@ -10184,7 +10182,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     def _hrs_2(rule):
  *         return rule.get_confidence()
  */
-  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_hrs_2, 244, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 244, __pyx_L1_error)
+  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_hrs_2, 244, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 244, __pyx_L1_error)
 
   /* "sigdirect.pyx":248
  *         return rule.get_confidence()
@@ -10193,7 +10191,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     def _hrs_3(rule):
  *         return rule.get_log_p() * rule.get_confidence()
  */
-  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_sigdirect_mysigdirect_pyx, __pyx_n_s_hrs_3, 248, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 248, __pyx_L1_error)
+  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_mysigdirect_pyx, __pyx_n_s_hrs_3, 248, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 248, __pyx_L1_error)
 
   /* "(tree fragment)":1
  * def __reduce_cython__(self):             # <<<<<<<<<<<<<<

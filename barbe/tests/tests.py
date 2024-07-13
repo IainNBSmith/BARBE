@@ -6,7 +6,19 @@ from datetime import datetime
 import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-import tests_config
+import barbe.tests.tests_config as tests_config
+import random
+from numpy.random import RandomState
+from barbe.explainer import BARBE
+
+from sklearn import datasets
+from sklearn.ensemble import RandomForestClassifier
+
+RANDOM_SEED = 1
+
+random.seed(RANDOM_SEED)
+# np.random.seed(seed=RANDOM_SEED)
+const_random_state = RandomState(RANDOM_SEED)
 
 
 # global variables
@@ -28,7 +40,7 @@ fidelity_division = True
 REPEAT_COUNT = 1
 
 #DATA_ROOT_DIR = experiments_config.DATA_ROOT_DIR
-DATA_ROOT_DIR = "./dataset"
+DATA_ROOT_DIR = "../dataset"
 
 datasets_info_dict = tests_config.all_datasets_info_dict.copy()
 
@@ -48,7 +60,9 @@ remove_datasets = [
 
 
 def _get_train_df(filename, has_index, header_index=None):
+    print("Entered Train DF: ", filename, os.getcwd())
     df = pd.read_csv(filename, sep=',', header=header_index, na_values='?')
+    print("Loaded DF")
     if has_index:
         df = df.drop(df.columns[0], axis=1)
     return df
@@ -98,7 +112,7 @@ def _preprocess_data(train_df, class_index, dataset_name):
         # standardazing the column
         scaler = StandardScaler()
         train_df[column] = scaler.fit_transform(train_df[column].to_numpy().reshape((-1, 1)))
-        test_df[column] = scaler.transform(test_df[column].to_numpy().reshape((-1, 1)))
+        # test_df[column] = scaler.transform(test_df[column].to_numpy().reshape((-1, 1)))
 
         # set NaN to 0
         train_df[column].fillna(0., inplace=True)
@@ -114,8 +128,16 @@ def _preprocess_data(train_df, class_index, dataset_name):
 
 
 def _get_data():
+    for dataset, dataset_info in datasets_info_dict.items():
+        print('---', dataset)
+        print('---', dataset_info)
+    dataset_name = dataset
+    dataset_info = dataset_info
+    class_index = dataset_info['CLASS_INDEX']
+    has_index = dataset_info['HAS_INDEX']
+    header_index = dataset_info['HEADER_ROW_NUMBER']
     # dataset_name, dataset_info
-    filenames = ['./dataset/glass.data']  # IAIN
+    filenames = ['../dataset/glass.data']  # IAIN
 
     # load from file
     df = _get_train_df(filenames[0], has_index, header_index)
@@ -132,26 +154,32 @@ def _get_data():
 
     dataset_info['features'] = train_df.shape[1] - 1
     dataset_info['initial_train_size'] = train_df.shape[0]
-    dataset_info['initial_test_size'] = test_df.shape[0]
+    # dataset_info['initial_test_size'] = test_df.shape[0]
     dataset_info['original_train_df'] = train_df.copy()
-    dataset_info['original_test_df'] = test_df.copy()
+    # dataset_info['original_test_df'] = test_df.copy()
 
     if shrink_train_size and train_df.shape[0] > desired_train_size:
         train_df = train_df[:desired_train_size]
-    if shrink_test_size and test_df.shape[0] > desired_test_size:
-        test_df = test_df[:desired_test_size]
+    # if shrink_test_size and test_df.shape[0] > desired_test_size:
+    #     test_df = test_df[:desired_test_size]
     dataset_info['train_size'] = train_df.shape[0]
-    dataset_info['test_size'] = test_df.shape[0]
+    # dataset_info['test_size'] = test_df.shape[0]
 
-    return train_df, test_df
+    # return train_df, test_df
+    return train_df, None
 
 
 def test_produce_lime_perturbations(n_perturbations=5000):
+    # From this test we learned that a sample must be discretized into bins
+    #  then it has scale assigned by the training sample and only then can it
+    #  be perturbed
+
     training_data, _ = _get_data()
+    data_row = training_data.drop('class', axis=1).iloc[0]
 
     print("Running test: Lime Perturbation")
     start_time = datetime.now()
-    lw = LimeWrapper(training_data)
+    lw = LimeWrapper(training_data.drop('class', axis=1), training_data['class'])
     perturbed_data = lw.produce_perturbation(data_row, n_perturbations)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
@@ -159,17 +187,98 @@ def test_produce_lime_perturbations(n_perturbations=5000):
 
 
 def test_simple_numeric():
-    pass
+   pass
 
 
 def test_simple_text():
     pass
 
 
+def test_iris_dataset():
+    # IAIN add traffic dataset to this work with trained classification being
+    #  the day of the week?
+    iris = datasets.load_iris()
+
+    iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+
+    data_row = iris_df.iloc[50]
+    training_labels = iris.target
+    training_data = iris_df
+
+    print("Running test: BARBE iris Run")
+    start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data, training_labels, verbose=True, input_sets_class=True)
+    explanation = explainer.explain(data_row, bbmodel)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(explanation)
+    print(bbmodel.feature_importances_)
+
+
 def test_glass_dataset():
-    pass
+    # From this test we learned that a sample must be discretized into bins
+    #  then it has scale assigned by the training sample and only then can it
+    #  be perturbed
+
+    training_data, _ = _get_data()
+    training_data.columns = training_data.columns.astype(str)
+    # IAIN something is going on I think with the input data (have to check tomorrow)
+    #  something weird is going on with the rules being translated/used. It could have to
+    #  do with something improper in the predictions (check that multiple lables are given)
+    #
+    # To try to fix this I have instead (and think the perturber needs) called the barbe
+    #  version of perturbations which returns a OneHotEncoder (I think this can be made separately)
+    #  this means in BARBE I have an element called self._why which holds the sd_data that seems to be
+    #  used by SigDirect as the perturbed data. What I need to do tomorrow is check that the labels have some
+    #  significance and then compare the data at each step to data in the current barbe.py file.
+    # IAIN IMPORTANT: now as written it yields rules so this only has to be cleaned up before starting your own encoder
+    #  you should also check with data that has named columns too (seems to always yield the same rule though)
+    #  I assume this is because it is not actually using the one given row, it is using the zeroth row of the perturbed
+    #  data. So I need to fix this to ensure rules are accurate, need to find out how though.
+    #  (can the ohe encode new data?)
+    # IAIN TODO: check the sets that are passed to ensure that the classes are correct as it seems to flip-flop classes
+    #  for example 2's are 7's tho I wonder why the accuracy is still so high with this
+    # data_row = training_data.drop('class', axis=1).loc[training_data['class'] == 7].iloc[10]  # IAIN most recent change yields more rules
+    data_row = training_data.drop('class', axis=1).iloc[10]
+    training_labels = training_data['class']
+    training_data = training_data.drop('class', axis=1)
+    '''
+    (COMPLETE/July 6th) TODO: Get SigDirect to be able to compile
+    (COMPLETE/July 6th) TODO: Incorporate SigDirect into the explain function (pass the data)
+    (COMPLETE/July 7th) TODO: Check explanation coming out of SigDirect method for correctness
+        - Problem is explanations do not yield correct predictions atm (check if input data matches)
+    (COMPLETE/July 7th -> July 8th) TODO: Compare results to original writing of BARBE
+        - Explanation is the same as the original barbe function I ran, so this seems complete
+    (COMPLETE/July 9th) TODO: Get BARBE to run only with the lime_tabular inverse function
+    (COMPLETE/July 9th) TODO: Check rules from the SigDirect or BARBE paper (whatever used GLASS)
+    (COMPLETE/July 9th) TODO: Get SigDirect working properly
+        - Changed settings in SigDirect and it started to output correct classifications
+        - Now we offer the setting of using all classes or just a binary classification for the given row's class
+    (July 9th -> July 10th) TODO: Try different input data with named columns maybe
+    (WORKED ON/July 10th -> July 11th) TODO: Clean up the written program
+    (July 11th) TODO: Start work on paper review (look into paper share by Osmar)
+    (July 11th) TODO: Ensure that data format of the input row is correct for both types of data
+    (July 11th) TODO: Setup data to rerun a few times until the classification is correct
+    (NOTE/July 13th) - Encoder is modified, but support ends up inconsistent so we need a fix
+    '''
+    print("Running test: BARBE Glass Run")
+    start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data, training_labels, verbose=True, input_sets_class=True)
+    explanation = explainer.explain(data_row, bbmodel)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(explanation)
+    print(explainer.get_categories())
+    print(bbmodel.feature_importances_)
+    # explainer.get_rules()
 
 
 # run all tests or specific tests if this is the main function
 if __name__ == "__main__":
-    test_produce_lime_perturbations()
+    test_iris_dataset()

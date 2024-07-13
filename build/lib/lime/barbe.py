@@ -64,10 +64,14 @@ from lime_tabular import TableDomainMapper
 # the next two functions seem like they would be better implemented as part of the explainer
 def get_all_rules(neighborhood_data, labels_column, clf):
     print('CALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
+    print(neighborhood_data)
+    print(labels_column)
     clf.fit(neighborhood_data, labels_column)
     local_pred = clf.predict(neighborhood_data[0].reshape((1, -1)), 2).astype(int)[0]
 
     all_rules = clf.get_all_rules()
+    print("IAIN all rules here")
+    print(all_rules)
     return all_rules, local_pred
 
 
@@ -125,6 +129,8 @@ def get_features_sigdirect(all_rules, true_label):
             continue
         else:
             applied_rules.append(rule)
+        print("this is the weird shape IAIN")
+        print(temp)
         rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
         #         rule_items = temp ## TEXT (uncomment for TEXT)
         for item, val in enumerate(rule_items):
@@ -148,6 +154,7 @@ def get_features_sigdirect(all_rules, true_label):
             continue
         else:
             applicable_rules.append(rule)
+        print("here?")
         rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
         #         rule_items = temp ## TEXT (uncomment for TEXT)
         for item, val in enumerate(rule_items):
@@ -171,6 +178,8 @@ def get_features_sigdirect(all_rules, true_label):
         elif temp.sum() - np.sum(temp & original_point_sd.astype(int)) > 1:  # error???
             continue
         #             else:
+        print("here??")
+        print(temp)
         rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
         #         rule_items = temp ## TEXT (uncomment for TEXT)
         seen_set = 0
@@ -405,6 +414,8 @@ class BarbeBase(object):
         # IAIN model regressor here is sigdirect (within BarbeBase so it should have its own model saved in it)
         all_raw_rules, predicted_label = get_all_rules(neighborhood_data_sd, labels_column, model_regressor)
 
+        print("IAIN all raw rules")
+        print(all_raw_rules)
         # convert raw rules to rules (one-hot-decoding them)
         if predicted_label == true_label:
             for x, y in all_raw_rules.items():
@@ -678,6 +689,12 @@ class BarbeExplainer(object):
         # IAIN define the sd_data that will be used later
         data, inverse, sd_data, ohe = self.__data_inverse_barbe(data_row, num_samples, predict_fn, barbe_mode)
 
+        print("Output that will be used")
+        print(data)
+        print(inverse)
+        print(sd_data)
+        assert False
+
         if sp.sparse.issparse(data):  # code does not go here
             # Note in sparse case we don't subtract mean since data would become dense
             scaled_data = data.multiply(self.scaler.scale_)
@@ -693,6 +710,7 @@ class BarbeExplainer(object):
         ).ravel()
 
         if barbe_mode == "BARBE":
+            # IAIN uses inverse for predictions?
             yss = predict_fn(inverse)
         elif barbe_mode == "TEXT":
             yss = predict_fn(sd_data)  ## TEXT
@@ -777,6 +795,7 @@ class BarbeExplainer(object):
 
         # IAIN lime code that we seem not to change
         print("IAIN using TableDomainMapper")  # it does use this so we must see
+        # IAIN uses scaled_data[0]??
         domain_mapper = TableDomainMapper(feature_names,
                                           values,
                                           scaled_data[0],
@@ -802,6 +821,7 @@ class BarbeExplainer(object):
         for label in labels:
             # IAIN what is yss?
             print("IAIN called from with data")
+            # IAIN scaled_data should be perturbations
             (ret_exp.intercept[label],
              ret_exp.local_exp[label],
              ret_exp.score, ret_exp.local_pred) = self.base.explain_instance_with_data(
@@ -903,13 +923,15 @@ class BarbeExplainer(object):
 
             sd_values = np.array(inverse).astype(int)
             sd_values[0] = first_row
+            # IAIN maybe find a way to give the original inverse data or transform the input??
             if self.discretizer is not None:
                 inverse[1:] = self.discretizer.undiscretize(inverse[1:])
             inverse[0] = data_row
             ohe = sklearn.preprocessing.OneHotEncoder(categories='auto', handle_unknown='ignore')
             # IAIN this is where the modification of data occurs
+            original_inverse = sd_values
             sd_values = np.asarray(ohe.fit_transform(sd_values).todense()).astype(int)
-            return data, inverse, sd_values, ohe
+            return data, inverse, sd_values, original_inverse
         elif barbe_mode == 'TEXT':
             # IAIN for later this may be what I change to import other stuff for BARBIE
             sd_values = np.zeros((int(num_samples), first_row.shape[0]))

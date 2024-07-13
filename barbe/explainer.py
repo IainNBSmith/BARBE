@@ -5,13 +5,16 @@ This file contains the explainer part of BARBE and will call to all other parts 
 
 import pickle
 import pandas as pd
+from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
 from copy import deepcopy
+import numpy as np
 
 # Import wrappers for other packages
-from utils.sigdirect_interface import SigDirectWrapper
-from utils.lime_interface import LimeWrapper
+from barbe.utils.sigdirect_interface import SigDirectWrapper
+from barbe.utils.lime_interface import LimeWrapper
+from barbe.utils.bbmodel_interface import BlackBoxWrapper
 
 
 class BARBE:
@@ -54,7 +57,8 @@ class BARBE:
                                        )
                 print(explainer)
     '''
-    def __init__(self, verbose=False, mode='tabular', n_perturbations=5000):
+    def __init__(self, training_data, training_labels, verbose=False, mode='tabular', n_perturbations=5000,
+                 input_sets_class=True):
         # IAIN include model settings, make the model here?
         # IAIN do we include the perturbation type here? Is it consistent?
         # IAIN eventually method will include 'text' too.
@@ -63,9 +67,15 @@ class BARBE:
         # IAIN should include some checks in here for mode and perturbation validity
 
         self._verbose = verbose
+        self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
         self._mode = mode
+        self._feature_names = list(training_data)
+        self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
         self._perturbed_data = None
+        self._perturbed_inverse = None
+        self._input_sets_class = input_sets_class
+        self._input_data = None
         self._blackbox_classification = {'input': None, 'perturbed': None}
         self._surrogate_classification = {'input': None, 'perturbed': None}
         self._surrogate_model = None  # SigDirect model trained on the new points
@@ -81,22 +91,34 @@ class BARBE:
         elif self._mode in 'text':
             # IAIN should currently pass an error
             pass
+
+        # wrap model so prediction call is always the same
+        input_model = BlackBoxWrapper(input_model)
+
+        if self._input_sets_class:  # black box is true or false for input class
+            # IAIN need to clean up how data is passed to models (should be model side)
+            input_model.set_class(input_model.predict(input_data.to_numpy().reshape(1,-1)))
         # get black box predictions
-        self._blackbox_classification['input'] = input_model.predict(input_data)
+        self._blackbox_classification['input'] = input_model.predict(input_data.to_numpy().reshape(1,-1))  # IAIN make this look better
         self._blackbox_classification['perturbed'] = input_model.predict(self._perturbed_data)
 
-        # fit the surrogate through the wrapper
-        self._surrogate_model = SigDirectWrapper.fit(self._perturbed_data,
-                                                     self._blackbox_classification['perturbed'])
+        self._surrogate_model = SigDirectWrapper(self._feature_names, verbose=self._verbose)
 
-        self._surrogate_classification['input'] = self._surrogate_model.predict(input_data)
-        self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data)
+        # fit the surrogate through the wrapper
+        if self._verbose:
+            print(self._verbose_header, 'black box prediction', self._blackbox_classification['perturbed'])
+        self._surrogate_model.fit(self._perturbed_inverse, self._blackbox_classification['perturbed'])
+
+        self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1,-1))
+        self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_inverse)
+        if self._verbose:
+            print(self._verbose_header, "was it successful?", self._blackbox_classification['input'], self._surrogate_classification['input'])
 
     def _check_input_data(self, input_data):
         # IAIN checks if input is valid (tabular data is tabular, text data is text)
         #  and put it into a common format (pandas dataframe or string)
         if self._mode in 'tabular':
-            pass
+            return input_data
         elif self._mode in 'text':
             # IAIN should currently pass an error
             pass
@@ -114,9 +136,9 @@ class BARBE:
 
     def _generate_perturbed_tabular(self, input_data):
         # calls to set method to perturb the data, based on the mode
-        # IAIN should check which columns are categorical and which are numeric
-        self._perturbed_data = None
-        pass
+        self._perturbed_data, self._perturbed_inverse = self._perturber.produce_perturbation(input_data,
+                                                                                             self._n_perturbations)
+        # self._perturbed_inverse = self._perturbed_data
 
     def _generate_perturbed_text(self, input_data):
         # calls to set method to perturb the data, based on the mode
@@ -132,16 +154,22 @@ class BARBE:
         # IAIN check if comparison model, data, and method is f(a,b) is comparing vectors
         # IAIN compare the surrogate to the original input model
         # IAIN set default and some alternative options for comparison of classifications
+        # IAIN set default and some alternative options for comparison of classifications
         # IAIN comparison_method(y_true, y_pred)
-        pass
+        return comparison_method(self._blackbox_classification['perturbed'],
+                                 self._surrogate_classification['perturbed'])
 
+    # IAIN do we still need this?
     def get_rules(self):
         # IAIN this will output rules and their translations as learned by the model
-        pass
+        self._surrogate_model.get_all_features()
 
-    def get_features(self):
+    def get_features(self, input_data, true_label):
         # IAIN same as previous named get features
-        pass
+        return self._surrogate_model.get_features(input_data, true_label)
+
+    def get_categories(self):
+        self._surrogate_model.get_categories()
 
     def explain(self, input_data, input_model, fit_new_surrogate=True):
         # IAIN should include the surrogate similarity to original model
@@ -152,7 +180,7 @@ class BARBE:
 
         # check input before going further
         self._check_input_model(input_model)
-        self._check_input_data(input_data)
+        input_data = self._check_input_data(input_data)
 
         # cannot test without a new surrogate
         if self._surrogate_model is None:
@@ -166,8 +194,9 @@ class BARBE:
         # IAIN need to add something here that takes the input data for the explanation
 
         # IAIN expecting a fit model explain the result for the new data
-        self._explanation = (self.get_features() + " \n " +
-                             self.get_surrogate_fidelity() + " \n " +
-                             self.get_rules())
+        print('Fidelity:', self.get_surrogate_fidelity())
+        explanation_temp = self.get_features(input_data, self._blackbox_classification['input'][0])
+        self._explanation = (str(self.get_features(input_data, self._blackbox_classification['input'][0])) + '\n'
+                             + str(len(explanation_temp)) + " \n " + str(self.get_surrogate_fidelity()))
 
         return self._explanation
