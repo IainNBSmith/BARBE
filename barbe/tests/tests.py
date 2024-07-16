@@ -14,6 +14,8 @@ from barbe.explainer import BARBE
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
 
+from barbe.perturber import BarbePerturber
+
 RANDOM_SEED = 1
 
 random.seed(RANDOM_SEED)
@@ -186,6 +188,24 @@ def test_produce_lime_perturbations(n_perturbations=5000):
     print(perturbed_data)
 
 
+def test_produce_barbe_perturbations(n_perturbations=5000):
+    # From this test we learned that a sample must be discretized into bins
+    #  then it has scale assigned by the training sample and only then can it
+    #  be perturbed
+
+    training_data, _ = _get_data()
+    data_row = training_data.drop('class', axis=1).iloc[0]
+
+    print("Running test: BARBE Perturbation")
+    start_time = datetime.now()
+    bp = BarbePerturber(training_data.drop('class', axis=1))
+    perturbed_data = bp.produce_perturbation(n_perturbations, data_row=data_row)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(perturbed_data)
+
+
+
 def test_simple_numeric():
    pass
 
@@ -242,9 +262,13 @@ def test_glass_dataset():
     # IAIN TODO: check the sets that are passed to ensure that the classes are correct as it seems to flip-flop classes
     #  for example 2's are 7's tho I wonder why the accuracy is still so high with this
     # data_row = training_data.drop('class', axis=1).loc[training_data['class'] == 7].iloc[10]  # IAIN most recent change yields more rules
+    # print("Feature corruption")
     data_row = training_data.drop('class', axis=1).iloc[10]
     training_labels = training_data['class']
     training_data = training_data.drop('class', axis=1)
+    # For overfit
+    # data_row = training_data.iloc[5]
+    # training_labels = training_data['class']
     '''
     (COMPLETE/July 6th) TODO: Get SigDirect to be able to compile
     (COMPLETE/July 6th) TODO: Incorporate SigDirect into the explain function (pass the data)
@@ -263,6 +287,10 @@ def test_glass_dataset():
     (July 11th) TODO: Ensure that data format of the input row is correct for both types of data
     (July 11th) TODO: Setup data to rerun a few times until the classification is correct
     (NOTE/July 13th) - Encoder is modified, but support ends up inconsistent so we need a fix
+    (NOTE/July 13th) - Check why fidelity can be one yet it does not provide any rules
+    (July 15th) TODO: Return the exact rules that were used on the case (e.g. 2<'sepal width (cm)'<5)
+    (COMPLETE/July 16th) TODO: Make your own perturber
+        - Needed to scale back the standard deviation to improve the results
     '''
     print("Running test: BARBE Glass Run")
     start_time = datetime.now()

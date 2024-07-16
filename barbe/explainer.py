@@ -16,6 +16,7 @@ from barbe.utils.sigdirect_interface import SigDirectWrapper
 from barbe.utils.lime_interface import LimeWrapper
 from barbe.utils.bbmodel_interface import BlackBoxWrapper
 
+from barbe.perturber import BarbePerturber
 
 class BARBE:
     '''
@@ -58,22 +59,27 @@ class BARBE:
                 print(explainer)
     '''
     def __init__(self, training_data, training_labels, verbose=False, mode='tabular', n_perturbations=5000,
-                 input_sets_class=True):
-        # IAIN include model settings, make the model here?
+                 input_sets_class=True, dev_scaling_factor=5):
+        # IAIN include surrogate model settings, make the model here?
         # IAIN do we include the perturbation type here? Is it consistent?
         # IAIN eventually method will include 'text' too.
         # IAIN raise warning when perturbations are not the default and text is called
 
         # IAIN should include some checks in here for mode and perturbation validity
 
+        self._dev_scaling = dev_scaling_factor is not None
+        self._dev_scaling_factor = dev_scaling_factor if self._dev_scaling else 1
         self._verbose = verbose
         self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
         self._mode = mode
         self._feature_names = list(training_data)
-        self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
+        # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
+        # IAIN NOTES: adding a scaling factor to the deviation makes it work better
+        # IAIN NOTES: normal distribution is more consistent for rules
+        self._perturber = BarbePerturber(training_data, rng_distribution='normal',
+                                         dev_scaling_factor=self._dev_scaling_factor)
         self._perturbed_data = None
-        self._perturbed_inverse = None
         self._input_sets_class = input_sets_class
         self._input_data = None
         self._blackbox_classification = {'input': None, 'perturbed': None}
@@ -107,10 +113,10 @@ class BARBE:
         # fit the surrogate through the wrapper
         if self._verbose:
             print(self._verbose_header, 'black box prediction', self._blackbox_classification['perturbed'])
-        self._surrogate_model.fit(self._perturbed_inverse, self._blackbox_classification['perturbed'])
+        self._surrogate_model.fit(self._perturbed_data, self._blackbox_classification['perturbed'])
 
         self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1,-1))
-        self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_inverse)
+        self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data)
         if self._verbose:
             print(self._verbose_header, "was it successful?", self._blackbox_classification['input'], self._surrogate_classification['input'])
 
@@ -136,9 +142,8 @@ class BARBE:
 
     def _generate_perturbed_tabular(self, input_data):
         # calls to set method to perturb the data, based on the mode
-        self._perturbed_data, self._perturbed_inverse = self._perturber.produce_perturbation(input_data,
-                                                                                             self._n_perturbations)
-        # self._perturbed_inverse = self._perturbed_data
+        self._perturbed_data = self._perturber.produce_perturbation(self._n_perturbations,
+                                                                    data_row=input_data)
 
     def _generate_perturbed_text(self, input_data):
         # calls to set method to perturb the data, based on the mode
