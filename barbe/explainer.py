@@ -77,8 +77,9 @@ class BARBE:
         # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
         # IAIN NOTES: adding a scaling factor to the deviation makes it work better
         # IAIN NOTES: normal distribution is more consistent for rules
-        self._perturber = BarbePerturber(training_data, rng_distribution='normal',
-                                         dev_scaling_factor=self._dev_scaling_factor)
+        self._perturber = BarbePerturber(training_data, rng_distribution='uniform',
+                                         dev_scaling_factor=self._dev_scaling_factor,
+                                         uniform_training_range=True)
         self._perturbed_data = None
         self._input_sets_class = input_sets_class
         self._input_data = None
@@ -119,6 +120,7 @@ class BARBE:
         self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data)
         if self._verbose:
             print(self._verbose_header, "was it successful?", self._blackbox_classification['input'], self._surrogate_classification['input'])
+        return self._blackbox_classification['input'] == self._surrogate_classification['input']
 
     def _check_input_data(self, input_data):
         # IAIN checks if input is valid (tabular data is tabular, text data is text)
@@ -167,7 +169,7 @@ class BARBE:
     # IAIN do we still need this?
     def get_rules(self):
         # IAIN this will output rules and their translations as learned by the model
-        self._surrogate_model.get_all_features()
+        return self._surrogate_model.get_all_rules()
 
     def get_features(self, input_data, true_label):
         # IAIN same as previous named get features
@@ -194,12 +196,17 @@ class BARBE:
 
         if fit_new_surrogate:
             # fit the SigDirect model
-            self._fit_surrogate_model(input_data, input_model)
-
-        # IAIN need to add something here that takes the input data for the explanation
+            fit_tries = 0
+            fit_success = False
+            while fit_tries < 5 and not fit_success:
+                fit_tries += 1
+                fit_success = self._fit_surrogate_model(input_data, input_model)
+            if self._verbose:
+                print(self._verbose_header, 'number of tries:', fit_tries, fit_success)
 
         # IAIN expecting a fit model explain the result for the new data
-        print('Fidelity:', self.get_surrogate_fidelity())
+        if self._verbose:
+            print(self._verbose_header, 'fidelity:', self.get_surrogate_fidelity())
         explanation_temp = self.get_features(input_data, self._blackbox_classification['input'][0])
         self._explanation = (str(self.get_features(input_data, self._blackbox_classification['input'][0])) + '\n'
                              + str(len(explanation_temp)) + " \n " + str(self.get_surrogate_fidelity()))

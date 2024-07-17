@@ -44,6 +44,7 @@ class SigDirectWrapper:
         #  they were doing before only just implicitly (check with Osmar)
         self._oh_enc = OneHotEncoder(categories='auto', handle_unknown='ignore',
                                      min_frequency=None)
+        # IAIN you will need to check which values are discrete then only do Kbins for those...
         self._kb_discrete = KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='quantile')
         self._kb_discrete.fit(X)
         self._oh_enc.fit(self._kb_discrete.transform(X))
@@ -67,10 +68,6 @@ class SigDirectWrapper:
         # return self._kb_discrete.inverse_transform(self._oh_enc.inverse_transform(enc_X))
         return_list = [None for i in range(len(partial_decoding))]
         for i in partial_usable:
-            print(i, int(partial_decoding[i]))
-            print(len(return_list))
-            print(len(self._kb_discrete.bin_edges_))
-            print(len(self._kb_discrete.bin_edges_[i]))
             return_list[i] = self._kb_discrete.bin_edges_[i][int(partial_decoding[i])]
         # return_list[partial_usable] = self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)][0]
         return [return_list]
@@ -110,13 +107,56 @@ class SigDirectWrapper:
     #     for key, item in self._rules:
     #         print(key, item[0].get_confidence(), item[0].get_support())
 
+    def _get_bin_bounds(self, bin_index, current_item):
+        bin_size = len(self._kb_discrete.bin_edges_[bin_index])
+        item_index = np.where(self._kb_discrete.bin_edges_[bin_index] == current_item)[0]
+        if item_index == 0:
+            return None, current_item
+        elif item_index == bin_size - 1:
+            return current_item, None
+        return self._kb_discrete.bin_edges_[bin_index][item_index - 1][0], current_item
+
     def get_categories(self):
         return self._oh_enc.categories_
+
+    def get_all_rules(self, rules_subset=None):
+        if rules_subset is None:
+            rules_subset = self._rules
+
+        rules_translation = []
+        for class_label in rules_subset:
+            for rule, _, original_point_sd in rules_subset[class_label]:
+                temp = np.zeros(original_point_sd.shape[1]).astype(int)
+                temp[rule.get_items()] = 1
+                rule_support = rule.get_support()
+                rule_confidence = rule.get_confidence()
+                rule_items = self._decode(temp.reshape((1, -1)))[0]
+                rule_text = ""
+                for i in range(len(rule_items)):
+                    item = rule_items[i]
+                    if item is not None:
+                        if rule_text != "":
+                            rule_text += ", "
+                        rule_low, rule_high = self._get_bin_bounds(i, item)
+                        if rule_low is None:
+                            rule_text += ("'" + str(self._feature_names[i]) + "'" +
+                                          " < " + str(np.round(rule_high, 4)))
+                        elif rule_high is None:
+                            rule_text += ("'" + str(self._feature_names[i]) + "'" +
+                                          " > " + str(np.round(rule_low, 4)))
+                        else:
+                            rule_text += (str(np.round(rule_low, 4)) + " <= " +
+                                          "'" + str(self._feature_names[i]) + "'" +
+                                          " <= " + str(np.round(rule_high, 4)))
+                        # IAIN print("BIN BOUNDS:", self._get_bin_bounds(i, item))
+                rules_translation.append((rule_text + " -> " + str(class_label), rule_support, rule_confidence))
+        # format [(rule text, support, confidence), ...]
+        return rules_translation
 
     def get_features(self, data_row, true_label):
         # IAIN now one thing to try is when decoding we just check where relevant bins to the sample appear,
         #  I'm pretty sure we would still do decoding for this though
-        print("Bins:", self._kb_discrete.bin_edges_)
+        # print("Bins:", self._kb_discrete.bin_edges_)
         label_quality = self._generate_rules(data_row, true_label)
         all_rules = self._rules
         # applied rules,
@@ -241,6 +281,7 @@ class SigDirectWrapper:
                     print(self._verbose_header, "black box candid", bb_features[candid_feature])
                 bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or indicated as not used
                 other_rules.append(rule)
+            # what if we subtract the rule's support instead
             counter -= 1
 
         if self._verbose:
@@ -250,7 +291,7 @@ class SigDirectWrapper:
                   other_rules)
         feature_value_pairs = sorted(bb_features.items(), key=lambda x: x[1], reverse=True)
 
-        return [(self._feature_names[k], v, "input comparison: " + str(np.round(list(data_row)[k], 4))) for k, v in feature_value_pairs]
+        return [(self._feature_names[k], v) for k, v in feature_value_pairs]
 
     def get_translation(self):
         # IAIN we should use this to translate bin values given in the feature value pairs

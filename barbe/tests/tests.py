@@ -1,6 +1,32 @@
 """
 This code contains tests that ensure the BARBE package is working correctly.
 """
+
+'''
+    (COMPLETE/July 6th) TODO: Get SigDirect to be able to compile
+    (COMPLETE/July 6th) TODO: Incorporate SigDirect into the explain function (pass the data)
+    (COMPLETE/July 7th) TODO: Check explanation coming out of SigDirect method for correctness
+        - Problem is explanations do not yield correct predictions atm (check if input data matches)
+    (COMPLETE/July 7th -> July 8th) TODO: Compare results to original writing of BARBE
+        - Explanation is the same as the original barbe function I ran, so this seems complete
+    (COMPLETE/July 9th) TODO: Get BARBE to run only with the lime_tabular inverse function
+    (COMPLETE/July 9th) TODO: Check rules from the SigDirect or BARBE paper (whatever used GLASS)
+    (COMPLETE/July 9th) TODO: Get SigDirect working properly
+        - Changed settings in SigDirect and it started to output correct classifications
+        - Now we offer the setting of using all classes or just a binary classification for the given row's class
+    (July 9th -> July 10th) TODO: Try different input data with named columns maybe
+    (WORKED ON/July 10th -> July 11th) TODO: Clean up the written program
+    (NOTE/July 13th) - Encoder is modified, but support ends up inconsistent so we need a fix
+    (NOTE/July 13th) - Check why fidelity can be one yet it does not provide any rules
+    (COMPLETE/July 16th) TODO: Make your own perturber
+        - Needed to scale back the standard deviation to improve the results
+    (July 11th -> July 17th) TODO: Start work on paper review (look into paper share by Osmar)
+    (July 11th -> July 17th) TODO: Ensure that data format of the input row is correct for both types of data
+        - Include in tests.py (a test where we check this works)
+    (COMPLETE/July 11th -> July 17th) TODO: Setup data to rerun a few times until the classification is correct
+        - Easy to include a check in the called function
+    (COMPLETE/July 15th -> July 17th) TODO: Return the exact rules that were used on the case (e.g. 2<'sepal width (cm)'<5)
+    '''
 from barbe.utils.lime_interface import LimeWrapper
 from datetime import datetime
 import os
@@ -10,6 +36,7 @@ import barbe.tests.tests_config as tests_config
 import random
 from numpy.random import RandomState
 from barbe.explainer import BARBE
+import numpy as np
 
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
@@ -187,25 +214,6 @@ def test_produce_lime_perturbations(n_perturbations=5000):
     print(data_row)
     print(perturbed_data)
 
-
-def test_produce_barbe_perturbations(n_perturbations=5000):
-    # From this test we learned that a sample must be discretized into bins
-    #  then it has scale assigned by the training sample and only then can it
-    #  be perturbed
-
-    training_data, _ = _get_data()
-    data_row = training_data.drop('class', axis=1).iloc[0]
-
-    print("Running test: BARBE Perturbation")
-    start_time = datetime.now()
-    bp = BarbePerturber(training_data.drop('class', axis=1))
-    perturbed_data = bp.produce_perturbation(n_perturbations, data_row=data_row)
-    print("Test Time: ", datetime.now() - start_time)
-    print(data_row)
-    print(perturbed_data)
-
-
-
 def test_simple_numeric():
    pass
 
@@ -236,6 +244,7 @@ def test_iris_dataset():
     print(data_row)
     print(explanation)
     print(bbmodel.feature_importances_)
+    print("ALL RULES:", explainer.get_rules())
 
 
 def test_glass_dataset():
@@ -269,31 +278,49 @@ def test_glass_dataset():
     # For overfit
     # data_row = training_data.iloc[5]
     # training_labels = training_data['class']
-    '''
-    (COMPLETE/July 6th) TODO: Get SigDirect to be able to compile
-    (COMPLETE/July 6th) TODO: Incorporate SigDirect into the explain function (pass the data)
-    (COMPLETE/July 7th) TODO: Check explanation coming out of SigDirect method for correctness
-        - Problem is explanations do not yield correct predictions atm (check if input data matches)
-    (COMPLETE/July 7th -> July 8th) TODO: Compare results to original writing of BARBE
-        - Explanation is the same as the original barbe function I ran, so this seems complete
-    (COMPLETE/July 9th) TODO: Get BARBE to run only with the lime_tabular inverse function
-    (COMPLETE/July 9th) TODO: Check rules from the SigDirect or BARBE paper (whatever used GLASS)
-    (COMPLETE/July 9th) TODO: Get SigDirect working properly
-        - Changed settings in SigDirect and it started to output correct classifications
-        - Now we offer the setting of using all classes or just a binary classification for the given row's class
-    (July 9th -> July 10th) TODO: Try different input data with named columns maybe
-    (WORKED ON/July 10th -> July 11th) TODO: Clean up the written program
-    (July 11th) TODO: Start work on paper review (look into paper share by Osmar)
-    (July 11th) TODO: Ensure that data format of the input row is correct for both types of data
-    (July 11th) TODO: Setup data to rerun a few times until the classification is correct
-    (NOTE/July 13th) - Encoder is modified, but support ends up inconsistent so we need a fix
-    (NOTE/July 13th) - Check why fidelity can be one yet it does not provide any rules
-    (July 15th) TODO: Return the exact rules that were used on the case (e.g. 2<'sepal width (cm)'<5)
-    (COMPLETE/July 16th) TODO: Make your own perturber
-        - Needed to scale back the standard deviation to improve the results
-    '''
+
     print("Running test: BARBE Glass Run")
     start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data, training_labels, verbose=False, input_sets_class=True)
+    explanation = explainer.explain(data_row, bbmodel)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(explanation)
+    print(explainer.get_categories())
+    print(bbmodel.feature_importances_)
+    print("ALL RULES:", explainer.get_rules())
+    # explainer.get_rules()
+
+
+def test_barbe_categorical(n_perturbations=5000):
+    def categorical_named(x):
+        if x <= 1:
+            return "A"
+        elif x <= 3:
+            return "B"
+        return "C"
+
+    training_data, _ = _get_data()
+    # make a discrete value
+    # boolean
+    training_data[list(training_data)[0]] = training_data[list(training_data)[0]] < 1
+    # string
+    training_data[list(training_data)[1]] = training_data[list(training_data)[1]].apply(categorical_named)
+    # float / int
+    training_data[list(training_data)[2]] = np.ceil(training_data[list(training_data)[2]])
+
+    print("Running test: BARBE Categorical")
+    data_row = training_data.drop('class', axis=1).iloc[10]
+    training_labels = training_data['class']
+    training_data = training_data.drop('class', axis=1)
+    # For overfit
+    # data_row = training_data.iloc[5]
+    # training_labels = training_data['class']
+    start_time = datetime.now()
+    # so the random forest in itself cannot take categorical values :(
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
     # IAIN do we need the class to be passed into the explainer? Probably not...
@@ -304,7 +331,9 @@ def test_glass_dataset():
     print(explanation)
     print(explainer.get_categories())
     print(bbmodel.feature_importances_)
-    # explainer.get_rules()
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+
 
 
 # run all tests or specific tests if this is the main function
