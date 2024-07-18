@@ -18,6 +18,13 @@ import numpy as np
 
 
 class SigDirectWrapper:
+    __doc__ = '''
+        Purpose: Utility for BARBE, handles some operations that are not in SigDirect by default.
+
+        Input: column_names (list<string>) -> Original column names of input data. Required to get named rules.
+               verbose (boolean)           -> Whether to provide verbose output.
+        '''
+
     def __init__(self, column_names, verbose=False):
         # IAIN this should have settings for sigdirect and more accurate utilities
         # IAIN intention is for the user to get the same flexibility as scikit
@@ -31,6 +38,7 @@ class SigDirectWrapper:
                 get_logs=False,
                 other_info=None)
         self._oh_enc = None
+        self._kb_discrete = None
         self._rules = None
         self._feature_names = column_names
         self._categorical_features = None
@@ -340,7 +348,3 @@ class SigDirectWrapper:
         feature_value_pairs = sorted(bb_features.items(), key=lambda x: x[1], reverse=True)
 
         return [(self._feature_names[k], v) for k, v in feature_value_pairs]
-
-    def get_translation(self):
-        # IAIN we should use this to translate bin values given in the feature value pairs
-        pass

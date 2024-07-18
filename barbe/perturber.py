@@ -9,8 +9,44 @@ from numpy.random import Generator, PCG64
 
 
 class BarbePerturber:
-    def __init__(self, training_data, perturbation_type='uniform', covariance_mode='full', rng_distribution='uniform',
-                 uniform_training_range=False, uniform_scaled=True, dev_scaling_factor=1, df=None):
+    __doc__ = '''
+        Purpose: Perturbs input data for BARBE into multiple samples.
+
+        Input: training_data (pandas DataFrame) -> trained method that makes a prediction on data.
+               perturbation_type (string)       -> The type of distribution to use when generating perturbed data.
+                |                                   'uniform' -> uniform distribution over a range (-2, 2) is equally as
+                |                                                 likely to generate 0 as 0.1 as 1.2
+                |                                   'normal' -> normal distribution, data will be more similar to the
+                |                                                true distribution of the data along with all
+                |                                                interactions between features.
+                |                                   'cauchy' -> cauchy distribution, long-tailed distribution that
+                |                                                captures more radical differences in feature values.
+                |                                                Useful when edge cases are a concern.
+                |                                   't-distribution' -> t distribution, useful when less training data
+                |                                                        is available (for example if privacy is a 
+                |                                                        concern). Has wider tails and more flexibility
+                |                                                        than the normal distribution.
+                | Default: 'uniform' Options: {'uniform', 'normal', 'cauchy', 't-distribution'}
+               covariance_mode (string)         -> Used when perturbation_type = 'normal'. Covariance can either take
+                |                                   all interactions into account or only deviation within a feature.
+                | Default: 'full' Options: {'full', 'diagonal'}
+               uniform_training_range (boolean) -> Used when peturbation_type = 'uniform'. Whether the uniform data is
+                |                                   used to generate data somewhere in the range of the original input.
+               uniform_scaled (boolean)         -> Used when peturbation_type = 'uniform'. Independent from
+                |                                   uniform_training_range. Whether to scale uniform data so the
+                |                                   deviations appear similar to the scale of the original data.
+                |                                   Note: sometimes perturbation by itself is useful when model
+                |                                   performance on edge cases is a concern.
+               dev_scaling_factor (int>0)       -> Amount to scale the deviations (standard deviation and convariance).
+                |                                   Makes the model tighter so new data is more similar to input.
+               df (None or int>2)               -> Used when perturbation_type = 't-distribution'. Degrees of freedom 
+                |                                   used when generating a t-distribution, will be set to the amount of
+                |                                   training data if df = None. Note: When df > 100 t-distributions are
+                |                                   similar to a normal distribution.
+        '''
+
+    def __init__(self, training_data, perturbation_type='uniform', covariance_mode='full', uniform_training_range=False,
+                 uniform_scaled=True, dev_scaling_factor=1, df=None):
         # check and modify training data
         self._categorical_features = []
         self._feature_original_types = []
@@ -18,8 +54,8 @@ class BarbePerturber:
 
         training_data = self._training_discrete_conversion(training_data.to_numpy())
 
+
         self._covariance_mode = covariance_mode
-        self._perturbation_type = perturbation_type
         self._n_features = training_data.shape[1]
         self._df = training_data.shape[0] if df is None else df  # note if over 100 it is essentially normal
         self._means = self._calculate_means(training_data)  # required to recenter input
@@ -29,7 +65,7 @@ class BarbePerturber:
         self._max, self._min = self._calculate_range(training_data)
         self._covariance = self._calculate_covariance(training_data) / dev_scaling_factor
 
-        self._distribution = rng_distribution
+        self._distribution = perturbation_type
         self._random_state = Generator(PCG64())
 
     def _training_discrete_conversion(self, training_array, category_threshold=10):

@@ -8,6 +8,15 @@ import torch
 
 
 class BlackBoxWrapper:
+    __doc__ = '''
+    Purpose: Utility for BARBE, wraps black box models to give them a common call using obj.predict() and adds method
+     for changing classification to binary labels rather than multiclass.
+     
+    Input: bbmodel (object or callable)         -> trained method that makes a prediction on data.
+           class_input (return type of bbmodel) -> class used for binary output (will be True and other labels False).
+            | Default: None
+    '''
+
     def __init__(self, bbmodel, class_input=None):
         self._bbmodel = bbmodel
         self._class_binary = class_input
@@ -15,6 +24,10 @@ class BlackBoxWrapper:
         self._assign_type()
 
     def _assign_type(self):
+        """
+        Purpose: Check that there is something like a predict function in the given bbmodel. Based on the available
+         functions (itself callable or a callable predict function) assign it a label that will be used later.
+        """
         pred_function = getattr(self._bbmodel, "predict", None)
         if callable(pred_function):
             self._model_type = 'sklearn-like'
@@ -26,9 +39,18 @@ class BlackBoxWrapper:
                           "Have you run model.eval()?")
 
     def set_class(self, label):
+        """
+        Purpose: Set class used in binary classification e.g. bbmodel predicts 1, 2, 3, ..., 9 if _class_binary = 2
+         then this will return False, True, False, ..., False instead.
+        """
         self._class_binary = label
 
     def _binary_assignment(self, y):
+        """
+        Input: y (1d numpy array) -> classifications to check
+        Purpose: Convert predictions that may have multiple labels into a binary True or False.
+        Output: Either y or an array of True and False values according to the binary class.
+        """
         if self._class_binary is None:
             return y
         else:

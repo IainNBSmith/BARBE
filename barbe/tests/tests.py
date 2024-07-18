@@ -214,6 +214,11 @@ def test_produce_lime_perturbations(n_perturbations=5000):
     print(data_row)
     print(perturbed_data)
 
+
+def test_documentation():
+    help(BARBE)
+
+
 def test_simple_numeric():
    pass
 

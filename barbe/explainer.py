@@ -13,51 +13,61 @@ import numpy as np
 
 # Import wrappers for other packages
 from barbe.utils.sigdirect_interface import SigDirectWrapper
-from barbe.utils.lime_interface import LimeWrapper
+# from barbe.utils.lime_interface import LimeWrapper
 from barbe.utils.bbmodel_interface import BlackBoxWrapper
-
 from barbe.perturber import BarbePerturber
 
+
 class BARBE:
-    '''
-    Example of a call
-    Clearly way too much is being handled by something else, it should be simple...
+    __doc__ = '''
+        Purpose: **B**lack-box **A**ssocaition **R**ule-**B**ased **E**xplanation (**BARBE**) is a model-independent 
+         framework that can explain the decisions of any black-box classifier for tabular datasets with high-precision. 
 
+        Input: training_data (pandas DataFrame)   -> Sample of data used by a black box model to learn scale and some
+                                                      feature interactions on.
+               training_labels (numpy array)      -> DEPRECATED. not used.
+               verbose (boolearn)                 -> Whether to provide verbose output during training.
+               mode (string)                      -> Mode BARBE will run in, important for generating simulated data.
+                | Default: 'tabular' Options: {'tabular', 'text'}
+               n_perturbations (int>1)            -> Number of perturbed sample points BARBE will generate to explain
+                |                                     input data during BARBE.explain().
+                | Default: 5000
+               input_sets_class (boolean)         -> Whether the input data of BARBE.explain() sets the class label to
+                |                                     True and False for training the SigDirect surrogate model.
+                | Default: True
+               dev_scaling_factor (None or int>0) -> Whether to reduce the deviation for perturbed data. Tends to 
+                |                                     improve the surrogate performance as less is changed about the
+                |                                     input data.
+                | Default: 5
+    
+        Example Usage:
+        from sklearn import datasets
+        from sklearn.ensemble import RandomForestClassifier()
+        import pandas as pd
+        
+        iris = datasets.load_iris()
 
-    def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classifier_type, num_samples, around_instance, seed, max_features, method='BARBE', xlime_mode='ONE'):
+        iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 
-    # IAIN these steps should be built in? Or is there something I am missing...?
-    print('Function evaluate_explanations_parallel with params = ', dataset_name, clf, classifier_type, num_samples, around_instance, seed, max_features, method, xlime_mode)
-    random.seed(1)
-    np.random.seed(1)
-    train_df2 = train_df.drop('class', axis=1)   #train_df2 and test_df2 is without class labels
-    test_df2 = test_df.drop('class', axis=1)
-    ordered_class_labels = sorted(list(set(train_df['class'].values)))
-    print('train_df ordered_class_labels: ', ordered_class_labels)
-    columns = list(train_df2.columns)
-    categorical_features        = [x for x in columns if '_' in str(x)]
-    categorical_feature_indices = [columns.index(x) for x in columns if '_' in str(x)]
-    categorical_features_map    = {columns.index(x):x for x in columns if '_' in str(x)}
-    all_features = train_df2.columns.values
-    print('dataset:', dataset_name, 'method:', method, 'seed:', seed, 'num_samples:', num_samples, 'test size:', test_df2.shape)
-    print('all_features')
-    print(all_features)
-    fout.write('dataset: {} method: {} seed: {} num_sampes: {} test size: {}\n'.format(dataset_name, method, seed, num_samples, test_df2.shape))
+        data_row = iris_df.iloc[50]
+        training_labels = iris.target
+        training_data = iris_df
 
+        print("Running test: BARBE iris Run")
+        start_time = datetime.now()
+        bbmodel = RandomForestClassifier()
+        bbmodel.fit(training_data, training_labels)
 
+        explainer = BARBE(training_data, None, verbose=True, input_sets_class=True)
+        explanation = explainer.explain(data_row, bbmodel)
+        print("Test Time: ", datetime.now() - start_time)
+        print(data_row)
+        print(explanation)
+        print(bbmodel.feature_importances_)
+        print("ALL RULES:", explainer.get_rules())
+        
+        '''
 
-    explainer = barbe.BarbeExplainer(train_df2.values,
-                                       categorical_features=categorical_feature_indices,
-                                       feature_names=all_features,
-                                       verbose=False,
-                                       class_names=ordered_class_labels,
-                                       mode='classification',
-                                       sample_around_instance=around_instance,
-                                       random_state=RandomState(seed),
-                                       discretizer=discretizers[i]
-                                       )
-                print(explainer)
-    '''
     def __init__(self, training_data, training_labels, verbose=False, mode='tabular', n_perturbations=5000,
                  input_sets_class=True, dev_scaling_factor=5):
         # IAIN include surrogate model settings, make the model here?
@@ -77,7 +87,7 @@ class BARBE:
         # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
         # IAIN NOTES: adding a scaling factor to the deviation makes it work better
         # IAIN NOTES: normal distribution is more consistent for rules
-        self._perturber = BarbePerturber(training_data, rng_distribution='uniform',
+        self._perturber = BarbePerturber(training_data, perturbation_type='uniform',
                                          dev_scaling_factor=self._dev_scaling_factor,
                                          uniform_training_range=True)
         self._perturbed_data = None
@@ -136,7 +146,10 @@ class BARBE:
         # IAIN ensures that the input model has a predict function and output is as expected
         #  or can be formatted into a list (,k)
         if self._mode in 'tabular':
-            pass
+            try:
+                bbmodel = BlackBoxWrapper(input_model)
+            except:
+                raise Exception('Error while checking black box model.')
         elif self._mode in 'text':
             # IAIN should currently pass an error
             pass
@@ -167,22 +180,42 @@ class BARBE:
                                  self._surrogate_classification['perturbed'])
 
     def get_rules(self):
-        # IAIN this will output rules and their translations as learned by the model
+        """
+        Input: None
+        Purpose: Get all the rules from the surrogate model.
+        Output: list<(rule_text, support, confidence)>, all rules with their support and confidence.
+        """
         return self._surrogate_model.get_all_rules()
 
     def get_features(self, input_data, true_label):
-        # IAIN same as previous named get features
+        """
+        Input: input_data (pandas DataFrame row)    -> Input to get feature usage from.
+               true_label (string, int, or boolean) -> True label that would be assigned by the black box model. Must be
+                |                                       set to a boolean if using input_sets_class = True.
+        Purpose: Get the features and their cumulative support from the surrogate model, negative values indicate a
+                  rule is present but not used when predicting the input data.
+        Output: list<(feature, sum of support)>, all features used when predicting the input data and the total support.
+        """
         return self._surrogate_model.get_features(input_data, true_label)
 
     def get_categories(self):
+        """
+        Input: None.
+        Purpose: Get the features that are defined as categorical by the surrogate model.
+        Output: dict<(feature column number, list<obj> -> len<=10)>
+        """
         self._surrogate_model.get_categories()
 
     def explain(self, input_data, input_model, fit_new_surrogate=True):
-        # IAIN should include the surrogate similarity to original model
-        # IAIN follow how it is called at the moment
-        # IAIN the way it is called by them kinda sucks
-        # IAIN in the case of not fitting a new surrogate use the previous one to explain a new
-        #  sample (results may vary hence why it is always true by default)
+        """
+        Input: input_data (pandas DataFrame row)                 -> The data to explain.
+               input_model (callable or obj with predict method) -> Input model to provide explanation over.
+               fit_new_surrogate (boolean)                       -> Whether to fit a new surrogate model to explain the
+                |                                                    input data. Does not use input_model.
+        Purpose: Provide the importance of different features for classifying the input data as used by the input model.
+        Output: explanation, a string consisting of feature importance and surrogate fidelity (how similar the
+                 predictions made by BARBE are to the black box model).
+        """
 
         # check input before going further
         self._check_input_model(input_model)
@@ -200,14 +233,17 @@ class BARBE:
             while fit_tries < 5 and not fit_success:
                 fit_tries += 1
                 fit_success = self._fit_surrogate_model(input_data, input_model)
+            if not fit_success:
+                raise Exception('BARBE ERROR: model did not successfully match input data in 5 tries.')
             if self._verbose:
                 print(self._verbose_header, 'number of tries:', fit_tries, fit_success)
 
-        # IAIN expecting a fit model explain the result for the new data
         if self._verbose:
             print(self._verbose_header, 'fidelity:', self.get_surrogate_fidelity())
-        explanation_temp = self.get_features(input_data, self._blackbox_classification['input'][0])
-        self._explanation = (str(self.get_features(input_data, self._blackbox_classification['input'][0])) + '\n'
-                             + str(len(explanation_temp)) + " \n " + str(self.get_surrogate_fidelity()))
+        # expecting a fit model explain the result for the new data, unless refit it assumes the prediction is correct
+        # explanation_temp = self.get_features(input_data, self._blackbox_classification['input'][0])
+        self._explanation = (str(self.get_features(input_data,
+                                                   self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))[0]))
+                             + " \n " + str(self.get_surrogate_fidelity()))
 
         return self._explanation
