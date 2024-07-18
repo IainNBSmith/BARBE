@@ -9,8 +9,6 @@ from numpy.random import Generator, PCG64
 
 
 class BarbePerturber:
-    # TODO: current version only works for numerical data ? How do we handle and detect discrete data
-    #  TODO: consider assigning numbers to the categories and on return we select category based on the closes value
     def __init__(self, training_data, perturbation_type='uniform', covariance_mode='full', rng_distribution='uniform',
                  uniform_training_range=False, uniform_scaled=True, dev_scaling_factor=1, df=None):
         # check and modify training data

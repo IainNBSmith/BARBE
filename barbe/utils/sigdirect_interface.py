@@ -33,6 +33,7 @@ class SigDirectWrapper:
         self._oh_enc = None
         self._rules = None
         self._feature_names = column_names
+        self._categorical_features = None
         self._verbose = verbose
         self._verbose_header = "SigDirect:"
 
@@ -42,17 +43,43 @@ class SigDirectWrapper:
         # is the output importance here??
         # we also along with the bins want the importance of a feature so maybe that is what
         #  they were doing before only just implicitly (check with Osmar)
+        self._categorical_features = dict()
+        for i in range(X.shape[1]):
+            unique_features = np.unique(X[:, i])
+            if len(unique_features) <= 10:
+                self._categorical_features[i] = unique_features
+        self._not_categorical = [i for i in range(X.shape[1]) if i not in list(self._categorical_features.keys())]
+
         self._oh_enc = OneHotEncoder(categories='auto', handle_unknown='ignore',
                                      min_frequency=None)
         # IAIN you will need to check which values are discrete then only do Kbins for those...
         self._kb_discrete = KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='quantile')
-        self._kb_discrete.fit(X)
-        self._oh_enc.fit(self._kb_discrete.transform(X))
+        self._kb_discrete.fit(X[:, self._not_categorical])
+        if list(self._categorical_features.keys()):
+            self._oh_enc.fit(np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
+                                       self._categorical_transform(X), axis=1))
+        else:
+            self._oh_enc.fit(self._kb_discrete.transform(X))
+        self._new_feature_order = self._not_categorical + list(self._categorical_features.keys())
+
+    def _categorical_transform(self, X):
+        X = X.copy()
+        for index, uvalues in self._categorical_features.items():
+            replacement_array = np.array([None for i in range(X.shape[0])])
+            for i in range(len(uvalues)):
+                replacement_array[np.where(X[:, index] == uvalues[i])] = i
+            X[:, index] = replacement_array
+        return X[:, list(self._categorical_features.keys())]
 
     def _encode(self, X):
         if self._verbose:
             print(self._verbose_header, "before encoding:", X.shape, X)
-        return np.asarray(self._oh_enc.transform(self._kb_discrete.transform(X)).todense()).astype(int)
+        if list(self._categorical_features.keys()):
+            return np.asarray(self._oh_enc.transform(
+                np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
+                          self._categorical_transform(X), axis=1)).todense()).astype(int)
+        else:
+            return np.asarray(self._oh_enc.transform(self._kb_discrete.transform(X)).todense()).astype(int)
 
     def _decode(self, enc_X):
         # IAIN generalize this
@@ -68,7 +95,22 @@ class SigDirectWrapper:
         # return self._kb_discrete.inverse_transform(self._oh_enc.inverse_transform(enc_X))
         return_list = [None for i in range(len(partial_decoding))]
         for i in partial_usable:
-            return_list[i] = self._kb_discrete.bin_edges_[i][int(partial_decoding[i])]
+            moved_index = self._new_feature_order[i]
+            if moved_index in self._not_categorical:
+                # print(self._not_categorical)
+                converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
+                # converted_index = i
+                # print(i)
+                # print(self._kb_discrete.bin_edges_)
+                # print(converted_index, partial_decoding[i])
+                # print(np.where(i == np.array(self._not_categorical)))
+                # print(converted_index, partial_decoding, len(self._kb_discrete.bin_edges_[converted_index]))
+                return_list[moved_index] = self._kb_discrete.bin_edges_[converted_index][int(partial_decoding[i])]
+            else:
+                converted_index = np.where(moved_index == np.array(list(self._categorical_features.keys())))[0][0]
+                print(converted_index, i, np.array(list(self._categorical_features.keys())))
+                print(self._categorical_features)
+                return_list[moved_index] = self._categorical_features[converted_index][int(partial_decoding[i])]
         # return_list[partial_usable] = self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)][0]
         return [return_list]
 
@@ -114,7 +156,7 @@ class SigDirectWrapper:
             return None, current_item
         elif item_index == bin_size - 1:
             return current_item, None
-        return self._kb_discrete.bin_edges_[bin_index][item_index - 1][0], current_item
+        return self._kb_discrete.bin_edges_[bin_index][item_index-1][0], current_item
 
     def get_categories(self):
         return self._oh_enc.categories_
@@ -131,23 +173,29 @@ class SigDirectWrapper:
                 rule_support = rule.get_support()
                 rule_confidence = rule.get_confidence()
                 rule_items = self._decode(temp.reshape((1, -1)))[0]
+                print("IAIN", rule_items)
                 rule_text = ""
                 for i in range(len(rule_items)):
                     item = rule_items[i]
+                    moved_index = i
                     if item is not None:
                         if rule_text != "":
                             rule_text += ", "
-                        rule_low, rule_high = self._get_bin_bounds(i, item)
-                        if rule_low is None:
-                            rule_text += ("'" + str(self._feature_names[i]) + "'" +
-                                          " < " + str(np.round(rule_high, 4)))
-                        elif rule_high is None:
-                            rule_text += ("'" + str(self._feature_names[i]) + "'" +
-                                          " > " + str(np.round(rule_low, 4)))
+                        if moved_index in self._not_categorical:
+                            converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
+                            rule_low, rule_high = self._get_bin_bounds(converted_index, item)
+                            if rule_low is None:
+                                rule_text += ("'" + str(self._feature_names[i]) + "'" +
+                                              " < " + str(np.round(rule_high, 4)))
+                            elif rule_high is None:
+                                rule_text += ("'" + str(self._feature_names[i]) + "'" +
+                                              " > " + str(np.round(rule_low, 4)))
+                            else:
+                                rule_text += (str(np.round(rule_low, 4)) + " <= " +
+                                              "'" + str(self._feature_names[i]) + "'" +
+                                              " <= " + str(np.round(rule_high, 4)))
                         else:
-                            rule_text += (str(np.round(rule_low, 4)) + " <= " +
-                                          "'" + str(self._feature_names[i]) + "'" +
-                                          " <= " + str(np.round(rule_high, 4)))
+                            rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
                         # IAIN print("BIN BOUNDS:", self._get_bin_bounds(i, item))
                 rules_translation.append((rule_text + " -> " + str(class_label), rule_support, rule_confidence))
         # format [(rule text, support, confidence), ...]

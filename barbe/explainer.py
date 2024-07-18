@@ -166,7 +166,6 @@ class BARBE:
         return comparison_method(self._blackbox_classification['perturbed'],
                                  self._surrogate_classification['perturbed'])
 
-    # IAIN do we still need this?
     def get_rules(self):
         # IAIN this will output rules and their translations as learned by the model
         return self._surrogate_model.get_all_rules()
