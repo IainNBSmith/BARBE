@@ -180,6 +180,7 @@ class SigDirectWrapper:
                 temp[rule.get_items()] = 1
                 rule_support = rule.get_support()
                 rule_confidence = rule.get_confidence()
+                rule_p = rule.get_log_p()
                 rule_items = self._decode(temp.reshape((1, -1)))[0]
                 print("IAIN", rule_items)
                 rule_text = ""
@@ -205,7 +206,8 @@ class SigDirectWrapper:
                         else:
                             rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
                         # IAIN print("BIN BOUNDS:", self._get_bin_bounds(i, item))
-                rules_translation.append((rule_text + " -> " + str(class_label), rule_support, rule_confidence))
+                rules_translation.append((rule_text + " -> " + str(class_label), class_label,
+                                          rule_support, rule_confidence, rule_p))
         # format [(rule text, support, confidence), ...]
         return rules_translation
 
@@ -249,7 +251,7 @@ class SigDirectWrapper:
                                     reverse=False)
 
         counter = len(all_rules)
-        bb_features = defaultdict(int)
+        bb_features = defaultdict(lambda: [])
 
         # First add applied rules
         applied_rules = []
@@ -273,7 +275,7 @@ class SigDirectWrapper:
                 #                 if val==0: ## TEXT (uncomment for TEXT)
                 #                     continue ## TEXT (uncomment for TEXT)
                 #                 if item not in bb_features:
-                bb_features[item] += rule.get_support()
+                bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), 1))
             #                     bb_features[item] += counter
             #                 bb_features[item] = max(bb_features[item],  rule.get_confidence()/len(rule.get_items()))
             counter -= 1
@@ -299,7 +301,7 @@ class SigDirectWrapper:
                     continue
                 if item not in bb_features:
                     #                 bb_features[item] += rule.get_support()
-                    bb_features[item] += counter
+                    bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), counter))
             counter -= 1
 
         # Third, add other rules.
@@ -335,7 +337,8 @@ class SigDirectWrapper:
             if seen_set == temp.sum() - 1:  # and (item not in bb_features):
                 if self._verbose:
                     print(self._verbose_header, "black box candid", bb_features[candid_feature])
-                bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or indicated as not used
+                # bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or indicated as not used
+                bb_features[candid_feature].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), counter))
                 other_rules.append(rule)
             # what if we subtract the rule's support instead
             counter -= 1
@@ -345,6 +348,20 @@ class SigDirectWrapper:
             print(self._verbose_header, "rules", applicable_rules,
                   applied_rules,
                   other_rules)
+
+        bb_features = evaluation_function(bb_features)
         feature_value_pairs = sorted(bb_features.items(), key=lambda x: x[1], reverse=True)
 
         return [(self._feature_names[k], v) for k, v in feature_value_pairs]
+
+def evaluation_function(bb_features):
+    # except dict<feature, list<(support, confidence, log_p, counter)>]>
+    # return dict<feature, float>
+    eval_bb_features = defaultdict(int)
+    for feature, tlist in bb_features.items():
+        temp_eval = 0
+        for support, confidence, pvalue, counter in tlist:
+            temp_eval += counter * ( (1/support) * (1/confidence) * (1/pvalue) )
+        temp_eval /= len(tlist)
+        eval_bb_features[feature] = temp_eval
+    return eval_bb_features
