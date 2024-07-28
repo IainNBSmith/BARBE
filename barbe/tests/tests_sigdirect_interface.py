@@ -40,4 +40,5 @@ def test_categorical_sigdirect(n_perturbations=5000):
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
     print(clas.get_features(data_row, 2))
+    print(clas.get_contrast_sets(data_row))
     print(clas.get_all_rules())

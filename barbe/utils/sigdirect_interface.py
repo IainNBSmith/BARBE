@@ -162,12 +162,38 @@ class SigDirectWrapper:
         item_index = np.where(self._kb_discrete.bin_edges_[bin_index] == current_item)[0]
         if item_index == 0:
             return None, current_item
-        elif item_index == bin_size - 1:
+        if item_index == bin_size - 2:
             return current_item, None
-        return self._kb_discrete.bin_edges_[bin_index][item_index-1][0], current_item
+        return current_item, self._kb_discrete.bin_edges_[bin_index][item_index+1][0]
 
     def get_categories(self):
         return self._oh_enc.categories_
+
+    def _rule_translation(self, rule_items):
+        rule_text = ""
+        for i in range(len(rule_items)):
+            item = rule_items[i]
+            moved_index = i
+            if item is not None:
+                if rule_text != "":
+                    rule_text += ", "
+                if moved_index in self._not_categorical:
+                    converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
+                    rule_low, rule_high = self._get_bin_bounds(converted_index, item)
+                    if rule_low is None:
+                        rule_text += ("'" + str(self._feature_names[i]) + "'" +
+                                      " < " + str(np.round(rule_high, 4)))
+                    elif rule_high is None:
+                        rule_text += ("'" + str(self._feature_names[i]) + "'" +
+                                      " > " + str(np.round(rule_low, 4)))
+                    else:
+                        rule_text += (str(np.round(rule_low, 4)) + " <= " +
+                                      "'" + str(self._feature_names[i]) + "'" +
+                                      " <= " + str(np.round(rule_high, 4)))
+                else:
+                    rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
+                # IAIN print("BIN BOUNDS:", self._get_bin_bounds(i, item))
+        return rule_text
 
     def get_all_rules(self, rules_subset=None):
         if rules_subset is None:
@@ -182,7 +208,7 @@ class SigDirectWrapper:
                 rule_confidence = rule.get_confidence()
                 rule_p = rule.get_log_p()
                 rule_items = self._decode(temp.reshape((1, -1)))[0]
-                print("IAIN", rule_items)
+                # print("IAIN", rule_items)
                 rule_text = ""
                 for i in range(len(rule_items)):
                     item = rule_items[i]
@@ -210,6 +236,56 @@ class SigDirectWrapper:
                                           rule_support, rule_confidence, rule_p))
         # format [(rule text, support, confidence), ...]
         return rules_translation
+
+    def get_contrast_sets(self, data_row, max_dev=0.05):
+        # IAIN get contrast sets as in the paper "Learning Statistically Significant Contrast Sets" Algorithm 1
+        # encode and decode the data_row (to get the applied bins)
+        encoded_value = self._encode(data_row.to_numpy().reshape(1, -1))
+        len_encoding = len(encoded_value[0])
+        data_antecedent = self._decode(encoded_value)[0]
+        print(data_antecedent)
+
+        # Get the kingfisher association rules
+        label_quality = self._generate_rules(data_row, self.predict(data_row.to_numpy().reshape(1, -1)))
+        all_rules = self._rules
+
+        # translate the rules into values
+        all_translated_rules = dict()
+        for c_label in all_rules:
+            rule_list = all_rules[c_label]
+            all_translated_rules[c_label] = []
+            for rule, _, _ in rule_list:
+                temp = np.zeros(len_encoding).astype(int)
+                temp[rule.get_items()] = 1
+                all_translated_rules[c_label].append((self._decode(temp.reshape(1, -1))[0], 10**rule.get_log_p()))
+
+        print(all_translated_rules)
+
+        final_rules = []
+        # for each rule check that it satisfies eq 3 not all classes are the same for the condition p-value
+        for c_label, rule_list in all_translated_rules.items():
+            for rule, p_val in rule_list:
+                min_dif = abs(p_val - 0.05)
+                non_equal = False
+                e_match = 0
+                for o_c_label, o_rule_list in all_translated_rules.items():
+                    if c_label != o_c_label:
+                        for o_rule, o_p_val in o_rule_list:
+                            if rule == o_rule:
+                                e_match += 1
+                                if p_val != o_p_val:
+                                    non_equal = True
+                                    if abs(p_val - o_p_val) < min_dif or min_dif == abs(p_val) - 0.05:
+                                        min_dif = abs(p_val - o_p_val)
+
+                if min_dif <= max_dev and not (e_match != 0 and not non_equal):
+                    # for each significant rule if c.antecedant < o.antecedent (X -> c, X is antecedent, o=data_row) add it to set
+                    # these now contain the contrast sets
+                    # return the rules (in text) that apply to o (data_row)
+                    if all([(rule[i] == data_antecedent[i]) or (rule[i] is None) for i in range(len(data_antecedent))]):
+                        final_rules.append((rule, c_label, p_val, min_dif))
+
+        return [(self._rule_translation(rule_item) + ' -> ' + str(c), c, p, m) for rule_item, c, p, m in final_rules]
 
     def get_features(self, data_row, true_label):
         # IAIN now one thing to try is when decoding we just check where relevant bins to the sample appear,
@@ -353,6 +429,7 @@ class SigDirectWrapper:
         feature_value_pairs = sorted(bb_features.items(), key=lambda x: x[1], reverse=True)
 
         return [(self._feature_names[k], v) for k, v in feature_value_pairs]
+
 
 def evaluation_function(bb_features):
     # except dict<feature, list<(support, confidence, log_p, counter)>]>

@@ -169,6 +169,9 @@ class BARBE:
     def get_surrogate_model(self):
         return deepcopy(self._surrogate_model)
 
+    def get_contrasting_rules(self, data_row):
+        return self._surrogate_model.get_contrast_sets(data_row)
+
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
                                comparison_method=accuracy_score):
         # IAIN check if comparison model, data, and method is f(a,b) is comparing vectors

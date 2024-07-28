@@ -26,6 +26,7 @@ This code contains tests that ensure the BARBE package is working correctly.
     (COMPLETE/July 11th -> July 17th) TODO: Setup data to rerun a few times until the classification is correct
         - Easy to include a check in the called function
     (COMPLETE/July 15th -> July 17th) TODO: Return the exact rules that were used on the case (e.g. 2<'sepal width (cm)'<5)
+    (July 19th) TODO: Add alternative to training data for perturbing data e.g. categorical_info, feature_names, scales or bounds (switches perturbation_mode)
     '''
 from barbe.utils.lime_interface import LimeWrapper
 from datetime import datetime
@@ -250,6 +251,11 @@ def test_iris_dataset():
     print(explanation)
     print(bbmodel.feature_importances_)
     print("ALL RULES:", explainer.get_rules())
+    # example modification
+    # IAIN TODO: check in valid range the full edges do not matter
+    data_row['sepal length (cm)'] = -10
+    print("DATA:", data_row)
+    print("CONTRAST:", explainer.get_contrasting_rules(data_row))
 
 
 def test_glass_dataset():
@@ -297,6 +303,7 @@ def test_glass_dataset():
     print(explainer.get_categories())
     print(bbmodel.feature_importances_)
     print("ALL RULES:", explainer.get_rules())
+    print("CONTRAST:", explainer.get_contrasting_rules(data_row))
     # explainer.get_rules()
 
 
@@ -338,7 +345,6 @@ def test_barbe_categorical(n_perturbations=5000):
     print(bbmodel.feature_importances_)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
-
 
 
 # run all tests or specific tests if this is the main function

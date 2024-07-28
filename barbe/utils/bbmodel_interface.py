@@ -60,6 +60,7 @@ class BlackBoxWrapper:
         return self._bbmodel.predict(X)
 
     def _predict_torch(self, X):
+        # IAIN must also detach I think
         return self._bbmodel(torch.from_numpy(X.values))[:, 0]
 
     def predict(self, X):

@@ -48,21 +48,24 @@ class BarbePerturber:
     def __init__(self, training_data, perturbation_type='uniform', covariance_mode='full', uniform_training_range=False,
                  uniform_scaled=True, dev_scaling_factor=1, df=None):
         # check and modify training data
+        # IAIN later this should take input information
         self._categorical_features = []
         self._feature_original_types = []
         self._categorical_key = dict()
 
         training_data = self._training_discrete_conversion(training_data.to_numpy())
 
-
         self._covariance_mode = covariance_mode
         self._n_features = training_data.shape[1]
         self._df = training_data.shape[0] if df is None else df  # note if over 100 it is essentially normal
         self._means = self._calculate_means(training_data)  # required to recenter input
+        # IAIN later we will remove the means and let this information be passed in (while still allowing scaling)
         self._scale = self._calculate_scale(training_data) / dev_scaling_factor  # required to scale
         self._uniform_training_range = uniform_training_range  # whether uniform data should be generated based on the training data range
         self._uniform_scaled = uniform_scaled  # whether uniform perturbation should scale to deviation in training data (independent from training range)
+        # IAIN later this will be input if it is given generate the data in range and set uniform_training_range
         self._max, self._min = self._calculate_range(training_data)
+        # IAIN later when the scales are passes in we will set this to a diagonal given those scales
         self._covariance = self._calculate_covariance(training_data) / dev_scaling_factor
 
         self._distribution = perturbation_type
