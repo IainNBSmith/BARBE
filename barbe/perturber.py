@@ -6,6 +6,7 @@ This function should have the same functionality that the LimeWrapper in lime_in
 
 import numpy as np
 from numpy.random import Generator, PCG64
+import warnings
 
 
 class BarbePerturber:
@@ -106,12 +107,25 @@ class BarbePerturber:
     def _check_input(self, input_data, input_scale, input_categories):
         # IAIN check that at either input data is not none or scale and categories are both not none
         # IAIN give error message or warning in some cases to note that category scales should be 1-2 depending on the number
+        error_header = "BARBE Perturber Error"
         if input_data is None:
             # check input scale and input_categories
             # check that all the keys from input_categories are valid indices of input_scale
             #  if not then pass the error message and recommend scale depending on the # of uniques
             #  throw a warning if the scale is very small on a particular category
-            pass
+            # check that categories have relatively large scales
+            for key in input_categories:
+                temp_key = int(key)
+                n_values = len(input_categories[key]) \
+                    if isinstance(input_categories[key], list) else len(list(input_categories[key].keys()))
+                if input_scale[temp_key] < n_values / 4:
+                    warnings.warn(error_header + " scale may be too LOW to encounter variety of values in column:" +
+                                  str(temp_key) + "\nsuggested to use a value near " + str(int(n_values / 4)) +
+                                  "\nto avoid perturbations limited to the given value.")
+                if input_scale[temp_key] > n_values * 4:
+                    warnings.warn(error_header + " scale may be too HIGH to encounter variety of values in column: " +
+                                  str(temp_key) + "\nsuggested to use a value near " + str(int(n_values * 4)) +
+                                  "\nto avoid perturbation limited to the edge values.")
         else:
             # IAIN check the input data that it is a numpy or can be converted
             pass

@@ -62,7 +62,9 @@ def test_categorical_perturbation(n_perturbations=5000):
     print("CATEGORICAL:", bp.get_discrete_values())
     discrete_keys = bp.get_discrete_values()
     discrete_keys[0] = [True, False]
-    bp = BarbePerturber(input_scale=bp.get_scale(),
+    scale = bp.get_scale()
+    scale[0] = 0.01
+    bp = BarbePerturber(input_scale=scale,
                         input_categories=discrete_keys,
                         df=50)
     print("Test Time: ", datetime.now() - start_time)

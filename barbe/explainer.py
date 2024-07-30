@@ -4,6 +4,8 @@ This file contains the explainer part of BARBE and will call to all other parts 
 """
 
 import pickle
+import warnings
+
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -24,7 +26,8 @@ class BARBE:
          framework that can explain the decisions of any black-box classifier for tabular datasets with high-precision. 
 
         Input: training_data (pandas DataFrame)   -> Sample of data used by a black box model to learn scale and some
-                                                      feature interactions on.
+                |                                     feature interactions on.
+                | Default: None
                feature_names (list<string>)       -> feature names of input data if ungiven.
                 | Default: None
                input_scale (list<float>)          -> scales of expected data if not given as training.
@@ -81,13 +84,14 @@ class BARBE:
         # IAIN do we include the perturbation type here? Is it consistent?
         # IAIN eventually method will include 'text' too.
         # IAIN raise warning when perturbations are not the default and text is called
-        self._check_input_combination(training_data, feature_names, input_scale, input_categories)
+        self._check_input_combination(training_data, feature_names, input_scale, input_categories, dev_scaling_factor)
         # IAIN renumber input categories if they are named instead
-
+        input_categories = self._fix_input_categories(input_categories, feature_names)
         # IAIN should include some checks in here for mode and perturbation validity
 
         self._dev_scaling = dev_scaling_factor is not None
-        self._dev_scaling_factor = dev_scaling_factor if self._dev_scaling else 1
+        self._dev_scaling_factor = dev_scaling_factor \
+            if self._dev_scaling or input_scale else 1
         self._verbose = verbose
         self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
@@ -114,10 +118,32 @@ class BARBE:
     def __str__(self):
         return self._explanation
 
-    def _check_input_combination(self, training_data, feature_names, input_scale, input_categories):
+    def _check_input_combination(self, training_data, feature_names, input_scale, input_categories, dev_scaling_factor):
         # IAIN check that either training data is not None or all of feature names, scale, and categories have a value
         #  of a valid type. features names length must be the same as scale. Everything else is checked by perturber.
-        pass
+        error_header = "BARBE Check Input"
+        if training_data is None and input_scale is None:
+            assert ValueError(error_header + " either training data must be provided or input scales must be given.")
+        if training_data is not None and input_scale is not None:
+            assert ValueError(error_header + " both training data and scale cannot be given.")
+
+        if input_scale is not None:
+            if len(input_scale) != len(feature_names):
+                assert ValueError(error_header + " must have a feature name for each scale value.")
+            if list(input_categories.keys()) not in feature_names and \
+                    list(input_categories.keys()) not in range(len(input_scale)):
+                assert ValueError(error_header + " all scales must be set for features, even categorical. Size of "
+                                                 "scales should be set relative to the number of categories.")
+
+    def _fix_input_categories(self, input_categories, feature_names):
+        # IAIN make input categories numerical rather than named if not named
+        if input_categories is None:
+            return dict()
+        new_input_categories = dict()
+        for key in input_categories.keys():
+            temp_key = feature_names.index(key) if key in feature_names else int(key)
+            new_input_categories[temp_key] = input_categories[key]
+        return new_input_categories
 
     def _fit_surrogate_model(self, input_data, input_model):
         # IAIN tabular and text perturbations differ in an important way
