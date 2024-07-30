@@ -22,7 +22,7 @@ from barbe.perturber import BarbePerturber
 
 class BARBE:
     __doc__ = '''
-        Purpose: **B**lack-box **A**ssocaition **R**ule-**B**ased **E**xplanation (**BARBE**) is a model-independent 
+        Purpose: **B**lack-box **A**ssociation **R**ule-**B**ased **E**xplanation (**BARBE**) is a model-independent 
          framework that can explain the decisions of any black-box classifier for tabular datasets with high-precision. 
 
         Input: training_data (pandas DataFrame)   -> Sample of data used by a black box model to learn scale and some
@@ -35,7 +35,7 @@ class BARBE:
                input_categories (dict<list>) or   -> indicator for which values are categorical and the possible values.
                 |                (dict<dict>)         or direct assignment of values to labels.
                 | Default: None
-               verbose (boolearn)                 -> Whether to provide verbose output during training.
+               verbose (boolean)                  -> Whether to provide verbose output during training.
                mode (string)                      -> Mode BARBE will run in, important for generating simulated data.
                 | Default: 'tabular' Options: {'tabular', 'text'}
                n_perturbations (int>1)            -> Number of perturbed sample points BARBE will generate to explain
@@ -44,9 +44,25 @@ class BARBE:
                input_sets_class (boolean)         -> Whether the input data of BARBE.explain() sets the class label to
                 |                                     True and False for training the SigDirect surrogate model.
                 | Default: True
+               perturbation_type (string)         -> The type of distribution to use when generating perturbed data.
+                |                                     As referred to in BarbePurturber.
+                |                                     'uniform' -> uniform distribution over a range (-2, 2) is equally 
+                |                                                   as likely to generate 0 as 0.1 as 1.2
+                |                                     'normal' -> normal distribution, data will be more similar to the
+                |                                                  true distribution of the data along with all
+                |                                                  interactions between features.
+                |                                     'cauchy' -> cauchy distribution, long-tailed distribution that
+                |                                                  captures more radical differences in feature values.
+                |                                                  Useful when edge cases are a concern.
+                |                                     't-distribution' -> t distribution, useful when less training data
+                |                                                          is available (for example if privacy is a 
+                |                                                          concern). Has wider tails and more 
+                |                                                          flexibility than the normal distribution.
+                |                                                          Set to 20 df if training not given.
+                | Default: 'uniform' Options: {'uniform', 'normal', 'cauchy', 't-distribution'}
                dev_scaling_factor (None or int>0) -> Whether to reduce the deviation for perturbed data. Tends to 
                 |                                     improve the surrogate performance as less is changed about the
-                |                                     input data.
+                |                                     input data. IGNORED if scales are given.
                 | Default: 5
     
         Example Usage:
@@ -97,7 +113,8 @@ class BARBE:
         self._n_perturbations = n_perturbations
         self._mode = mode
         self._feature_names = list(training_data) if feature_names is None else feature_names
-        # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
+        # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change
+        #  this line
         # IAIN NOTES: adding a scaling factor to the deviation makes it work better
         # IAIN NOTES: normal distribution is more consistent for rules
         self._perturber = BarbePerturber(training_data=training_data,
@@ -106,7 +123,7 @@ class BARBE:
                                          perturbation_type=perturbation_type,
                                          dev_scaling_factor=self._dev_scaling_factor,
                                          uniform_training_range=False,
-                                         df=(None if training_data is not None else 50))
+                                         df=(None if training_data is not None else 20))
         self._perturbed_data = None
         self._input_sets_class = input_sets_class
         self._input_data = None
@@ -160,7 +177,7 @@ class BARBE:
             # IAIN need to clean up how data is passed to models (should be model side)
             input_model.set_class(input_model.predict(input_data.to_numpy().reshape(1,-1)))
         # get black box predictions
-        self._blackbox_classification['input'] = input_model.predict(input_data.to_numpy().reshape(1,-1))  # IAIN make this look better
+        self._blackbox_classification['input'] = input_model.predict(input_data.to_numpy().reshape(1, -1))  # IAIN make this look better
         self._blackbox_classification['perturbed'] = input_model.predict(self._perturbed_data)
 
         self._surrogate_model = SigDirectWrapper(self._feature_names, verbose=self._verbose)
@@ -170,10 +187,11 @@ class BARBE:
             print(self._verbose_header, 'black box prediction', self._blackbox_classification['perturbed'])
         self._surrogate_model.fit(self._perturbed_data, self._blackbox_classification['perturbed'])
 
-        self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1,-1))
+        self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))
         self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data)
         if self._verbose:
-            print(self._verbose_header, "was it successful?", self._blackbox_classification['input'], self._surrogate_classification['input'])
+            print(self._verbose_header, "was it successful?", self._blackbox_classification['input'],
+                  self._surrogate_classification['input'])
         return self._blackbox_classification['input'] == self._surrogate_classification['input']
 
     def _check_input_data(self, input_data):
@@ -214,6 +232,12 @@ class BARBE:
         return deepcopy(self._surrogate_model)
 
     def get_contrasting_rules(self, data_row):
+        """
+        Input: data_row (pandas DataFrame row) -> row to find contrast rules for
+        Purpose: Find rules that apply directly to a row's values that may decide classification results in surrogate.
+                  For use in counterfactual reasoning.
+        Output: list<(string, int, float, float, float)> -> list of contrast rules, their class, p-value, and importance
+        """
         return self._surrogate_model.get_contrast_sets(data_row)
 
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
@@ -228,13 +252,18 @@ class BARBE:
 
     def get_rules(self):
         """
-        Input: None
         Purpose: Get all the rules from the surrogate model.
         Output: list<(rule_text, support, confidence)>, all rules with their support and confidence.
         """
         return self._surrogate_model.get_all_rules()
 
     def get_perturber(self, feature='all'):
+        """
+        Input: feature (string) -> String indicating the type of feature to make a 'get' call to the  purtuber for.
+                | Default: 'all' Options: {'all', 'scale', 'categories'}
+        Purpose: Get perturber or information from it.
+        Output: instance of BarbePertuber or list<object>.
+        """
         if feature in 'all':
             return self._perturber
         elif feature in 'scale':
@@ -272,7 +301,6 @@ class BARBE:
         Output: explanation, a string consisting of feature importance and surrogate fidelity (how similar the
                  predictions made by BARBE are to the black box model).
         """
-
         # check input before going further
         self._check_input_model(input_model)
         input_data = self._check_input_data(input_data)

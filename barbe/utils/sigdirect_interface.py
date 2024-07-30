@@ -98,28 +98,23 @@ class SigDirectWrapper:
             print(self._verbose_header, "OneHot decode:", partial_decoding)
             print(partial_usable, partial_decoding[partial_usable])
             print(self._kb_discrete.bin_edges_[partial_usable][0])
-            print(self._verbose_header, "corresponding bins", self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)])
+            print(self._verbose_header, "corresponding bins",
+                  self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)])
         # do not need to fully decode I only need to handle which bin value is assigned
         # return self._kb_discrete.inverse_transform(self._oh_enc.inverse_transform(enc_X))
         return_list = [None for i in range(len(partial_decoding))]
         for i in partial_usable:
             moved_index = self._new_feature_order[i]
             if moved_index in self._not_categorical:
-                # print(self._not_categorical)
                 converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
-                # converted_index = i
-                # print(i)
-                # print(self._kb_discrete.bin_edges_)
-                # print(converted_index, partial_decoding[i])
-                # print(np.where(i == np.array(self._not_categorical)))
-                # print(converted_index, partial_decoding, len(self._kb_discrete.bin_edges_[converted_index]))
+
                 return_list[moved_index] = self._kb_discrete.bin_edges_[converted_index][int(partial_decoding[i])]
             else:
                 converted_index = np.where(moved_index == np.array(list(self._categorical_features.keys())))[0][0]
                 print(converted_index, i, np.array(list(self._categorical_features.keys())))
                 print(self._categorical_features)
                 return_list[moved_index] = self._categorical_features[converted_index][int(partial_decoding[i])]
-        # return_list[partial_usable] = self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)][0]
+
         return [return_list]
 
     def fit(self, X, y):
@@ -144,7 +139,7 @@ class SigDirectWrapper:
             if self._verbose:
                 print(self._verbose_header, "rules matched", predicted_label, true_label)
             for x, y in all_raw_rules.items():
-                all_rules[x] = [(t, self._oh_enc, self._encode(data_row.to_numpy().reshape(1,-1))) for t in y]
+                all_rules[x] = [(t, self._oh_enc, self._encode(data_row.to_numpy().reshape(1, -1))) for t in y]
 
         else:
             if self._verbose:
@@ -152,10 +147,6 @@ class SigDirectWrapper:
             predicted_label = -1  # to show we couldn't predict it correctly
         self._rules = all_rules
         return predicted_label
-
-    # def get_all_features(self):
-    #     for key, item in self._rules:
-    #         print(key, item[0].get_confidence(), item[0].get_support())
 
     def _get_bin_bounds(self, bin_index, current_item):
         bin_size = len(self._kb_discrete.bin_edges_[bin_index])
@@ -192,7 +183,6 @@ class SigDirectWrapper:
                                       " <= " + str(np.round(rule_high, 4)))
                 else:
                     rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
-                # IAIN print("BIN BOUNDS:", self._get_bin_bounds(i, item))
         return rule_text
 
     def get_all_rules(self, rules_subset=None):
@@ -208,33 +198,10 @@ class SigDirectWrapper:
                 rule_confidence = rule.get_confidence()
                 rule_p = rule.get_log_p()
                 rule_items = self._decode(temp.reshape((1, -1)))[0]
-                # print("IAIN", rule_items)
-                rule_text = ""
-                for i in range(len(rule_items)):
-                    item = rule_items[i]
-                    moved_index = i
-                    if item is not None:
-                        if rule_text != "":
-                            rule_text += ", "
-                        if moved_index in self._not_categorical:
-                            converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
-                            rule_low, rule_high = self._get_bin_bounds(converted_index, item)
-                            if rule_low is None:
-                                rule_text += ("'" + str(self._feature_names[i]) + "'" +
-                                              " < " + str(np.round(rule_high, 4)))
-                            elif rule_high is None:
-                                rule_text += ("'" + str(self._feature_names[i]) + "'" +
-                                              " > " + str(np.round(rule_low, 4)))
-                            else:
-                                rule_text += (str(np.round(rule_low, 4)) + " <= " +
-                                              "'" + str(self._feature_names[i]) + "'" +
-                                              " <= " + str(np.round(rule_high, 4)))
-                        else:
-                            rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
-                        # IAIN print("BIN BOUNDS:", self._get_bin_bounds(i, item))
+                rule_text = self._rule_translation(rule_items)
                 rules_translation.append((rule_text + " -> " + str(class_label), class_label,
                                           rule_support, rule_confidence, rule_p))
-        # format [(rule text, support, confidence), ...]
+        # format [(rule text, support, confidence, rule_p), ...]
         return rules_translation
 
     def get_contrast_sets(self, data_row, max_dev=0.05):
@@ -279,7 +246,8 @@ class SigDirectWrapper:
                                         min_dif = abs(p_val - o_p_val)
 
                 if min_dif <= max_dev and not (e_match != 0 and not non_equal):
-                    # for each significant rule if c.antecedant < o.antecedent (X -> c, X is antecedent, o=data_row) add it to set
+                    # for each significant rule if c.antecedant < o.antecedent (X -> c, X is antecedent, o=data_row)
+                    #  add it to set
                     # these now contain the contrast sets
                     # return the rules (in text) that apply to o (data_row)
                     if all([(rule[i] == data_antecedent[i]) or (rule[i] is None) for i in range(len(data_antecedent))]):
@@ -413,7 +381,8 @@ class SigDirectWrapper:
             if seen_set == temp.sum() - 1:  # and (item not in bb_features):
                 if self._verbose:
                     print(self._verbose_header, "black box candid", bb_features[candid_feature])
-                # bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or indicated as not used
+                # bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or
+                #  indicated as not used
                 bb_features[candid_feature].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), counter))
                 other_rules.append(rule)
             # what if we subtract the rule's support instead
@@ -435,10 +404,18 @@ def evaluation_function(bb_features):
     # except dict<feature, list<(support, confidence, log_p, counter)>]>
     # return dict<feature, float>
     eval_bb_features = defaultdict(int)
+    SMALL_FLOAT = 1e-9
+    high_importance = 0
     for feature, tlist in bb_features.items():
         temp_eval = 0
         for support, confidence, pvalue, counter in tlist:
-            temp_eval += counter * ( (1/support) * (1/confidence) * (1/pvalue) )
+            if counter > 0 or feature not in eval_bb_features.keys():
+                temp_eval += np.sign(counter) * ( (1/(support+SMALL_FLOAT)) * (1/(confidence+SMALL_FLOAT)) *
+                                                  (1/((10**pvalue)+SMALL_FLOAT)) )
         temp_eval /= len(tlist)
         eval_bb_features[feature] = temp_eval
+        if temp_eval > high_importance:
+            high_importance = temp_eval
+    for feature in eval_bb_features.keys():
+        eval_bb_features[feature] /= high_importance
     return eval_bb_features

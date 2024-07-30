@@ -77,9 +77,8 @@ class BarbePerturber:
                             temp_replacement[str(item)] = count
                             count += 1
                         self._categorical_key[key] = temp_replacement
-            self._feature_original_types = [type(input_categories[key][list(input_categories[key].keys())[0]]) for key in input_categories.keys()]
-            self._categorical_key = input_categories
-
+            self._feature_original_types = [type(input_categories[key][list(input_categories[key].keys())[0]])
+                                            for key in input_categories.keys()]
 
         self._covariance_mode = covariance_mode
         self._n_features = training_data.shape[1] \
@@ -189,7 +188,7 @@ class BarbePerturber:
     def _rescale_data(self, unscaled_data, scaling_mean=None):
         if scaling_mean is None:
             scaling_mean = self._means
-        return (unscaled_data * self._scale) + scaling_mean
+        return (unscaled_data * list(self._scale)) + scaling_mean
 
     def _calculate_covariance(self, training_array):
         full_cov = np.cov(training_array.T)
@@ -209,8 +208,8 @@ class BarbePerturber:
                 return (self._random_state.uniform(self._min, self._max, size=(num_perturbations, self._n_features)) +
                         row_array)
 
-            return self._rescale_data(self._random_state.uniform(self._min, self._max, size=(num_perturbations,
-                                                                                             self._n_features)),
+            return self._rescale_data(self._random_state.uniform(self._min, self._max,
+                                                                 size=(num_perturbations, self._n_features)),
                                       scaling_mean=row_array)
         elif self._distribution in 'normal':
             # location scale size
@@ -221,7 +220,8 @@ class BarbePerturber:
                                       scaling_mean=row_array)
         elif self._distribution in 't-distribution':
             # df size
-            return self._rescale_data(self._random_state.standard_t(self._df, size=(num_perturbations, self._n_features)),
+            return self._rescale_data(self._random_state.standard_t(self._df, size=(num_perturbations,
+                                                                                    self._n_features)),
                                       scaling_mean=row_array)
         return None
 
