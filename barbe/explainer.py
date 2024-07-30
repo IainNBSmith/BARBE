@@ -25,7 +25,13 @@ class BARBE:
 
         Input: training_data (pandas DataFrame)   -> Sample of data used by a black box model to learn scale and some
                                                       feature interactions on.
-               training_labels (numpy array)      -> DEPRECATED. not used.
+               feature_names (list<string>)       -> feature names of input data if ungiven.
+                | Default: None
+               input_scale (list<float>)          -> scales of expected data if not given as training.
+                | Default: None
+               input_categories (dict<list>) or   -> indicator for which values are categorical and the possible values.
+                |                (dict<dict>)         or direct assignment of values to labels.
+                | Default: None
                verbose (boolearn)                 -> Whether to provide verbose output during training.
                mode (string)                      -> Mode BARBE will run in, important for generating simulated data.
                 | Default: 'tabular' Options: {'tabular', 'text'}
@@ -58,7 +64,7 @@ class BARBE:
         bbmodel = RandomForestClassifier()
         bbmodel.fit(training_data, training_labels)
 
-        explainer = BARBE(training_data, None, verbose=True, input_sets_class=True)
+        explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
         explanation = explainer.explain(data_row, bbmodel)
         print("Test Time: ", datetime.now() - start_time)
         print(data_row)
@@ -68,12 +74,15 @@ class BARBE:
         
         '''
 
-    def __init__(self, training_data, training_labels, verbose=False, mode='tabular', n_perturbations=5000,
-                 input_sets_class=True, dev_scaling_factor=5):
+    def __init__(self, training_data=None, feature_names=None, input_scale=None, input_categories=None,
+                 verbose=False, mode='tabular', input_sets_class=True,
+                 n_perturbations=5000, perturbation_type='uniform', dev_scaling_factor=5):
         # IAIN include surrogate model settings, make the model here?
         # IAIN do we include the perturbation type here? Is it consistent?
         # IAIN eventually method will include 'text' too.
         # IAIN raise warning when perturbations are not the default and text is called
+        self._check_input_combination(training_data, feature_names, input_scale, input_categories)
+        # IAIN renumber input categories if they are named instead
 
         # IAIN should include some checks in here for mode and perturbation validity
 
@@ -83,13 +92,17 @@ class BARBE:
         self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
         self._mode = mode
-        self._feature_names = list(training_data)
+        self._feature_names = list(training_data) if feature_names is None else feature_names
         # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change this line
         # IAIN NOTES: adding a scaling factor to the deviation makes it work better
         # IAIN NOTES: normal distribution is more consistent for rules
-        self._perturber = BarbePerturber(training_data, perturbation_type='uniform',
+        self._perturber = BarbePerturber(training_data=training_data,
+                                         input_scale=input_scale,
+                                         input_categories=input_categories,
+                                         perturbation_type=perturbation_type,
                                          dev_scaling_factor=self._dev_scaling_factor,
-                                         uniform_training_range=True)
+                                         uniform_training_range=False,
+                                         df=(None if training_data is not None else 50))
         self._perturbed_data = None
         self._input_sets_class = input_sets_class
         self._input_data = None
@@ -100,6 +113,11 @@ class BARBE:
 
     def __str__(self):
         return self._explanation
+
+    def _check_input_combination(self, training_data, feature_names, input_scale, input_categories):
+        # IAIN check that either training data is not None or all of feature names, scale, and categories have a value
+        #  of a valid type. features names length must be the same as scale. Everything else is checked by perturber.
+        pass
 
     def _fit_surrogate_model(self, input_data, input_model):
         # IAIN tabular and text perturbations differ in an important way
@@ -189,6 +207,15 @@ class BARBE:
         Output: list<(rule_text, support, confidence)>, all rules with their support and confidence.
         """
         return self._surrogate_model.get_all_rules()
+
+    def get_perturber(self, feature='all'):
+        if feature in 'all':
+            return self._perturber
+        elif feature in 'scale':
+            return self._perturber.get_scale()
+        elif feature in 'categories':
+            return self._perturber.get_discrete_values()
+        return None
 
     def get_features(self, input_data, true_label):
         """

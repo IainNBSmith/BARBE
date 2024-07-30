@@ -244,7 +244,45 @@ def test_iris_dataset():
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data, training_labels, verbose=True, input_sets_class=True)
+    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
+    explanation = explainer.explain(data_row, bbmodel)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(explanation)
+    print(bbmodel.feature_importances_)
+    print("ALL RULES:", explainer.get_rules())
+    # example modification
+    # IAIN TODO: check in valid range the full edges do not matter
+    data_row['sepal length (cm)'] = -10
+    print("DATA:", data_row)
+    print("CONTRAST:", explainer.get_contrasting_rules(data_row))
+
+
+def test_iris_give_scale_category():
+    # IAIN add traffic dataset to this work with trained classification being
+    #  the day of the week?
+    iris = datasets.load_iris()
+
+    iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+
+    data_row = iris_df.iloc[50]
+    training_labels = iris.target
+    training_data = iris_df
+
+    print("Running test: BARBE iris Run")
+    start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
+    print("INPUT PREMADE PERTURBATION INFO")
+    print("SCALE FROM OTHER:", explainer.get_perturber(feature='scale'))
+    print("SCALE USED IF DIFFERENT:", [0.2, 0.1, 0.5, 0.1])
+    print("CATEGORIES:", explainer.get_perturber(feature='categories'))
+    explainer = BARBE(input_scale=[0.2, 0.1, 0.5, 0.1],
+                      input_categories=explainer.get_perturber(feature='categories'),
+                      feature_names=list(training_data),
+                      verbose=True, input_sets_class=True)
     explanation = explainer.explain(data_row, bbmodel)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
@@ -295,7 +333,7 @@ def test_glass_dataset():
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data, training_labels, verbose=False, input_sets_class=True)
+    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=True)
     explanation = explainer.explain(data_row, bbmodel)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
@@ -337,6 +375,51 @@ def test_barbe_categorical(n_perturbations=5000):
     bbmodel.fit(training_data, training_labels)
     # IAIN do we need the class to be passed into the explainer? Probably not...
     explainer = BARBE(training_data, training_labels, verbose=True, input_sets_class=True)
+    explanation = explainer.explain(data_row, bbmodel)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(explanation)
+    print(explainer.get_categories())
+    print(bbmodel.feature_importances_)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+
+
+def test_barbe_categorical_given_scale_categorical(n_perturbations=5000):
+    def categorical_named(x):
+        if x <= 1:
+            return "A"
+        elif x <= 3:
+            return "B"
+        return "C"
+
+    training_data, _ = _get_data()
+    # make a discrete value
+    # boolean
+    training_data[list(training_data)[0]] = training_data[list(training_data)[0]] < 1
+    # string
+    training_data[list(training_data)[1]] = training_data[list(training_data)[1]].apply(categorical_named)
+    # float / int
+    training_data[list(training_data)[2]] = np.ceil(training_data[list(training_data)[2]])
+
+    print("Running test: BARBE Categorical")
+    data_row = training_data.drop('class', axis=1).iloc[10]
+    training_labels = training_data['class']
+    training_data = training_data.drop('class', axis=1)
+    # For overfit
+    # data_row = training_data.iloc[5]
+    # training_labels = training_data['class']
+    start_time = datetime.now()
+    # so the random forest in itself cannot take categorical values :(
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
+    explainer = BARBE(input_scale=explainer.get_perturber(feature='scale'),
+                      input_categories=explainer.get_perturber(feature='categories'),
+                      feature_names=list(training_data),
+                      verbose=True, input_sets_class=True)
+
     explanation = explainer.explain(data_row, bbmodel)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)

@@ -16,7 +16,10 @@ def test_produce_barbe_perturbations(n_perturbations=5000):
 
     print("Running test: BARBE Perturbation")
     start_time = datetime.now()
-    bp = BarbePerturber(training_data.drop('class', axis=1))
+    bp = BarbePerturber(training_data=training_data.drop('class', axis=1))
+    bp = BarbePerturber(input_scale=bp.get_scale(),
+                        input_categories=bp.get_discrete_values(),
+                        df=50)
     perturbed_data = bp.produce_perturbation(n_perturbations, data_row=data_row)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
@@ -56,6 +59,12 @@ def test_categorical_perturbation(n_perturbations=5000):
     start_time = datetime.now()
     bp = BarbePerturber(training_data.drop('class', axis=1))
     perturbed_data = bp.produce_perturbation(n_perturbations, data_row=data_row)
+    print("CATEGORICAL:", bp.get_discrete_values())
+    discrete_keys = bp.get_discrete_values()
+    discrete_keys[0] = [True, False]
+    bp = BarbePerturber(input_scale=bp.get_scale(),
+                        input_categories=discrete_keys,
+                        df=50)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
     print(perturbed_data)

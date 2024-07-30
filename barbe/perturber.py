@@ -12,7 +12,13 @@ class BarbePerturber:
     __doc__ = '''
         Purpose: Perturbs input data for BARBE into multiple samples.
 
-        Input: training_data (pandas DataFrame) -> trained method that makes a prediction on data.
+        Input: training_data (pandas DataFrame) -> training data to find scales for making perturbations.
+                | Default: None
+               input_scale (list<float>)        -> scales of expected data if not given as training.
+                | Default: None
+               input_categories (dict<list>) or -> indicator for which values are categorical and the possible values.
+                |                (dict<dict>)       or direct assignment of values to labels.
+                | Default: None
                perturbation_type (string)       -> The type of distribution to use when generating perturbed data.
                 |                                   'uniform' -> uniform distribution over a range (-2, 2) is equally as
                 |                                                 likely to generate 0 as 0.1 as 1.2
@@ -45,31 +51,70 @@ class BarbePerturber:
                 |                                   similar to a normal distribution.
         '''
 
-    def __init__(self, training_data, perturbation_type='uniform', covariance_mode='full', uniform_training_range=False,
-                 uniform_scaled=True, dev_scaling_factor=1, df=None):
+    def __init__(self, training_data=None, input_scale=None, input_categories=None, perturbation_type='uniform',
+                 covariance_mode='full', uniform_training_range=False, uniform_scaled=True, dev_scaling_factor=1,
+                 df=None):
+        self._input_mode = ""  # either training or premade
+        if input_scale is not None:
+            input_scale = np.array(input_scale)
+        self._check_input(training_data, input_scale, input_categories)
         # check and modify training data
-        # IAIN later this should take input information
-        self._categorical_features = []
-        self._feature_original_types = []
-        self._categorical_key = dict()
+        if input_categories is None:
+            self._categorical_features = []  # indicators of which columns are categorical
+            self._feature_original_types = []  # indicates the original type of all categorical values (supplied if given input_categories)
+            self._categorical_key = dict()
+            training_data = self._training_discrete_conversion(training_data.to_numpy())
+        else:
+            self._categorical_key = input_categories
+            self._categorical_features = list(input_categories.keys())
+            if any([isinstance(self._categorical_key[key], list) for key in self._categorical_key.keys()]):
+                for key in self._categorical_key.keys():
+                    if isinstance(self._categorical_key[key], list):
+                        temp_replacement = dict()
+                        count = 0
+                        for item in self._categorical_key[key]:
+                            temp_replacement[str(item)] = count
+                            count += 1
+                        self._categorical_key[key] = temp_replacement
+            self._feature_original_types = [type(input_categories[key][list(input_categories[key].keys())[0]]) for key in input_categories.keys()]
+            self._categorical_key = input_categories
 
-        training_data = self._training_discrete_conversion(training_data.to_numpy())
 
         self._covariance_mode = covariance_mode
-        self._n_features = training_data.shape[1]
+        self._n_features = training_data.shape[1] \
+            if input_scale is None else len(input_scale)
+        # IAIN may need to check
         self._df = training_data.shape[0] if df is None else df  # note if over 100 it is essentially normal
-        self._means = self._calculate_means(training_data)  # required to recenter input
+        self._means = self._calculate_means(training_data) \
+            if input_scale is None else [0 for _ in range(len(input_scale))]  # required to recenter input
         # IAIN later we will remove the means and let this information be passed in (while still allowing scaling)
-        self._scale = self._calculate_scale(training_data) / dev_scaling_factor  # required to scale
+        # required to scale
+        self._scale = self._calculate_scale(training_data) / dev_scaling_factor \
+            if input_scale is None else input_scale
         self._uniform_training_range = uniform_training_range  # whether uniform data should be generated based on the training data range
         self._uniform_scaled = uniform_scaled  # whether uniform perturbation should scale to deviation in training data (independent from training range)
         # IAIN later this will be input if it is given generate the data in range and set uniform_training_range
-        self._max, self._min = self._calculate_range(training_data)
+        self._max, self._min = self._calculate_range(training_data,
+                                                     input_shape=len(input_scale) if input_scale is not None else None)
         # IAIN later when the scales are passes in we will set this to a diagonal given those scales
-        self._covariance = self._calculate_covariance(training_data) / dev_scaling_factor
+        self._covariance = self._calculate_covariance(training_data) / dev_scaling_factor \
+            if input_scale is None else np.diag(input_scale)
 
         self._distribution = perturbation_type
         self._random_state = Generator(PCG64())
+
+    def _check_input(self, input_data, input_scale, input_categories):
+        # IAIN check that at either input data is not none or scale and categories are both not none
+        # IAIN give error message or warning in some cases to note that category scales should be 1-2 depending on the number
+        if input_data is None:
+            # check input scale and input_categories
+            # check that all the keys from input_categories are valid indices of input_scale
+            #  if not then pass the error message and recommend scale depending on the # of uniques
+            #  throw a warning if the scale is very small on a particular category
+            pass
+        else:
+            # IAIN check the input data that it is a numpy or can be converted
+            pass
 
     def _training_discrete_conversion(self, training_array, category_threshold=10):
         # conversion from discrete values -> numeric values
@@ -112,12 +157,14 @@ class BarbePerturber:
             perturbed_array[:, i] = replacement_values.astype(self._feature_original_types[i])
         return perturbed_array
 
-    def _calculate_range(self, training_array):
+    def _calculate_range(self, training_array, input_shape=None):
+        input_shape = training_array.shape[1] if input_shape is None else input_shape
+
         if self._uniform_training_range:
             return np.max(training_array, axis=0), np.min(training_array, axis=0)
         # Use 0 to 1 instead and scale result
-        return (np.array([2 for _ in range(training_array.shape[1])]),
-                np.array([-2 for _ in range(training_array.shape[1])]))
+        return (np.array([2 for _ in range(input_shape)]),
+                np.array([-2 for _ in range(input_shape)]))
 
     def _calculate_scale(self, training_array):
         return np.std(training_array, axis=0)
@@ -166,6 +213,9 @@ class BarbePerturber:
 
     def get_discrete_values(self):
         return self._categorical_key.copy()
+
+    def get_scale(self):
+        return self._scale
 
     def produce_perturbation(self, num_perturbations, data_row=None):
         if data_row is None:
