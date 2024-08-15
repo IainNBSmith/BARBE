@@ -11,7 +11,7 @@ import warnings
 
 class BarbePerturber:
     __doc__ = '''
-        Purpose: Perturbs input data for BARBE into multiple samples.
+        Purpose: Perturbs input data or a given scale from BARBE into multiple samples.
 
         Input: training_data (pandas DataFrame) -> training data to find scales for making perturbations.
                 | Default: None
@@ -49,12 +49,16 @@ class BarbePerturber:
                df (None or int>2)               -> Used when perturbation_type = 't-distribution'. Degrees of freedom 
                 |                                   used when generating a t-distribution, will be set to the amount of
                 |                                   training data if df = None. Note: When df > 100 t-distributions are
-                |                                   similar to a normal distribution.
+                |                                   similar to a normal distribution. Default is 20 if not given and the\
+                |                                   input_scale is used.
+               random_seed (int)                -> Random seed to use when generating perturbations. If None use a
+                |                                   pseudo random state.
+                | Default: None
         '''
 
     def __init__(self, training_data=None, input_scale=None, input_categories=None, perturbation_type='uniform',
                  covariance_mode='full', uniform_training_range=False, uniform_scaled=True, dev_scaling_factor=1,
-                 df=None):
+                 df=None, random_seed=None):
         self._input_mode = ""  # either training or premade
         if input_scale is not None:
             input_scale = np.array(input_scale)
@@ -83,25 +87,30 @@ class BarbePerturber:
         self._covariance_mode = covariance_mode
         self._n_features = training_data.shape[1] \
             if input_scale is None else len(input_scale)
-        # IAIN may need to check
-        self._df = training_data.shape[0] if df is None else df  # note if over 100 it is essentially normal
+        # if given use degrees of freedom, if not then use the shape of the data, if no data set default
+        self._df = training_data.shape[0] \
+            if df is None and training_data is None else df  # over 100 is normal dist
+        self._df = 20 if self._df is None else self._df
+
         self._means = self._calculate_means(training_data) \
             if input_scale is None else [0 for _ in range(len(input_scale))]  # required to recenter input
-        # IAIN later we will remove the means and let this information be passed in (while still allowing scaling)
-        # required to scale
+
+        # do not reduce the deviation if input_scale is given
         self._scale = self._calculate_scale(training_data) / dev_scaling_factor \
             if input_scale is None else input_scale
-        self._uniform_training_range = uniform_training_range  # whether uniform data should be generated based on the training data range
-        self._uniform_scaled = uniform_scaled  # whether uniform perturbation should scale to deviation in training data (independent from training range)
-        # IAIN later this will be input if it is given generate the data in range and set uniform_training_range
+        #  whether uniform data should be generated based on the training data range
+        self._uniform_training_range = uniform_training_range
+        # whether uniform perturbation should scale to deviation in training data (independent of training range)
+        self._uniform_scaled = uniform_scaled
         self._max, self._min = self._calculate_range(training_data,
                                                      input_shape=len(input_scale) if input_scale is not None else None)
-        # IAIN later when the scales are passes in we will set this to a diagonal given those scales
+        # IAIN potentially add non-diagonal input scale values in future
         self._covariance = self._calculate_covariance(training_data) / dev_scaling_factor \
             if input_scale is None else np.diag(input_scale)
 
         self._distribution = perturbation_type
-        self._random_state = Generator(PCG64())
+        self._random_state = Generator(PCG64()) \
+            if random_seed is None else np.random.default_rng(seed=random_seed)
 
     def _check_input(self, input_data, input_scale, input_categories):
         # IAIN check that at either input data is not none or scale and categories are both not none
@@ -175,7 +184,7 @@ class BarbePerturber:
 
         if self._uniform_training_range:
             return np.max(training_array, axis=0), np.min(training_array, axis=0)
-        # Use 0 to 1 instead and scale result
+        # default is essentially anywhere within two standard deviations if considering normal scale
         return (np.array([2 for _ in range(input_shape)]),
                 np.array([-2 for _ in range(input_shape)]))
 

@@ -41,6 +41,7 @@ import numpy as np
 
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
+import pickle
 
 from barbe.perturber import BarbePerturber
 
@@ -332,16 +333,25 @@ def test_glass_dataset():
     start_time = datetime.now()
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
+
+    training_data.to_csv("../dataset/glass_test.csv")
+    with open("../pretrained/glass_test_decision_tree.pickle", "wb") as f:
+        pickle.dump(bbmodel, f)
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=True)
+    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=True,
+                      perturbation_type='uniform', dev_scaling_factor=5)
     explanation = explainer.explain(data_row, bbmodel)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
     print(explanation)
     print(explainer.get_categories())
     print(bbmodel.feature_importances_)
-    print("ALL RULES:", explainer.get_rules())
-    print("CONTRAST:", explainer.get_contrasting_rules(data_row))
+    all_rules = explainer.get_rules()
+    print("ALL RULES:", all_rules)
+    print(len(all_rules))
+    contrast_rules = explainer.get_contrasting_rules(data_row)
+    print("CONTRAST:", contrast_rules)
+    print(len(contrast_rules))
     # explainer.get_rules()
 
 

@@ -69,3 +69,10 @@ class BlackBoxWrapper:
         elif self._model_type == 'torch-like':
             return self._binary_assignment(self._predict_torch(X))
         return None
+
+    def check_valid_data(self, X):
+        try:
+            self.predict(X)
+            return 1
+        except ValueError:
+            return 0

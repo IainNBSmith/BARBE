@@ -20,6 +20,10 @@ from barbe.utils.bbmodel_interface import BlackBoxWrapper
 from barbe.perturber import BarbePerturber
 
 
+DIST_INFO = {'Generic Distributions': {'uniform': 'Uniform', 'normal': 'Normal'},
+             'Skewed Distributions': {'t-distribution': 't-Distribution', 'cauchy': 'Cauchy'}}
+
+
 class BARBE:
     __doc__ = '''
         Purpose: **B**lack-box **A**ssociation **R**ule-**B**ased **E**xplanation (**BARBE**) is a model-independent 
@@ -96,27 +100,22 @@ class BARBE:
     def __init__(self, training_data=None, feature_names=None, input_scale=None, input_categories=None,
                  verbose=False, mode='tabular', input_sets_class=True,
                  n_perturbations=5000, perturbation_type='uniform', dev_scaling_factor=5):
-        # IAIN include surrogate model settings, make the model here?
-        # IAIN do we include the perturbation type here? Is it consistent?
-        # IAIN eventually method will include 'text' too.
-        # IAIN raise warning when perturbations are not the default and text is called
-        self._check_input_combination(training_data, feature_names, input_scale, input_categories, dev_scaling_factor)
-        # IAIN renumber input categories if they are named instead
+
+        self._check_input_combination(training_data, feature_names, input_scale, input_categories, n_perturbations,
+                                      dev_scaling_factor)
         input_categories = self._fix_input_categories(input_categories, feature_names)
-        # IAIN should include some checks in here for mode and perturbation validity
 
         self._dev_scaling = dev_scaling_factor is not None
         self._dev_scaling_factor = dev_scaling_factor \
-            if self._dev_scaling or input_scale else 1
+            if self._dev_scaling and not input_scale else 1
         self._verbose = verbose
         self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
         self._mode = mode
-        self._feature_names = list(training_data) if feature_names is None else feature_names
-        # self._perturber = LimeWrapper(training_data, training_labels)  # For our own perturber we only need to change
-        #  this line
-        # IAIN NOTES: adding a scaling factor to the deviation makes it work better
-        # IAIN NOTES: normal distribution is more consistent for rules
+        self._feature_names = list(training_data) \
+            if feature_names is None else feature_names
+        # OLD CODE WHEN LIME PERTURBER WAS USED
+        # self._perturber = LimeWrapper(training_data, training_labels)
         self._perturber = BarbePerturber(training_data=training_data,
                                          input_scale=input_scale,
                                          input_categories=input_categories,
@@ -135,63 +134,68 @@ class BARBE:
     def __str__(self):
         return self._explanation
 
-    def _check_input_combination(self, training_data, feature_names, input_scale, input_categories, dev_scaling_factor):
-        # IAIN check that either training data is not None or all of feature names, scale, and categories have a value
-        #  of a valid type. features names length must be the same as scale. Everything else is checked by perturber.
+    def _check_input_combination(self, training_data, feature_names, input_scale, input_categories, n_perturbations,
+                                 dev_scaling_factor):
         error_header = "BARBE Check Input"
+        # check that there is either training data or an input scale
         if training_data is None and input_scale is None:
             assert ValueError(error_header + " either training data must be provided or input scales must be given.")
         if training_data is not None and input_scale is not None:
             assert ValueError(error_header + " both training data and scale cannot be given.")
 
         if input_scale is not None:
+            # if there is an input scale make sure feature names are given
             if len(input_scale) != len(feature_names):
                 assert ValueError(error_header + " must have a feature name for each scale value.")
+            # make sure that any input categories have keys described in scale
             if list(input_categories.keys()) not in feature_names and \
                     list(input_categories.keys()) not in range(len(input_scale)):
                 assert ValueError(error_header + " all scales must be set for features, even categorical. Size of "
                                                  "scales should be set relative to the number of categories.")
 
+        # check that number of perturbations is appropriate
+        if n_perturbations < 100:
+            warnings.warn(error_header + " low number of perturbations (" + str(n_perturbations) + ") may lead to "
+                                         "misrepresentation of the underlying model.")
+
     def _fix_input_categories(self, input_categories, feature_names):
-        # IAIN make input categories numerical rather than named if not named
         if input_categories is None:
             return dict()
         new_input_categories = dict()
+        # make input categories numerical rather than named if not named
         for key in input_categories.keys():
             temp_key = feature_names.index(key) if key in feature_names else int(key)
             new_input_categories[temp_key] = input_categories[key]
         return new_input_categories
 
     def _fit_surrogate_model(self, input_data, input_model):
-        # IAIN tabular and text perturbations differ in an important way
+        # differently produce perturbations for text and tabular data
         if self._mode in 'tabular':
             self._generate_perturbed_tabular(input_data)
         elif self._mode in 'text':
-            # IAIN should currently pass an error
-            pass
+            self._generate_perturbed_text(input_data)
 
         # wrap model so prediction call is always the same
         input_model = BlackBoxWrapper(input_model)
 
         if self._input_sets_class:  # black box is true or false for input class
-            # IAIN need to clean up how data is passed to models (should be model side)
             input_model.set_class(input_model.predict(input_data.to_numpy().reshape(1,-1)))
+
         # get black box predictions
         self._blackbox_classification['input'] = input_model.predict(input_data.to_numpy().reshape(1, -1))  # IAIN make this look better
         self._blackbox_classification['perturbed'] = input_model.predict(self._perturbed_data)
 
+        # fit and get predictions for surrogate model
         self._surrogate_model = SigDirectWrapper(self._feature_names, verbose=self._verbose)
-
-        # fit the surrogate through the wrapper
-        if self._verbose:
-            print(self._verbose_header, 'black box prediction', self._blackbox_classification['perturbed'])
         self._surrogate_model.fit(self._perturbed_data, self._blackbox_classification['perturbed'])
 
         self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))
         self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data)
+
         if self._verbose:
             print(self._verbose_header, "was it successful?", self._blackbox_classification['input'],
                   self._surrogate_classification['input'])
+
         return self._blackbox_classification['input'] == self._surrogate_classification['input']
 
     def _check_input_data(self, input_data):
@@ -257,6 +261,9 @@ class BARBE:
         """
         return self._surrogate_model.get_all_rules()
 
+    def get_perturbed_data(self):
+        return self._perturbed_data.copy()
+
     def get_perturber(self, feature='all'):
         """
         Input: feature (string) -> String indicating the type of feature to make a 'get' call to the  purtuber for.
@@ -291,7 +298,7 @@ class BARBE:
         """
         self._surrogate_model.get_categories()
 
-    def explain(self, input_data, input_model, fit_new_surrogate=True):
+    def explain(self, input_data, input_model, fit_new_surrogate=True, ignore_errors=False):
         """
         Input: input_data (pandas DataFrame row)                 -> The data to explain.
                input_model (callable or obj with predict method) -> Input model to provide explanation over.
@@ -307,7 +314,6 @@ class BARBE:
 
         # cannot test without a new surrogate
         if self._surrogate_model is None:
-            # IAIN push a warning later
             fit_new_surrogate = True
 
         if fit_new_surrogate:
@@ -318,7 +324,10 @@ class BARBE:
                 fit_tries += 1
                 fit_success = self._fit_surrogate_model(input_data, input_model)
             if not fit_success:
-                raise Exception('BARBE ERROR: model did not successfully match input data in 5 tries.')
+                if not ignore_errors:
+                    raise Exception('BARBE ERROR: model did not successfully match input data in 5 tries.')
+                else:
+                    return None
             if self._verbose:
                 print(self._verbose_header, 'number of tries:', fit_tries, fit_success)
 
@@ -326,8 +335,6 @@ class BARBE:
             print(self._verbose_header, 'fidelity:', self.get_surrogate_fidelity())
         # expecting a fit model explain the result for the new data, unless refit it assumes the prediction is correct
         # explanation_temp = self.get_features(input_data, self._blackbox_classification['input'][0])
-        self._explanation = (str(self.get_features(input_data,
-                                                   self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))[0]))
-                             + " \n " + str(self.get_surrogate_fidelity()))
+        self._explanation = self.get_features(input_data, self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))[0])
 
         return self._explanation
