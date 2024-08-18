@@ -187,6 +187,37 @@ class SigDirectWrapper:
                     rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
         return rule_text
 
+    def get_ohe_simple(self):
+        """
+        Input:
+        Purpose: Return a simple vector that denotes the bin positions of the one hot encoder.
+        Output:
+        """
+        print("IAIN in ohe simple")
+        # original_size = self._rules[0][0][2].shape[1]
+        for item in self._rules:
+            original_size = self._rules[item][0][2].shape[1]
+            break
+        ohe_key = np.zeros(original_size).astype(int)
+        prev_ind = None
+        counter = 0
+        for i in range(original_size):
+            temp = np.zeros(original_size).astype(int)
+            temp[i] = 1
+            position = self._decode(temp.reshape((1, -1)))[0]
+            #print("IAIN OHE POSITION: ", position)
+            ind_use = np.where(np.array(position) != None)
+            #print("IAIN OHE IND USE: ", ind_use)
+            if prev_ind is None or prev_ind == ind_use:
+                counter += 1
+            else:
+                counter = 1
+            ohe_key[i] = counter
+            prev_ind = ind_use
+
+        print("IAIN SIMPLE OHE: ", ohe_key)
+        return ohe_key
+
     def get_all_rules(self, rules_subset=None):
         if rules_subset is None:
             rules_subset = self._rules
@@ -209,7 +240,7 @@ class SigDirectWrapper:
         # format [(rule text, support, confidence, rule_p), ...]
         return rules_translation
 
-    def get_contrast_sets(self, data_row, max_dev=0.0005):
+    def get_contrast_sets(self, data_row, max_dev=0.0005, raw_rules=False):
         # IAIN get contrast sets as in the paper "Learning Statistically Significant Contrast Sets" Algorithm 1
         # encode and decode the data_row (to get the applied bins)
         encoded_value = self._encode(data_row.to_numpy().reshape(1, -1))
@@ -229,31 +260,35 @@ class SigDirectWrapper:
             for rule, _, _ in rule_list:
                 temp = np.zeros(len_encoding).astype(int)
                 temp[rule.get_items()] = 1
-                all_translated_rules[c_label].append((self._decode(temp.reshape(1, -1))[0], 10**rule.get_log_p()))
+                all_translated_rules[c_label].append((self._decode(temp.reshape(1, -1))[0], temp.reshape(1, -1),
+                                                      rule.get_confidence(), 10**rule.get_log_p()))
 
-        print(all_translated_rules)
+        print("IAIN ALL RULES ", all_translated_rules)
 
         final_rules = []
         # for each rule check that it satisfies eq 3 not all classes are the same for the condition p-value
         for c_label, rule_list in all_translated_rules.items():
-            for rule, p_val in rule_list:
-                min_dif = abs(p_val - self._sigdirect_model)
+            for rule, raw, conf, p_val in rule_list:
+                min_dif = abs(p_val - 0.0005)
                 non_equal = False
                 e_match = 0
                 for o_c_label, o_rule_list in all_translated_rules.items():
                     if c_label != o_c_label:
-                        for o_rule, o_p_val in o_rule_list:
+                        for o_rule, _, _, o_p_val in o_rule_list:
                             # IAIN or set to equal in other cases
                             if all([(rule[i] is not None and o_rule[i] is not None) or
                                     (rule[i] is None and o_rule[i] is None)
                                     for i in range(len(rule))]):
                                 e_match += 1
                                 if p_val != o_p_val:
+                                    print("IAIN POTENTIAL PAIR ", rule, o_rule)
                                     non_equal = True
                                     if abs(p_val - o_p_val) < min_dif or min_dif == abs(p_val) - 0.05:
                                         min_dif = abs(p_val - o_p_val)
 
+                print("IAIN WHY NOT ", min_dif, max_dev)
                 if min_dif <= max_dev and not (e_match != 0 and not non_equal):
+                    print("IAIN ADDED RULE")
                     # for each significant rule if c.antecedant < o.antecedent (X -> c, X is antecedent, o=data_row)
                     #  add it to set
                     # these now contain the contrast sets
@@ -261,9 +296,15 @@ class SigDirectWrapper:
                     # IAIN remove line for just rules that apply to current if all([(rule[i] == data_antecedent[i]) or
                     #  (rule[i] is None) for i in range(len(data_antecedent))]):
                     # IAIN we could even append a set of rules that are together considered (applied + counter)
-                    final_rules.append((rule, c_label, p_val, min_dif))
+                    if raw_rules:
+                        final_rules.append((raw[0], c_label, conf, p_val))
+                    else:
+                        final_rules.append((rule, c_label, p_val, min_dif))
 
-        return [(self._rule_translation(rule_item) + ' -> ' + str(c), c, p, m) for rule_item, c, p, m in final_rules]
+        if raw_rules:
+            print("IAIN FINAL RULES ", final_rules)
+            return final_rules
+        return [(self._rule_translation(rule_item) + ' -> ' + str(c), c, conf, p, m) for rule_item, c, conf, p, m in final_rules]
 
     def get_features(self, data_row, true_label):
         # IAIN now one thing to try is when decoding we just check where relevant bins to the sample appear,

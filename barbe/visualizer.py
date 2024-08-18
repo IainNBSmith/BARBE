@@ -1,6 +1,7 @@
 from shiny import reactive, App, render, run_app, ui
 from htmltools import css
 
+from pathlib import Path
 import barbe.explainer
 # from shiny.express import ui
 from barbe.utils.visualizer_utils import *
@@ -20,7 +21,8 @@ import torch
 # TODO: add a setting to get the prediction from the surrogate?
 
 
-app_ui = ui.page_fluid(ui.layout_columns(ui.card(ui.input_file('data_file_name', 'Choose Data File', accept=[".csv", ".data"]),
+app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
+                 ui.layout_columns(ui.card(ui.input_file('data_file_name', 'Choose Data File', accept=[".csv", ".data"]),
                                                  ui.input_checkbox('data_file_option', 'Premade Ranges File'),
                                                  ui.input_checkbox('data_perturbations', 'Replace Ranges with Perturbations')),
                                                ui.input_file('predictor_file_name', 'Choose Black Box Model', accept=[".pickle", ".torch", ".pkl"]),
@@ -32,14 +34,19 @@ app_ui = ui.page_fluid(ui.layout_columns(ui.card(ui.input_file('data_file_name',
                                                     ui.input_action_button('data_info', 'Predict'), id='sidebar',
                                                     width=400),
                                          # IAIN add more information from the explainer besider the plot (in a card)
-                                        ui.layout_columns(ui.card(ui.card_header("BARBE Explainer"),
-                                                                              ui.input_select('dist_setting', 'Distribution', barbe.explainer.DIST_INFO),
-                                                                              ui.input_numeric('pert_setting', 'Number of Perturbations', 5000, min=1000, max=10000, step=1000),
-                                                                              ui.input_numeric('dev_setting', 'Deviation Scaling', 5, min=1, max=100, step=1),
-                                                                              ui.input_checkbox('set_class_setting', 'Use All Classes'),
-                                                                              ui.output_text('info'),
-                                                                              ui.input_action_button('data_explain', 'Explain')),
-                                         ui.output_plot('explanation_plot')),
+                                        ui.layout_columns(
+                                         ui.output_plot('explanation_plot'),
+                                            ui.card(ui.card_header("BARBE Explainer"),
+                                                    ui.input_select('dist_setting', 'Distribution',
+                                                                    barbe.explainer.DIST_INFO),
+                                                    ui.input_numeric('pert_setting', 'Number of Perturbations', 5000,
+                                                                     min=1000, max=10000, step=1000),
+                                                    ui.input_numeric('dev_setting', 'Deviation Scaling', 5, min=1,
+                                                                     max=100, step=1),
+                                                    ui.input_checkbox('set_class_setting', 'Use All Classes'),
+                                                    ui.output_text('info'),
+                                                    ui.input_action_button('data_explain', 'Explain'))
+                                        ),
                                         ui.output_table('explanation_rules'))
                                          )
 
@@ -227,6 +234,14 @@ def server(input, output, session):
             reset_data()
 
     @reactive.effect
+    @reactive.event(input.data_file_option)
+    def _():
+        if input.data_file_option():
+            ui.update_numeric('dev_setting', label='Deviation Scaling - locked to 1', value=1, min=1, max=1)
+        else:
+            ui.update_numeric('dev_setting', label='Deviation Scaling', value=5, min=1, max=100)
+
+    @reactive.effect
     @reactive.event(input.data_file_name)
     def _():
         server_prediction.set(None)
@@ -277,4 +292,5 @@ def server(input, output, session):
                 where="afterBegin")
 
 
-app = App(app_ui, server)
+css_dir = Path(__file__).parent / "styles"
+app = App(app_ui, server, static_assets=css_dir)

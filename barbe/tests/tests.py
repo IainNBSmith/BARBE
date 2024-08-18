@@ -297,6 +297,32 @@ def test_iris_give_scale_category():
     print("CONTRAST:", explainer.get_contrasting_rules(data_row))
 
 
+def test_iris_counterfactual():
+    # IAIN add traffic dataset to this work with trained classification being
+    #  the day of the week?
+    iris = datasets.load_iris()
+
+    iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+
+    data_row = iris_df.iloc[50]
+    training_labels = iris.target
+    training_data = iris_df
+
+    print("Running test: BARBE iris Counterfactual")
+    start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=False)
+    explanation = explainer.explain(data_row, bbmodel)
+    counterfactual = explainer.get_counterfactual_explanation(data_row)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(counterfactual[0])
+    print(counterfactual[2])
+    print(bbmodel.predict(data_row.to_numpy().reshape(1, -1)))
+    print(bbmodel.predict(counterfactual[0]))
+
 def test_glass_dataset():
     # From this test we learned that a sample must be discretized into bins
     #  then it has scale assigned by the training sample and only then can it
@@ -353,6 +379,40 @@ def test_glass_dataset():
     print("CONTRAST:", contrast_rules)
     print(len(contrast_rules))
     # explainer.get_rules()
+
+
+def test_glass_counterfactual():
+    # From this test we learned that a sample must be discretized into bins
+    #  then it has scale assigned by the training sample and only then can it
+    #  be perturbed
+
+    training_data, _ = _get_data()
+    training_data.columns = training_data.columns.astype(str)
+    data_row = training_data.drop('class', axis=1).iloc[10]
+    training_labels = training_data['class']
+    training_data = training_data.drop('class', axis=1)
+    # For overfit
+    # data_row = training_data.iloc[5]
+    # training_labels = training_data['class']
+
+    print("Running test: BARBE Glass Counterfactual")
+    start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=True,
+                      perturbation_type='uniform', dev_scaling_factor=5)
+    explanation = explainer.explain(data_row, bbmodel)
+    counterfactual = explainer.get_counterfactual_explanation(data_row)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(counterfactual[0])
+    print(counterfactual[2])
+    print(bbmodel.predict(data_row.to_numpy().reshape(1,-1)))
+    print(bbmodel.predict(counterfactual[0]))
+    # explainer.get_rules()
+
 
 
 def test_barbe_categorical(n_perturbations=5000):

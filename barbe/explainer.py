@@ -18,6 +18,7 @@ from barbe.utils.sigdirect_interface import SigDirectWrapper
 # from barbe.utils.lime_interface import LimeWrapper
 from barbe.utils.bbmodel_interface import BlackBoxWrapper
 from barbe.perturber import BarbePerturber
+from barbe.counterfactual import BarbeCounterfactual
 
 
 DIST_INFO = {'Generic Distributions': {'uniform': 'Uniform', 'normal': 'Normal'},
@@ -129,6 +130,7 @@ class BARBE:
         self._blackbox_classification = {'input': None, 'perturbed': None}
         self._surrogate_classification = {'input': None, 'perturbed': None}
         self._surrogate_model = None  # SigDirect model trained on the new points
+        self._counterfactual = BarbeCounterfactual()
         self._explanation = "No explanations done yet."
 
     def __str__(self):
@@ -243,6 +245,27 @@ class BARBE:
         Output: list<(string, int, float, float, float)> -> list of contrast rules, their class, p-value, and importance
         """
         return self._surrogate_model.get_contrast_sets(data_row)
+
+    def get_counterfactual_explanation(self, data_row):
+        """
+        Input:
+        Purpose:
+        Output:
+        """
+        data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape(1, -1))[0]
+        print("IAIN getting rules + ohe simple")
+        aa = self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05)
+        print("IAIN CONTRAST ", aa)
+        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.00005),
+                                 self._surrogate_model.get_ohe_simple())
+        print("IAIN getting prediction")
+        counter_predict, counter_rules = self._counterfactual.predict(self._surrogate_model._encode(data_row.to_numpy().reshape(1, -1)), data_cls)
+        print(counter_predict)
+        # counter_predict = self._surrogate_model._decode([counter_predict])
+        new_class = self._surrogate_model._sigdirect_model.predict(counter_predict)
+        counter_predict = self._surrogate_model._decode([counter_predict])
+        return counter_predict, counter_rules, new_class
+
 
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
                                comparison_method=accuracy_score):

@@ -1,0 +1,15 @@
+$bg-color: #dadada;
+$card-color: #6089ff;
+$card-header-color: #3b6bff;
+
+.container-fluid{
+  background-color:$bg-color;
+}
+
+.card{
+  background-color:$card-color;
+}
+
+.card-header{
+  background-color:$card-header-color;
+}
