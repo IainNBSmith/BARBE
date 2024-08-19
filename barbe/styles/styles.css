@@ -1,13 +1,17 @@
 .container-fluid {
-  background-color: #dadada;
+  background-color: #ffffff;
 }
 
 .card {
-  background-color: #6089ff;
+  background-color: #007C41;
 }
 
 .card-header {
-  background-color: #3b6bff;
+  background-color: #FFDB05;
+}
+
+.sidebar {
+  background-color: #FFDB05;
 }
 
 /*# sourceMappingURL=styles.css.map */
