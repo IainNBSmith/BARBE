@@ -89,22 +89,44 @@ class BarbeCounterfactual:
                     count += 1
         return count
 
-    def _get_similar_rules(self, rule, data_cls):
+    def _calculate_distance(self, rule, o_rule):
+        distance = 0
+        last_position = None
+        for i in range(len(rule)):
+            if rule[i] == 1:
+                if last_position is not None:
+                    distance += self._distance_matrix[i] - last_position
+                    last_position = None
+                else:
+                    last_position = self._distance_matrix[i]
+            if o_rule[i] == 1:
+                if last_position is not None:
+                    distance += self._distance_matrix[i] - last_position
+                    last_position = None
+                else:
+                    last_position = self._distance_matrix[i]
+        return distance
+
+    def _get_similar_rules(self, rule, data_cls, new_class=0):
         # get rules concerned with the same feature but different values (statistically significant from contrast)
-        in_vec, in_cls, conf, _ = rule
+        in_vec, in_cls, conf, pv = rule
         print("IAIN ENTERED SIMILAR CHECK")
-        if in_cls != data_cls:
+        if in_cls == new_class:
             print("DID NOT RETURN RULE ", in_cls, data_cls)
             return None
         similar_rule = None
         similar_pv = None
+        similar_distance = None
         for i in range(len(self._all_rules)):
             rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
-            if rule_cls != in_cls:
-                if self._all_same_features(in_vec, rule_vec) and (similar_rule is None or (similar_pv >
-                                                                                           rule_pv/rule_conf)):
-                    similar_rule = rule_vec
-                    similar_pv = rule_pv/rule_conf
+            if rule_cls == new_class:
+                if (self._all_same_features(in_vec, rule_vec) and
+                        (similar_rule is None or (similar_pv > rule_pv/rule_conf))):
+                    temp_distance = self._calculate_distance(in_vec, rule_vec)
+                    if similar_rule is None or similar_distance > temp_distance:
+                        similar_rule = rule_vec
+                        similar_pv = rule_pv/rule_conf
+                        similar_distance = temp_distance
 
         if similar_rule is not None:
             return similar_rule
@@ -129,7 +151,7 @@ class BarbeCounterfactual:
                     similar_rule, _, _, similar_pv = self._all_rules[i]
                     n_similar_features = temp_feature_similarity
 
-        print("IAIN DID NOT FIND RULES")
+        #print("IAIN DID NOT FIND RULES")
         return similar_rule
 
     def _get_distance(self, row1, row2):
@@ -149,19 +171,19 @@ class BarbeCounterfactual:
 
     def _same_feature(self, data_row, i):
         key_value = self._position_key[i]
-        print("IAIN KEY CHECK ", self._position_key)
+        #print("IAIN KEY CHECK ", self._position_key)
         for j in range(len(data_row)):
             if data_row[j] == 1 and self._position_key[j] == key_value:
-                print("IAIN SAME FEATURE: ", i, "and", j)
+                #print("IAIN SAME FEATURE: ", i, "and", j)
                 return True
         return False
 
-    def predict(self, data_row, data_cls):
-        print("IAIN in counterfactual predict")
+    def predict(self, data_row, data_cls, new_class=0):
+        #print("IAIN in counterfactual predict")
         # IAIN take the value, find applicable rules and search for potential rule changes
         data_row = data_row[0]
         applicable_rules = self._get_applicable_rules(data_row, data_cls)
-        print("IAIN APPLICABLE: ", applicable_rules)
+        #print("IAIN APPLICABLE: ", applicable_rules)
         prev_applicable_rules = None
         n_loops = 0
         new_data_row = data_row.copy()
@@ -170,35 +192,27 @@ class BarbeCounterfactual:
         rule_changes = []
 
         while prev_applicable_rules != applicable_rules and n_loops < 1:
+            # IAIN add doing one rule at a time
             for rule_translation in applicable_rules:
-                print("IAIN finding new rule")
-                swapped_rules = self._get_similar_rules(rule_translation, data_cls)
-                print("IAIN SWAPPED: ", swapped_rules)
+                #print("IAIN finding new rule")
+                swapped_rules = self._get_similar_rules(rule_translation, data_cls, new_class=new_class)
+                #print("IAIN SWAPPED: ", swapped_rules)
                 best_rule_distance = None
                 best_new_rule = None
-
-                # choose the best new rule
-                '''
-                for new_rule, _ in swapped_rules:
-                    temp_distance = self._get_distance(rule_translation, new_rule)
-                    if best_rule_distance is None or temp_distance < best_rule_distance:
-                        best_rule_distance = temp_distance
-                        best_new_rule = new_rule
-                '''
                 best_new_rule = swapped_rules
 
                 # change values that conflict with new rule
                 old_rule = rule_translation[0]
                 if best_new_rule is not None:
                     for i in range(len(new_data_row)):
-                        print(len(best_new_rule))
-                        print("IAIN FOUND RULES")
+                        #print(len(best_new_rule))
+                        #print("IAIN FOUND RULES")
                         if (new_data_row[i] == 1 and self._same_feature(old_rule, i)
                                 and best_new_rule[i] != 1):
-                            print("IAIN changed value at (to zero) ", i)
+                            #print("IAIN changed value at (to zero) ", i)
                             new_data_row[i] = 0
                         elif new_data_row[i] != 1 and best_new_rule[i] == 1:
-                            print("IAIN changed value at (to one) ", i)
+                            #print("IAIN changed value at (to one) ", i)
                             new_data_row[i] = 1
                 # track how rules were changed
                 rule_changes.append((rule_translation, best_new_rule))
