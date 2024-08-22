@@ -3,6 +3,8 @@ This file contains the explainer part of BARBE and will call to all other parts 
  sense.
 """
 
+# TODO: add encoding named predictions
+
 import pickle
 import warnings
 
@@ -12,6 +14,7 @@ from sklearn.metrics import accuracy_score
 
 from copy import deepcopy
 import numpy as np
+import math
 
 # Import wrappers for other packages
 from barbe.utils.sigdirect_interface import SigDirectWrapper
@@ -22,7 +25,7 @@ from barbe.counterfactual import BarbeCounterfactual
 
 
 DIST_INFO = {'Generic Distributions': {'uniform': 'Uniform', 'normal': 'Normal'},
-             'Skewed Distributions': {'t-distribution': 't-Distribution', 'cauchy': 'Cauchy'}}
+             'Skewed Distributions': {'t-distribution': 't-Distribution', 'cauchy': 'Cauchy (*extreme cases)'}}
 
 
 class BARBE:
@@ -100,7 +103,7 @@ class BARBE:
 
     def __init__(self, training_data=None, feature_names=None, input_scale=None, input_categories=None,
                  verbose=False, mode='tabular', input_sets_class=True,
-                 n_perturbations=5000, perturbation_type='uniform', dev_scaling_factor=5):
+                 n_perturbations=5000, perturbation_type='uniform', dev_scaling_factor=5, n_bins=5):
 
         self._check_input_combination(training_data, feature_names, input_scale, input_categories, n_perturbations,
                                       dev_scaling_factor)
@@ -108,7 +111,7 @@ class BARBE:
 
         self._dev_scaling = dev_scaling_factor is not None
         self._dev_scaling_factor = dev_scaling_factor \
-            if self._dev_scaling and not input_scale else 1
+            if self._dev_scaling and input_scale is not None else 1
         self._verbose = verbose
         self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
@@ -131,6 +134,7 @@ class BARBE:
         self._surrogate_classification = {'input': None, 'perturbed': None}
         self._surrogate_model = None  # SigDirect model trained on the new points
         self._counterfactual = BarbeCounterfactual()
+        self._n_bins = n_bins
         self._explanation = "No explanations done yet."
 
     def __str__(self):
@@ -177,18 +181,24 @@ class BARBE:
         elif self._mode in 'text':
             self._generate_perturbed_text(input_data)
 
+        input_row = pd.DataFrame(columns=self._feature_names, index=[0])
+        input_row.iloc[0] = input_data.to_numpy().reshape(1,-1)
+
         # wrap model so prediction call is always the same
         input_model = BlackBoxWrapper(input_model)
 
         if self._input_sets_class:  # black box is true or false for input class
-            input_model.set_class(input_model.predict(input_data.to_numpy().reshape(1,-1)))
+            input_model.set_class(input_model.predict(input_row))
 
         # get black box predictions
-        self._blackbox_classification['input'] = input_model.predict(input_data.to_numpy().reshape(1, -1))  # IAIN make this look better
-        self._blackbox_classification['perturbed'] = input_model.predict(self._perturbed_data)
-
+        self._blackbox_classification['input'] = input_model.predict(input_row)  # IAIN make this look better
+        print(self._perturbed_data)
+        self._blackbox_classification['perturbed'] = input_model.predict(pd.DataFrame(self._perturbed_data,
+                                                                                      columns=self._feature_names))
+        print(input_data)
+        print(pd.DataFrame(self._perturbed_data, columns=self._feature_names).iloc[0])
         # fit and get predictions for surrogate model
-        self._surrogate_model = SigDirectWrapper(self._feature_names, verbose=self._verbose)
+        self._surrogate_model = SigDirectWrapper(self._feature_names, n_bins=self._n_bins, verbose=self._verbose)
         self._surrogate_model.fit(self._perturbed_data, self._blackbox_classification['perturbed'])
 
         self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))
@@ -246,7 +256,7 @@ class BARBE:
         """
         return self._surrogate_model.get_contrast_sets(data_row)
 
-    def get_counterfactual_explanation(self, data_row):
+    def get_counterfactual_explanation(self, data_row, wanted_class=0):
         """
         Input:
         Purpose:
@@ -254,18 +264,37 @@ class BARBE:
         """
         data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape(1, -1))[0]
         print("IAIN getting rules + ohe simple")
-        aa = self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05)
+        aa = self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05, new_class=wanted_class)
         print("IAIN CONTRAST ", aa)
-        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.00005),
+        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.00005,
+                                                                         new_class=wanted_class),
                                  self._surrogate_model.get_ohe_simple())
         print("IAIN getting prediction")
-        counter_predict, counter_rules = self._counterfactual.predict(self._surrogate_model._encode(data_row.to_numpy().reshape(1, -1)), data_cls)
+        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape(1, -1))
+        counter_predict, counter_rules = self._counterfactual.predict(original_enc, data_cls)
         print(counter_predict)
         # counter_predict = self._surrogate_model._decode([counter_predict])
         new_class = self._surrogate_model._sigdirect_model.predict(counter_predict)
-        counter_predict = self._surrogate_model._decode([counter_predict])
-        return counter_predict, counter_rules, new_class
+        counter_value = self._surrogate_model._decode([counter_predict])
 
+        for i in range(len(original_enc[0])):
+            if original_enc[0][i] == counter_predict[i] and counter_predict[i] == 1:
+                temp = np.zeros(len(original_enc[0])).astype(int)
+                temp[i] = 1
+                position = self._surrogate_model._decode(temp.reshape((1, -1)))[0]
+                ind_use = np.where(np.array(position) != None)[0][0]
+                print(ind_use)
+                print(counter_value)
+                print(data_row.to_numpy().reshape(1, -1))
+                counter_value[0][ind_use] = data_row.to_numpy().reshape(1, -1)[0][ind_use]
+
+        # IAIN temp fix nan
+        for i in range(len(counter_value[0])):
+            if counter_value[0][i] is None or math.isnan(counter_value[0][i]):
+                counter_value[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
+
+
+        return counter_value, counter_rules, new_class
 
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
                                comparison_method=accuracy_score):
@@ -345,10 +374,11 @@ class BARBE:
             fit_success = False
             while fit_tries < 5 and not fit_success:
                 fit_tries += 1
-                fit_success = self._fit_surrogate_model(input_data, input_model)
+                temp_data = input_data.copy()
+                fit_success = self._fit_surrogate_model(temp_data, input_model)
             if not fit_success:
                 if not ignore_errors:
-                    raise Exception('BARBE ERROR: model did not successfully match input data in 5 tries.')
+                    raise AssertionError('BARBE ERROR: model did not successfully match input data in 5 tries.')
                 else:
                     return None
             if self._verbose:

@@ -7,6 +7,7 @@ import itertools
 import os
 from collections import defaultdict
 
+import pandas as pd
 # from distutils.core import setup
 # from Cython.Build import cythonize
 
@@ -25,7 +26,7 @@ class SigDirectWrapper:
                verbose (boolean)           -> Whether to provide verbose output.
         '''
 
-    def __init__(self, column_names, verbose=False):
+    def __init__(self, column_names, n_bins=5, verbose=False):
         # IAIN this should have settings for sigdirect and more accurate utilities
         # IAIN intention is for the user to get the same flexibility as scikit
         # IAIN adjusting settings worked!!
@@ -37,6 +38,7 @@ class SigDirectWrapper:
                 is_binary=True,
                 get_logs=False,
                 other_info=None)
+        self._n_bins = n_bins
         self._oh_enc = None
         self._kb_discrete = None
         self._rules = None
@@ -62,7 +64,7 @@ class SigDirectWrapper:
 
         self._oh_enc = OneHotEncoder(categories='auto', handle_unknown='ignore',
                                      min_frequency=None)
-        self._kb_discrete = KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='quantile')
+        self._kb_discrete = KBinsDiscretizer(n_bins=self._n_bins, encode='ordinal', strategy='quantile')
         self._kb_discrete.fit(X[:, self._not_categorical])
         # two encoding modes, one with mixture of bins and discrete the other only has bins
         if list(self._categorical_features.keys()):
@@ -98,9 +100,9 @@ class SigDirectWrapper:
             print(self._verbose_header, "before decoding:", enc_X)
             print(self._verbose_header, "OneHot decode:", partial_decoding)
             print(partial_usable, partial_decoding[partial_usable])
-            print(self._kb_discrete.bin_edges_[partial_usable][0])
-            print(self._verbose_header, "corresponding bins",
-                  self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)])
+            #print(self._kb_discrete.bin_edges_[partial_usable][0])
+            #print(self._verbose_header, "corresponding bins",
+            #      self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)])
 
         # do not need to fully decode I only need to handle which bin value is assigned
         return_list = [None for i in range(len(partial_decoding))]
@@ -114,20 +116,28 @@ class SigDirectWrapper:
                 converted_index = np.where(moved_index == np.array(list(self._categorical_features.keys())))[0][0]
                 print(converted_index, i, np.array(list(self._categorical_features.keys())))
                 print(self._categorical_features)
-                return_list[moved_index] = self._categorical_features[converted_index][int(partial_decoding[i])]
+                # IAIN URGENT (CHECK IF THE MOVED INDEX IS CORRECT HERE)
+                return_list[moved_index] = self._categorical_features[moved_index][int(partial_decoding[i])]
 
         return [return_list]
 
     def fit(self, X, y):
         # create an encoder for the given values
+        X = pd.DataFrame(X)
+        X = X.fillna(0)
+        X = X.to_numpy()
+        print(X[0,:])
         self._create_encoder(X)
         if self._verbose:
             print(self._verbose_header, self._encode(X))
             print(self._verbose_header, "training y:", y.tolist())
         # train sigdirect on one hot encoding of input data [0, 1, 0, 1, 1, ...]
+        print(self._encode(X))
+        print(y.tolist())
         self._sigdirect_model.fit(self._encode(X), y.tolist())
 
     def predict(self, X):
+        print("IAIN NEW: ", X[0,:])
         return self._sigdirect_model.predict(self._encode(X))
 
     def _generate_rules(self, data_row, true_label):
@@ -193,29 +203,33 @@ class SigDirectWrapper:
         Purpose: Return a simple vector that denotes the bin positions of the one hot encoder.
         Output:
         """
-        print("IAIN in ohe simple")
+        #print("IAIN in ohe simple")
         # original_size = self._rules[0][0][2].shape[1]
+        print(self._rules)
         for item in self._rules:
             original_size = self._rules[item][0][2].shape[1]
             break
-        ohe_key = np.zeros(original_size).astype(int)
-        prev_ind = None
-        counter = 0
-        for i in range(original_size):
-            temp = np.zeros(original_size).astype(int)
-            temp[i] = 1
-            position = self._decode(temp.reshape((1, -1)))[0]
-            #print("IAIN OHE POSITION: ", position)
-            ind_use = np.where(np.array(position) != None)
-            #print("IAIN OHE IND USE: ", ind_use)
-            if prev_ind is None or prev_ind == ind_use:
-                counter += 1
-            else:
-                counter = 1
-            ohe_key[i] = counter
-            prev_ind = ind_use
+        try:
+            ohe_key = np.zeros(original_size).astype(int)
+            prev_ind = None
+            counter = 0
+            for i in range(original_size):
+                temp = np.zeros(original_size).astype(int)
+                temp[i] = 1
+                position = self._decode(temp.reshape((1, -1)))[0]
+                # print("IAIN OHE POSITION: ", position)
+                ind_use = np.where(np.array(position) != None)
+                # print("IAIN OHE IND USE: ", ind_use)
+                if prev_ind is None or prev_ind == ind_use:
+                    counter += 1
+                else:
+                    counter = 1
+                ohe_key[i] = counter
+                prev_ind = ind_use
+        except UnboundLocalError:
+            assert ValueError(self._verbose_header + " ERROR: no rules available. Check input data and settings.")
 
-        print("IAIN SIMPLE OHE: ", ohe_key)
+        #print("IAIN SIMPLE OHE: ", ohe_key)
         return ohe_key
 
     def get_all_rules(self, rules_subset=None):
@@ -240,7 +254,7 @@ class SigDirectWrapper:
         # format [(rule text, support, confidence, rule_p), ...]
         return rules_translation
 
-    def get_contrast_sets(self, data_row, max_dev=0.0005, raw_rules=False):
+    def get_contrast_sets(self, data_row, max_dev=0.0005, raw_rules=False, new_class=0, old_class=1):
         # IAIN get contrast sets as in the paper "Learning Statistically Significant Contrast Sets" Algorithm 1
         # encode and decode the data_row (to get the applied bins)
         encoded_value = self._encode(data_row.to_numpy().reshape(1, -1))
@@ -263,7 +277,7 @@ class SigDirectWrapper:
                 all_translated_rules[c_label].append((self._decode(temp.reshape(1, -1))[0], temp.reshape(1, -1),
                                                       rule.get_confidence(), 10**rule.get_log_p()))
 
-        print("IAIN ALL RULES ", all_translated_rules)
+        #print("IAIN ALL RULES ", all_translated_rules)
 
         final_rules = []
         # for each rule check that it satisfies eq 3 not all classes are the same for the condition p-value
@@ -273,7 +287,8 @@ class SigDirectWrapper:
                 non_equal = False
                 e_match = 0
                 for o_c_label, o_rule_list in all_translated_rules.items():
-                    if c_label != o_c_label:
+                    if ((c_label == new_class and o_c_label == old_class) or
+                            (c_label == old_class and o_c_label == new_class)):
                         for o_rule, _, _, o_p_val in o_rule_list:
                             # IAIN or set to equal in other cases
                             if all([(rule[i] is not None and o_rule[i] is not None) or
@@ -281,14 +296,14 @@ class SigDirectWrapper:
                                     for i in range(len(rule))]):
                                 e_match += 1
                                 if p_val != o_p_val:
-                                    print("IAIN POTENTIAL PAIR ", rule, o_rule)
+                                    #print("IAIN POTENTIAL PAIR ", rule, o_rule)
                                     non_equal = True
                                     if abs(p_val - o_p_val) < min_dif or min_dif == abs(p_val) - 0.05:
                                         min_dif = abs(p_val - o_p_val)
 
-                print("IAIN WHY NOT ", min_dif, max_dev)
+                #print("IAIN WHY NOT ", min_dif, max_dev)
                 if min_dif <= max_dev and not (e_match != 0 and not non_equal):
-                    print("IAIN ADDED RULE")
+                    #print("IAIN ADDED RULE")
                     # for each significant rule if c.antecedant < o.antecedent (X -> c, X is antecedent, o=data_row)
                     #  add it to set
                     # these now contain the contrast sets
@@ -302,9 +317,9 @@ class SigDirectWrapper:
                         final_rules.append((rule, c_label, p_val, min_dif))
 
         if raw_rules:
-            print("IAIN FINAL RULES ", final_rules)
+            #print("IAIN FINAL RULES ", final_rules)
             return final_rules
-        return [(self._rule_translation(rule_item) + ' -> ' + str(c), c, conf, p, m) for rule_item, c, conf, p, m in final_rules]
+        return [(self._rule_translation(rule_item) + ' -> ' + str(c), c, p, m) for rule_item, c, p, m in final_rules]
 
     def get_features(self, data_row, true_label):
         # IAIN now one thing to try is when decoding we just check where relevant bins to the sample appear,

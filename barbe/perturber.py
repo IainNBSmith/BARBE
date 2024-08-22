@@ -64,12 +64,16 @@ class BarbePerturber:
             input_scale = np.array(input_scale)
         self._check_input(training_data, input_scale, input_categories)
         # check and modify training data
-        if input_categories is None:
+        print("IAIN IN LOOP")
+        if input_categories is None or (not input_categories and training_data is not None):
             self._categorical_features = []  # indicators of which columns are categorical
-            self._feature_original_types = []  # indicates the original type of all categorical values (supplied if given input_categories)
+            self._feature_original_types = {}  # indicates the original type of all categorical values (supplied if given input_categories)
             self._categorical_key = dict()
+            print("IAIN discrete conversion")
             training_data = self._training_discrete_conversion(training_data.to_numpy())
         else:
+            print("IAIN NOT RIGHT", input_categories)
+            self._feature_original_types = {}
             self._categorical_key = input_categories
             self._categorical_features = list(input_categories.keys())
             if any([isinstance(self._categorical_key[key], list) for key in self._categorical_key.keys()]):
@@ -81,9 +85,14 @@ class BarbePerturber:
                             temp_replacement[str(item)] = count
                             count += 1
                         self._categorical_key[key] = temp_replacement
-            self._feature_original_types = [type(input_categories[key][list(input_categories[key].keys())[0]])
-                                            for key in input_categories.keys()]
+            #self._feature_original_types = {}
+            for key in input_categories.keys():
+                print("IAIN POTENTIAL ISSUE: ", input_categories)
+                self._feature_original_types[key] = type(list(input_categories[key].keys())[0])
+            #self._feature_original_types = [type(input_categories[key][list(input_categories[key].keys())[0]])
+            #                                for key in input_categories.keys()]
 
+        print("IAIN I CAN PRINT")
         self._covariance_mode = covariance_mode
         self._n_features = training_data.shape[1] \
             if input_scale is None else len(input_scale)
@@ -141,10 +150,18 @@ class BarbePerturber:
     def _training_discrete_conversion(self, training_array, category_threshold=10):
         # conversion from discrete values -> numeric values
         for i in range(training_array.shape[1]):
-            unique_values = np.unique(training_array[:, i])
-            if len(unique_values) <= category_threshold:
+            unique_values = list(np.unique(training_array[:, i].astype(str)))
+            try:
+                unique_values.remove('nan')
+            except ValueError:
+                pass
+            print("IAIN UNIQUES ", unique_values)
+            if (len(unique_values) <= category_threshold and
+                    not np.all(np.isreal(list(training_array[:, i])))):
                 self._categorical_features.append(i)
-                self._feature_original_types.append(type(unique_values[0]))
+                print("UNIQUES IAIN: ", type(unique_values[0]))
+                self._feature_original_types[i] = type(unique_values[0])
+                # self._feature_original_types.append(type(unique_values[0]))
                 self._categorical_key[i] = dict()
                 for j in range(len(unique_values)):
                     value = str(unique_values[j])
@@ -155,7 +172,12 @@ class BarbePerturber:
 
     def _conversion_input(self, input_array):
         for i in self._categorical_features:
-            input_array[i] = self._categorical_key[i][str(input_array[i])]
+            # IAIN ERROR ORIGINATES HERE
+            try:
+                input_array[i] = self._categorical_key[i][str(input_array[i])]
+            except Exception as e:
+                raise ValueError(str(self._categorical_key) + " " +
+                                 str(i) + " " + str(input_array) + " " + str(self._categorical_features) + " " + str(e))
         return input_array
 
     def _perturbed_discrete_conversion(self, perturbed_array):
@@ -176,6 +198,9 @@ class BarbePerturber:
             replacement_values = np.array([None for i in range(perturbed_array.shape[0])])
             for dvalue in self._categorical_key[i].keys():
                 replacement_values[(perturbed_array[:, i] == self._categorical_key[i][str(dvalue)])] = dvalue
+            print("IAIN ", i, perturbed_array.shape, len(self._feature_original_types))
+            print(replacement_values)
+            print(self._feature_original_types)
             perturbed_array[:, i] = replacement_values.astype(self._feature_original_types[i])
         return perturbed_array
 
@@ -189,10 +214,10 @@ class BarbePerturber:
                 np.array([-2 for _ in range(input_shape)]))
 
     def _calculate_scale(self, training_array):
-        return np.std(training_array, axis=0)
+        return np.nanstd(training_array, axis=0)
 
     def _calculate_means(self, training_array):
-        return np.mean(training_array, axis=0)
+        return np.nanmean(training_array, axis=0)
 
     def _rescale_data(self, unscaled_data, scaling_mean=None):
         if scaling_mean is None:

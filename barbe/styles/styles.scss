@@ -1,6 +1,9 @@
-$bg-color: #dadada;
-$card-color: #6089ff;
-$card-header-color: #3b6bff;
+$bg-color: #ffffff;
+$card-color: #007C41;
+$card-header-color: #FFDB05;
+
+$primary-color: #007C41;
+$secondary-color: #FFDB05;
 
 .container-fluid{
   background-color:$bg-color;
@@ -8,8 +11,54 @@ $card-header-color: #3b6bff;
 
 .card{
   background-color:$card-color;
+  color: #ffffff;
 }
 
-.card-header{
-  background-color:$card-header-color;
+.card-header {
+  background-color: $card-header-color;
+  color: black;
 }
+
+#sidebar{
+  background-color:$card-header-color;
+
+}
+
+#save_menu{
+  padding: 10%;
+}
+
+#slider_container{
+  margin: 10%;
+  display:grid;
+  grid-template-columns: 70% 30%;
+}
+
+.sidebar-title{
+  color:$card-color;
+  font-family: Helvetica, sans-serif;
+  font-weight: bold;
+}
+
+th, td {
+  border-bottom: 1px solid #ddd;
+}
+
+.btn{
+  background-color: $card-color;
+  color:$card-header-color;
+}
+
+.btn:hover{
+  background-color: $card-header-color;
+  color:$card-color;
+}
+
+.progress{
+  background-color: $card-color;
+}
+
+.irs--shiny .irs-from,.irs--shiny .irs-to,.irs--shiny .irs-single{color:#fff;text-shadow:none;padding:1px 3px;background-color: $card-color;border-radius:3px;font-size:11px;line-height:1.333}
+.irs--shiny .irs-bar{top:25px;height:8px;border-top:1px solid $card-color;border-bottom:1px solid $card-color;background:$card-color;cursor:s-resize;z-index:2}
+.irs--shiny .irs-handle{top:17px;width:22px;height:22px;border:1px solid $card-color;background-color:$card-color;box-shadow:1px 1px 3px rgba(255,255,255,0.3);border-radius:22px;z-index:2}
+.irs--shiny .irs-handle.state_hover,.irs--shiny .irs-handle:hover{background:#013F1FFF}

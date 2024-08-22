@@ -4,14 +4,85 @@
 
 .card {
   background-color: #007C41;
+  color: #ffffff;
 }
 
 .card-header {
   background-color: #FFDB05;
+  color: black;
 }
 
-.sidebar {
+#sidebar {
   background-color: #FFDB05;
+}
+
+#save_menu {
+  padding: 10%;
+}
+
+#slider_container {
+  margin: 10%;
+  display: grid;
+  grid-template-columns: 70% 30%;
+}
+
+.sidebar-title {
+  color: #007C41;
+  font-family: Helvetica, sans-serif;
+  font-weight: bold;
+}
+
+th, td {
+  border-bottom: 1px solid #ddd;
+}
+
+.btn {
+  background-color: #007C41;
+  color: #FFDB05;
+}
+
+.btn:hover {
+  background-color: #FFDB05;
+  color: #007C41;
+}
+
+.progress {
+  background-color: #007C41;
+}
+
+.irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
+  color: #fff;
+  text-shadow: none;
+  padding: 1px 3px;
+  background-color: #007C41;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.333;
+}
+
+.irs--shiny .irs-bar {
+  top: 25px;
+  height: 8px;
+  border-top: 1px solid #007C41;
+  border-bottom: 1px solid #007C41;
+  background: #007C41;
+  cursor: s-resize;
+  z-index: 2;
+}
+
+.irs--shiny .irs-handle {
+  top: 17px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #007C41;
+  background-color: #007C41;
+  box-shadow: 1px 1px 3px rgba(255, 255, 255, 0.3);
+  border-radius: 22px;
+  z-index: 2;
+}
+
+.irs--shiny .irs-handle.state_hover, .irs--shiny .irs-handle:hover {
+  background: #013f1f;
 }
 
 /*# sourceMappingURL=styles.css.map */
