@@ -52,9 +52,10 @@ class BlackBoxWrapper:
         Output: Either y or an array of True and False values according to the binary class.
         """
         if self._class_binary is None:
-            return y
+            return y.astype(str)
         else:
-            return y == self._class_binary
+            return np.array([str(self._class_binary[0]) if yi == self._class_binary
+                             else '~' + str(self._class_binary[0]) for yi in y])
 
     def _predict_scikit(self, X):
         return self._bbmodel.predict(X)

@@ -72,6 +72,8 @@ class BARBE:
                 |                                     improve the surrogate performance as less is changed about the
                 |                                     input data. IGNORED if scales are given.
                 | Default: 5
+               n_bins (int>0)                     -> Number of bins to use on continuous numerical data.
+                | Default: 5
     
         Example Usage:
         from sklearn import datasets
@@ -244,6 +246,9 @@ class BARBE:
         self._perturbed_data = None
         pass
 
+    def get_available_classes(self):
+        return np.unique(self._blackbox_classification['perturbed']).tolist()
+
     def get_surrogate_model(self):
         return deepcopy(self._surrogate_model)
 
@@ -256,25 +261,26 @@ class BARBE:
         """
         return self._surrogate_model.get_contrast_sets(data_row)
 
-    def get_counterfactual_explanation(self, data_row, wanted_class=0):
+    def get_counterfactual_explanation(self, data_row, wanted_class):
         """
         Input:
         Purpose:
         Output:
         """
-        data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape(1, -1))[0]
-        print("IAIN getting rules + ohe simple")
-        aa = self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05, new_class=wanted_class)
+
+        data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)))[0]
+        print("IAIN DATA CLASS SURROGATE: ", data_cls)
+        aa = self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05, new_class=wanted_class,
+                                                     old_class=data_cls)
         print("IAIN CONTRAST ", aa)
-        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.00005,
+        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05,
                                                                          new_class=wanted_class),
                                  self._surrogate_model.get_ohe_simple())
+        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)))
+        counter_predict, counter_rules = self._counterfactual.predict(original_enc, data_cls, new_class=wanted_class)
         print("IAIN getting prediction")
-        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape(1, -1))
-        counter_predict, counter_rules = self._counterfactual.predict(original_enc, data_cls)
         print(counter_predict)
         # counter_predict = self._surrogate_model._decode([counter_predict])
-        new_class = self._surrogate_model._sigdirect_model.predict(counter_predict)
         counter_value = self._surrogate_model._decode([counter_predict])
 
         for i in range(len(original_enc[0])):
@@ -290,9 +296,16 @@ class BARBE:
 
         # IAIN temp fix nan
         for i in range(len(counter_value[0])):
-            if counter_value[0][i] is None or math.isnan(counter_value[0][i]):
+            if counter_value[0][i] is None or (not isinstance(counter_value[0][i], str) and math.isnan(counter_value[0][i])):
                 counter_value[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
 
+        new_class = self._surrogate_model.predict(np.array(counter_value))[0]
+        print("IAIN NEW CLASS: ", new_class)
+
+        counter_rules = [(self._surrogate_model.raw_rule_translation(a[0], a[1]),
+                          self._surrogate_model.raw_rule_translation(b, wanted_class)) for a, b in counter_rules]
+        #for a, b in counter_rules:
+        #    print("IAIN RULES: ", a, b)
 
         return counter_value, counter_rules, new_class
 

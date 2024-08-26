@@ -8,13 +8,15 @@ from barbe.perturber import BarbePerturber
 import pandas as pd
 import pickle
 
+# TODO: fix new error when n_bins=10 and dev_scaling=2 (only in the visualize for some reason)
 
-def produce_ranges(data):
-    feature_names = data.columns
-    feature_range = [np.unique(data[feature]) if len(list(np.unique(data[feature]))) <= 10 or
-                                                 np.isscalar(np.unique(data[feature])) else (np.min(data[feature]),
-                                                                                             np.max(data[feature]))
-                     for feature in feature_names]
+
+def produce_ranges(data, feature_categories):
+    feature_names = list(data)
+    feature_range = [np.unique(data[feature_names[i]]).astype(str) if i in feature_categories.keys() else (
+        np.round(np.nanmin(data[feature_names[i]]), 2),
+        np.round(np.nanmax(data[feature_names[i]]), 2))
+                     for i in range(len(feature_names))]
     return feature_range
 
 
@@ -42,10 +44,7 @@ def open_input_file(input_file, file_name):
     feature_scale = np.round(temp_perturber.get_scale(), 2)
     feature_categories = temp_perturber.get_discrete_values()
 
-    feature_range = [np.unique(data[feature_names[i]]).astype(str) if i in feature_categories.keys() else (np.round(np.nanmin(data[feature_names[i]]), 2),
-                                                                                                           np.round(np.nanmax(data[feature_names[i]]), 2))
-                     for i in range(len(feature_names))]
-    print("IAIN PLEASE: ", feature_categories)
+    feature_range = produce_ranges(data, feature_categories)
     return (data,
             feature_names,
             feature_types,
@@ -78,10 +77,10 @@ def fit_barbe_explainer(scales, features, categories, data_row, predictor, indic
                         settings=None):
     if settings is None:
         settings = {'perturbation_type': 'uniform',
-                    'dev_scaling_factor': 5,
+                    'dev_scaling_factor': 2,
                     'input_sets_class': True,
                     'n_perturbations': 5000,
-                    'n_bins': 5}
+                    'n_bins': 10}
     # IAIN fix error that occurs with odd cases passed as data (seems to error in the call)
     # check if this is data or given ranges instead
     try:
@@ -102,7 +101,11 @@ def fit_barbe_explainer(scales, features, categories, data_row, predictor, indic
 
 
 def barbe_rules_table(barbe_rules):
-    return pd.DataFrame(barbe_rules, columns=['Text', 'Class', 'Con', 'Supp', 'p_val']).sort_values(by=["p_val"], ascending=True)
+    return pd.DataFrame(barbe_rules, columns=['Rule', 'Class', 'Confidence', 'Support', 'P-Value']).sort_values(by=["P-Value"], ascending=True)
+
+
+def barbe_counter_rules_table(counter_rules):
+    return pd.DataFrame(counter_rules, columns=['Original Rule', 'New Rule'])
 
 
 def feature_importance_barplot(importance):

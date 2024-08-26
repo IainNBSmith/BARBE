@@ -26,7 +26,10 @@ This code contains tests that ensure the BARBE package is working correctly.
     (COMPLETE/July 11th -> July 17th) TODO: Setup data to rerun a few times until the classification is correct
         - Easy to include a check in the called function
     (COMPLETE/July 15th -> July 17th) TODO: Return the exact rules that were used on the case (e.g. 2<'sepal width (cm)'<5)
-    (July 19th) TODO: Add alternative to training data for perturbing data e.g. categorical_info, feature_names, scales or bounds (switches perturbation_mode)
+    (COMPLETE/July 19th) TODO: Add alternative to training data for perturbing data e.g. categorical_info, feature_names, scales or bounds (switches perturbation_mode)
+    (Aug 21st) TODO: Add loans data set test and saves
+    (Aug 21st) TODO: Add names to glass dataset
+    (Aug 22nd) TODO: Perturb categorical as one hot values or find a different method
     '''
 from barbe.utils.lime_interface import LimeWrapper
 from datetime import datetime
@@ -266,6 +269,7 @@ def test_iris_give_scale_category():
 
     iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 
+    # IAIN explain breaks for IRIS why??
     data_row = iris_df.iloc[50]
     training_labels = iris.target
     training_data = iris_df
@@ -274,13 +278,18 @@ def test_iris_give_scale_category():
     start_time = datetime.now()
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
+
+    training_data.to_csv("../dataset/iris_test.csv")
+    with open("../pretrained/iris_test_decision_tree.pickle", "wb") as f:
+        pickle.dump(bbmodel, f)
+
     # IAIN do we need the class to be passed into the explainer? Probably not...
     explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
     print("INPUT PREMADE PERTURBATION INFO")
     print("SCALE FROM OTHER:", explainer.get_perturber(feature='scale'))
     print("SCALE USED IF DIFFERENT:", [0.2, 0.1, 0.5, 0.1])
     print("CATEGORIES:", explainer.get_perturber(feature='categories'))
-    explainer = BARBE(input_scale=[0.2, 0.1, 0.5, 0.1],
+    explainer = BARBE(input_scale=[0.2, 0.1, 1e-9, 0.1],
                       input_categories=explainer.get_perturber(feature='categories'),
                       feature_names=list(training_data),
                       verbose=True, input_sets_class=True)
@@ -297,6 +306,64 @@ def test_iris_give_scale_category():
     print("CONTRAST:", explainer.get_contrasting_rules(data_row))
 
 
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import confusion_matrix
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.compose import ColumnTransformer
+def test_loan():
+    data = pd.read_csv("../dataset/train_loan_raw.csv", index_col=0)
+    print(list(data))
+    data = data.dropna()
+    encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+    categorical_features = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed', 'Property_Area']
+
+    data = data.dropna()
+    for cat in categorical_features:
+        data[cat] = data[cat].astype(str)
+
+    for cat in list(data):
+        if cat not in categorical_features + ['Loan_Status']:
+            data[cat] = data[cat].astype(float)
+
+    y = data['Loan_Status']
+    data = data.drop(['Loan_Status'], axis=1)
+
+    preprocess = ColumnTransformer([('enc', encoder, categorical_features)], remainder='passthrough')
+    model = Pipeline([('pre', preprocess),
+                      ('clf', RandomForestClassifier())])
+
+    model.fit(data, y)
+    data.to_csv("../dataset/loan_test.csv")
+    with open("../pretrained/loan_test_decision_tree.pickle", "wb") as f:
+        pickle.dump(model, f)
+    print(confusion_matrix(model.predict(data), y))
+    print(model.predict(data))
+
+
+def test_loan_open():
+    # TODO: see why crashes happen in webpage but not here
+    #  TODO: based on results here I think it is a formatting innaccury, should pass categorical info from the perturber to be certain
+    data = pd.read_csv("../dataset/train_loan_raw.csv", index_col=0)
+    print(data.dtypes)
+    y = data['Loan_Status']
+    data = data.drop(['Loan_Status'], axis=1)
+    with open("../pretrained/loan_test_decision_tree.pickle", "rb") as f:
+        model = pickle.load(f)
+
+    explainer = BARBE(training_data=data, input_categories=None, verbose=True, input_sets_class=True,
+                      dev_scaling_factor=1, perturbation_type='uniform')
+    explainer = BARBE(training_data=None, input_categories=explainer.get_perturber('categories'),
+                      input_scale=explainer.get_perturber('scale'),
+                      feature_names=list(data),
+                      verbose=True, input_sets_class=True,
+                      dev_scaling_factor=1, perturbation_type='uniform')
+    explanation = explainer.explain(data.iloc[0], model)
+    print(confusion_matrix(model.predict(data), y))
+    print(model.predict(data))
+    print(explainer.get_surrogate_fidelity())
+    print(np.unique(explainer._perturbed_data[:, 0]))
+
 def test_iris_counterfactual():
     # IAIN add traffic dataset to this work with trained classification being
     #  the day of the week?
@@ -304,7 +371,7 @@ def test_iris_counterfactual():
 
     iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 
-    data_row = iris_df.iloc[50]
+    data_row = iris_df.iloc[51]
     training_labels = iris.target
     training_data = iris_df
 
@@ -313,10 +380,12 @@ def test_iris_counterfactual():
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=False)
+    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=False,
+                      dev_scaling_factor=2, perturbation_type='uniform')
     explanation = explainer.explain(data_row, bbmodel)
-    counterfactual = explainer.get_counterfactual_explanation(data_row)
+    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='0')
     print("Test Time: ", datetime.now() - start_time)
+    print(explainer.get_surrogate_fidelity())
     print(data_row)
     print(counterfactual[0])
     print(counterfactual[2])
@@ -388,7 +457,7 @@ def test_glass_counterfactual():
 
     training_data, _ = _get_data()
     training_data.columns = training_data.columns.astype(str)
-    data_row = training_data.drop('class', axis=1).iloc[10]
+    data_row = training_data.drop('class', axis=1).iloc[0]
     training_labels = training_data['class']
     training_data = training_data.drop('class', axis=1)
     # For overfit
@@ -402,15 +471,16 @@ def test_glass_counterfactual():
 
     # IAIN do we need the class to be passed into the explainer? Probably not...
     explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=True,
-                      perturbation_type='uniform', dev_scaling_factor=5)
+                      perturbation_type='cauchy', dev_scaling_factor=2)
     explanation = explainer.explain(data_row, bbmodel)
-    counterfactual = explainer.get_counterfactual_explanation(data_row)
+    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class=0)
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
     print(counterfactual[0])
     print(counterfactual[2])
     print(bbmodel.predict(data_row.to_numpy().reshape(1,-1)))
     print(bbmodel.predict(counterfactual[0]))
+    print(explainer.get_surrogate_fidelity())
     # explainer.get_rules()
 
 

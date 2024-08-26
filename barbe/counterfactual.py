@@ -2,11 +2,15 @@ import numpy as np
 
 
 # TODO: add distance information to counterfactual
+# TODO: check why even if you pass the current class it will still suggest a change (maybe I am too aggressive with changes?)
 
 class BarbeCounterfactual:
-    __doc__ = """
-    
-    """
+    __doc__ = '''
+        Purpose: Suggests modification of input data to change classification. Used and managed by BARBE explainer.
+
+        Input: simple_distance (boolean) -> whether to use only simple distance comparison (no scale used).
+                | Default: True
+            '''
 
     def __init__(self, simple_distance=True):
         self._simple_distance = simple_distance
@@ -18,7 +22,6 @@ class BarbeCounterfactual:
         # key in the form [1, 2, 3, 1, 2, 1, 1, 1, ...]
         #                  binned         category
         self._position_key = None
-        pass
 
     def _calculate_distance_matrix(self):
         self._distance_matrix = self._position_key
@@ -31,7 +34,6 @@ class BarbeCounterfactual:
                 j += 1
 
         self._position_key[-1] = j-1
-        #print("IAIN FINAL POSITION KEY: ", self._position_key)
 
     def _calculate_importance_vector(self):
         if self._simple_distance:
@@ -40,11 +42,12 @@ class BarbeCounterfactual:
             pass
 
     def fit(self, rules, position_key):
-        # rules = list<array(features), label, p_val, confidence>
-        # IAIN take all the rules that matter and use them for reasoning
-        # create distance calculating matrices (p_val * confidence)
-        # store potential modifications (matrix)
-        print("IAIN in fitting counterfactual")
+        """
+        Input: rules (list<(enc_vec, cls, supp, conf, pval)>) -> rules learned by BARBE.
+               position_key (list<+int>)                      -> keys that show which feature each encoded value is.
+        Purpose:
+        Output:
+        """
         self._all_rules = rules
         self._position_key = position_key
 
@@ -56,9 +59,11 @@ class BarbeCounterfactual:
         # rule<(rule vec, class, conf, supp, pval)>
         # for rule_vec, rule_cls, rule_cnf, rule_sup, rule_pv in self._all_rules:
         applicable_rules = []
+        print("IAIN ALL RULES: ", self._all_rules)
         for i in range(len(self._all_rules)):
             print(self._all_rules[i])
             rule_vec, rule_cls, _, _ = self._all_rules[i]
+            print("IAIN CLASSES: ", rule_cls, data_cls)
             if rule_cls == data_cls:
                 print("IAIN FOUND POTENTIAL RULE")
                 print([(rule_vec[j] == data_row[j] or (rule_vec[j] == 0 and self._distance_matrix[j] != 1)) for j in range(len(data_row))])
@@ -68,6 +73,9 @@ class BarbeCounterfactual:
         return applicable_rules
 
     def _all_same_features(self, row1, row2):
+        print("IAIN KEY: ", self._position_key)
+        print("IAIN CHECK1: ", row1)
+        print("IAIN CHECK2: ", row2)
         loaded_feature = None
         for i in range(len(row1)):
             if loaded_feature is None and (row1[i] == 1 or row2[i] == 1) and not (row1[i] == 1 and row2[i] == 1):
@@ -119,6 +127,7 @@ class BarbeCounterfactual:
         similar_distance = None
         for i in range(len(self._all_rules)):
             rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
+            print("IAIN checking all rules: ", rule_cls, new_class)
             if rule_cls == new_class:
                 if (self._all_same_features(in_vec, rule_vec) and
                         (similar_rule is None or (similar_pv > rule_pv/rule_conf))):
@@ -134,7 +143,7 @@ class BarbeCounterfactual:
         n_similar_features = 1
         for i in range(len(self._all_rules)):
             rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
-            if rule_cls != in_cls:
+            if rule_cls == new_class:
                 temp_feature_similarity = self._count_same_features(in_vec, rule_vec)
                 if temp_feature_similarity > n_similar_features and (similar_rule is None or (similar_pv > rule_pv)):
                     similar_rule, _, _, similar_pv = self._all_rules[i]
@@ -143,15 +152,17 @@ class BarbeCounterfactual:
         if similar_rule is not None:
             return similar_rule
 
-        for i in range(len(self._all_rules)):
-            rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
-            if rule_cls != in_cls:
-                temp_feature_similarity = self._count_same_features(in_vec, rule_vec)
-                if similar_rule is None or (similar_pv > rule_pv):
-                    similar_rule, _, _, similar_pv = self._all_rules[i]
-                    n_similar_features = temp_feature_similarity
+        if False:
 
-        #print("IAIN DID NOT FIND RULES")
+            for i in range(len(self._all_rules)):
+                rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
+                if rule_cls != in_cls:
+                    temp_feature_similarity = self._count_same_features(in_vec, rule_vec)
+                    if similar_rule is None or (similar_pv > rule_pv):
+                        similar_rule, _, _, similar_pv = self._all_rules[i]
+                        n_similar_features = temp_feature_similarity
+
+            #print("IAIN DID NOT FIND RULES")
         return similar_rule
 
     def _get_distance(self, row1, row2):
@@ -179,11 +190,20 @@ class BarbeCounterfactual:
         return False
 
     def predict(self, data_row, data_cls, new_class=0):
+        """
+        Input: data_row (pandas DataFrame row) -> data row to find changes for.
+               data_cls (int)                  -> class of row.
+               new_class (int)                 -> desired new class.
+                | Default: 0
+        Purpose: Find applicable rules that need to be changed to try to change class.
+        Output: new_data_row (pandas DataFrame row)    -> data row changed based on rules.
+                rule_list (list<(rule_old, rule_new)>) -> rules that were changed and their replacements.
+        """
         #print("IAIN in counterfactual predict")
         # IAIN take the value, find applicable rules and search for potential rule changes
         data_row = data_row[0]
         applicable_rules = self._get_applicable_rules(data_row, data_cls)
-        #print("IAIN APPLICABLE: ", applicable_rules)
+        print("IAIN APPLICABLE: ", applicable_rules)
         prev_applicable_rules = None
         n_loops = 0
         new_data_row = data_row.copy()
@@ -196,7 +216,7 @@ class BarbeCounterfactual:
             for rule_translation in applicable_rules:
                 #print("IAIN finding new rule")
                 swapped_rules = self._get_similar_rules(rule_translation, data_cls, new_class=new_class)
-                #print("IAIN SWAPPED: ", swapped_rules)
+                print("IAIN SWAPPED: ", swapped_rules)
                 best_rule_distance = None
                 best_new_rule = None
                 best_new_rule = swapped_rules
@@ -206,7 +226,7 @@ class BarbeCounterfactual:
                 if best_new_rule is not None:
                     for i in range(len(new_data_row)):
                         #print(len(best_new_rule))
-                        #print("IAIN FOUND RULES")
+                        print("IAIN FOUND RULES")
                         if (new_data_row[i] == 1 and self._same_feature(old_rule, i)
                                 and best_new_rule[i] != 1):
                             #print("IAIN changed value at (to zero) ", i)

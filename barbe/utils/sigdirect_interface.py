@@ -121,24 +121,32 @@ class SigDirectWrapper:
 
         return [return_list]
 
+    def _y_conversion(self, y):
+        y = y.tolist()
+        self._pred_map = np.unique(y)
+        return [np.where(self._pred_map == yi)[0][0] for yi in y]
+
     def fit(self, X, y):
         # create an encoder for the given values
         X = pd.DataFrame(X)
         X = X.fillna(0)
         X = X.to_numpy()
+        y = self._y_conversion(y)
         print(X[0,:])
         self._create_encoder(X)
         if self._verbose:
             print(self._verbose_header, self._encode(X))
-            print(self._verbose_header, "training y:", y.tolist())
+            print(self._verbose_header, "training y:", y)
         # train sigdirect on one hot encoding of input data [0, 1, 0, 1, 1, ...]
         print(self._encode(X))
-        print(y.tolist())
-        self._sigdirect_model.fit(self._encode(X), y.tolist())
+        self._sigdirect_model.fit(self._encode(X), y)
+
+    def _y_reconversion(self, y):
+        return self._pred_map[y]
 
     def predict(self, X):
-        print("IAIN NEW: ", X[0,:])
-        return self._sigdirect_model.predict(self._encode(X))
+        # print("IAIN NEW: ", X[0,:])
+        return self._y_reconversion(self._sigdirect_model.predict(self._encode(X)))
 
     def _generate_rules(self, data_row, true_label):
         all_rules = defaultdict(list)
@@ -151,7 +159,7 @@ class SigDirectWrapper:
             if self._verbose:
                 print(self._verbose_header, "rules matched", predicted_label, true_label)
             for x, y in all_raw_rules.items():
-                all_rules[x] = [(t, self._oh_enc, self._encode(data_row.to_numpy().reshape(1, -1))) for t in y]
+                all_rules[self._y_reconversion(x)] = [(t, self._oh_enc, self._encode(data_row.to_numpy().reshape(1, -1))) for t in y]
 
         else:
             if self._verbose:
@@ -171,6 +179,12 @@ class SigDirectWrapper:
 
     def get_categories(self):
         return self._oh_enc.categories_
+
+    def raw_rule_translation(self, raw_enc, impl_str):
+        if raw_enc is None:
+            return None
+        # print('IAIN sig_side: ', self._decode(raw_enc.reshape((1,-1))))
+        return self._rule_translation(self._decode(raw_enc.reshape((1,-1)))[0]) + " -> " + impl_str
 
     def _rule_translation(self, rule_items):
         rule_text = ""

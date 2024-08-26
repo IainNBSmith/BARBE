@@ -40,8 +40,30 @@ $secondary-color: #FFDB05;
   font-weight: bold;
 }
 
-th, td {
+#exp_rules{
+  height:300px;
+  overflow:auto;
+}
+
+#cnt_rules{
+  height:300px;
+  overflow:auto;
+}
+
+table{
+  position:sticky;
+  top:0;
+  width:100%;
+}
+
+td {
   border-bottom: 1px solid #ddd;
+}
+
+th {
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top:0;
 }
 
 .btn{

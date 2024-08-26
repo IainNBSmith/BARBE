@@ -19,6 +19,15 @@ def test_open_data():
     print(list(ranges[-1].astype(str)))
 
 
+def test_open_private():
+    data, names, types, ranges, _, _ = open_input_file('../dataset/FOS_data_saved.csv', '../dataset/FOS_data_saved.csv')
+    print(data)
+    print(names)
+    print(types)
+    print(ranges)
+    print(list(ranges[-1]))
+
+
 def test_bad_data():
     data, names, types, ranges = open_input_file('../dataset/nope')
     print(data)
@@ -67,13 +76,20 @@ def test_loan_util():
     explanation = explainer.explain(data.iloc[0], model)
     # print(confusion_matrix(model.predict(data), y))
     print(model.predict(data))
+    print(explainer._surrogate_model.predict(data.to_numpy()))
     print(explainer.get_surrogate_fidelity())
     print(np.unique(explainer._perturbed_data[:, 0]))
+    print(explainer.get_available_classes())
+
+    reformat_input = pd.DataFrame(columns=list(data), index=[0])
+    reformat_input.iloc[0] = data.iloc[0]
+
+    print(explainer.get_counterfactual_explanation(reformat_input, 'Y'))
 
 
 def test_iris_util():
     # TODO: see why crashes happen in webpage but not here
-    #  TODO: based on results here I think it is a formatting innaccury, should pass categorical info from the perturber to be certain
+    #  TODO: based on results gethere I think it is a formatting innaccury, should pass categorical info from the perturber to be certain
     data = pd.read_csv("../dataset/iris_test.csv", index_col=0)
     print(data.dtypes)
     #y = data['Loan_Status']
@@ -112,3 +128,7 @@ def test_iris_util():
     print(model.predict(data))
     print(explainer.get_surrogate_fidelity())
     print(np.unique(explainer._perturbed_data[:, 0]))
+    reformat_input = pd.DataFrame(columns=list(data), index=[0])
+    reformat_input.iloc[0] = data.iloc[0]
+
+    print(explainer.get_counterfactual_explanation(data.iloc[0], '~Y'))

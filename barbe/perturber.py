@@ -9,6 +9,14 @@ from numpy.random import Generator, PCG64
 import warnings
 
 
+def check_numeric(x):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
+
+
 class BarbePerturber:
     __doc__ = '''
         Purpose: Perturbs input data or a given scale from BARBE into multiple samples.
@@ -155,9 +163,12 @@ class BarbePerturber:
                 unique_values.remove('nan')
             except ValueError:
                 pass
-            print("IAIN UNIQUES ", unique_values)
-            if (len(unique_values) <= category_threshold and
-                    not np.all(np.isreal(list(training_array[:, i])))):
+            if not all([check_numeric(value) for value in unique_values]):
+                print("IAIN UNIQUES ", unique_values)
+                print(all([check_numeric(value) for value in unique_values]))
+                print([check_numeric(value) for value in unique_values])
+            if (len(unique_values) <= category_threshold or
+                    not all([check_numeric(value) for value in unique_values])):
                 self._categorical_features.append(i)
                 print("UNIQUES IAIN: ", type(unique_values[0]))
                 self._feature_original_types[i] = type(unique_values[0])
@@ -167,7 +178,8 @@ class BarbePerturber:
                     value = str(unique_values[j])
                     self._categorical_key[i][value] = j
                     training_array[((training_array[:, i]).astype(str) == value), i] = j
-
+        print(self._categorical_key)
+        print(training_array)
         return training_array.astype(float)
 
     def _conversion_input(self, input_array):
