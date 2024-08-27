@@ -246,6 +246,33 @@ class SigDirectWrapper:
         #print("IAIN SIMPLE OHE: ", ohe_key)
         return ohe_key
 
+    def get_applicable_rules(self, input_point):
+        rules_subset = self._rules
+        input_enc = self._encode(input_point)[0]
+        input_point = np.where(input_enc == 1)[0].tolist()
+
+        rules_translation = []
+        for class_label in rules_subset:
+            for rule, _, original_point_sd in rules_subset[class_label]:
+                # with one hot encoded vector only non zero values from the rule need to be set to 1
+                # print("IAIN RULE ITEMS: ", rule.get_items())
+                if all([ind in input_point for ind in rule.get_items()]):
+                    temp = np.zeros(original_point_sd.shape[1]).astype(int)
+                    temp[rule.get_items()] = 1
+                    # get features from the rule to store
+                    rule_support = rule.get_support()
+                    rule_confidence = rule.get_confidence()
+                    rule_p = rule.get_log_p()
+                    # decode one hot vector and get text version of the rule
+                    rule_items = self._decode(temp.reshape((1, -1)))[0]
+                    rule_text = self._rule_translation(rule_items)
+                    rules_translation.append((rule_text + " -> " + str(class_label), class_label,
+                                              rule_support, rule_confidence, rule_p))
+        # format [(rule text, support, confidence, rule_p), ...]
+        return rules_translation
+
+
+
     def get_all_rules(self, rules_subset=None):
         if rules_subset is None:
             rules_subset = self._rules

@@ -386,6 +386,7 @@ def test_iris_counterfactual():
     counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='0')
     print("Test Time: ", datetime.now() - start_time)
     print(explainer.get_surrogate_fidelity())
+    print("APPLIED RULES: ", explainer.get_rules(applicable=data_row))
     print(data_row)
     print(counterfactual[0])
     print(counterfactual[2])

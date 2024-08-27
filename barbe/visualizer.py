@@ -78,8 +78,9 @@ app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
                                 ui.input_action_button('data_counterfactual', 'Counterfactual', disabled=True),
                                 max_height="400px"),
                                 col_widths=(8, 4)),
+                    ui.div(ui.output_table('applicable_rules'), id='exp_rules')
+                    ),
                     ui.div(ui.output_table('explanation_rules'), id='exp_rules')
-                    )
                  )
 
 
@@ -100,6 +101,7 @@ def server(input, output, session):
     server_counter_rules = reactive.value(None)
     server_counter = reactive.value({'': ''})
     server_prev = reactive.value(None)
+    server_applicable_rules = reactive.value(None)
 
     active_pert = reactive.value(False)  # checks if a checkbox has been pre-checked
 
@@ -128,7 +130,6 @@ def server(input, output, session):
                 ui.update_selectize('in_data_' + str(i), selected=str(values[i]))
         if not reset_flag and server_prev.get() is None:
             server_prev.set(prev_value.copy())
-
 
     def reset_data():
         prev_value = list()
@@ -222,6 +223,10 @@ def server(input, output, session):
         return server_rules.get()
 
     @render.table
+    def applicable_rules():
+        return server_applicable_rules.get()
+
+    @render.table
     def counter_rules():
         return server_counter_rules.get()
 
@@ -313,6 +318,7 @@ def server(input, output, session):
                         server_plot.set(feature_importance_barplot(explanation))
                         #ui.notification_show("Produced BARBE plots.")
                         server_rules.set(barbe_rules_table(explainer.get_rules()))
+                        server_applicable_rules.set(barbe_rules_table(explainer.get_rules(applicable=reformat_input.iloc[0])))
                         #ui.notification_show("Retrieved BARBE rules.")
                         server_explainer.set(explainer)
 

@@ -179,32 +179,32 @@ class BARBE:
     def _fit_surrogate_model(self, input_data, input_model):
         # differently produce perturbations for text and tabular data
         if self._mode in 'tabular':
-            self._generate_perturbed_tabular(input_data)
+            self._generate_perturbed_tabular(input_data.copy())
         elif self._mode in 'text':
             self._generate_perturbed_text(input_data)
 
         input_row = pd.DataFrame(columns=self._feature_names, index=[0])
-        input_row.iloc[0] = input_data.to_numpy().reshape(1,-1)
+        input_row.iloc[0] = input_data.to_numpy().reshape((1, -1))
 
         # wrap model so prediction call is always the same
         input_model = BlackBoxWrapper(input_model)
 
         if self._input_sets_class:  # black box is true or false for input class
-            input_model.set_class(input_model.predict(input_row))
+            input_model.set_class(input_model.predict(input_row.copy()))
 
         # get black box predictions
-        self._blackbox_classification['input'] = input_model.predict(input_row)  # IAIN make this look better
+        self._blackbox_classification['input'] = input_model.predict(input_row.copy())  # IAIN make this look better
         print(self._perturbed_data)
-        self._blackbox_classification['perturbed'] = input_model.predict(pd.DataFrame(self._perturbed_data,
+        self._blackbox_classification['perturbed'] = input_model.predict(pd.DataFrame(self._perturbed_data.copy(),
                                                                                       columns=self._feature_names))
         print(input_data)
         print(pd.DataFrame(self._perturbed_data, columns=self._feature_names).iloc[0])
         # fit and get predictions for surrogate model
         self._surrogate_model = SigDirectWrapper(self._feature_names, n_bins=self._n_bins, verbose=self._verbose)
-        self._surrogate_model.fit(self._perturbed_data, self._blackbox_classification['perturbed'])
+        self._surrogate_model.fit(self._perturbed_data.copy(), self._blackbox_classification['perturbed'])
 
-        self._surrogate_classification['input'] = self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))
-        self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data)
+        self._surrogate_classification['input'] = self._surrogate_model.predict(input_row.to_numpy().reshape((1, -1)).copy())
+        self._surrogate_classification['perturbed'] = self._surrogate_model.predict(self._perturbed_data.copy())
 
         if self._verbose:
             print(self._verbose_header, "was it successful?", self._blackbox_classification['input'],
@@ -268,16 +268,16 @@ class BARBE:
         Output:
         """
 
-        data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)))[0]
+        data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0]
         print("IAIN DATA CLASS SURROGATE: ", data_cls)
-        aa = self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05, new_class=wanted_class,
+        aa = self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05, new_class=wanted_class,
                                                      old_class=data_cls)
         print("IAIN CONTRAST ", aa)
-        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row, raw_rules=True, max_dev=0.05,
+        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05,
                                                                          new_class=wanted_class),
                                  self._surrogate_model.get_ohe_simple())
-        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)))
-        counter_predict, counter_rules = self._counterfactual.predict(original_enc, data_cls, new_class=wanted_class)
+        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)).copy())
+        counter_predict, counter_rules = self._counterfactual.predict(original_enc.copy(), data_cls, new_class=wanted_class)
         print("IAIN getting prediction")
         print(counter_predict)
         # counter_predict = self._surrogate_model._decode([counter_predict])
@@ -299,7 +299,7 @@ class BARBE:
             if counter_value[0][i] is None or (not isinstance(counter_value[0][i], str) and math.isnan(counter_value[0][i])):
                 counter_value[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
 
-        new_class = self._surrogate_model.predict(np.array(counter_value))[0]
+        new_class = self._surrogate_model.predict(np.array(counter_value).copy())[0]
         print("IAIN NEW CLASS: ", new_class)
 
         counter_rules = [(self._surrogate_model.raw_rule_translation(a[0], a[1]),
@@ -319,11 +319,15 @@ class BARBE:
         return comparison_method(self._blackbox_classification['perturbed'],
                                  self._surrogate_classification['perturbed'])
 
-    def get_rules(self):
+    def get_rules(self, applicable=None):
         """
-        Purpose: Get all the rules from the surrogate model.
+        Input: applicable (None or pandas Series) -> applicable row to find rules for.
+                | Default: None
+        Purpose: Get all the rules that apply to applicable or all the rules if none is given.
         Output: list<(rule_text, support, confidence)>, all rules with their support and confidence.
         """
+        if applicable is not None:
+            return self._surrogate_model.get_applicable_rules(applicable.to_numpy().reshape((1, -1)))
         return self._surrogate_model.get_all_rules()
 
     def get_perturbed_data(self):
