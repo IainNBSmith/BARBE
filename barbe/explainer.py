@@ -263,9 +263,14 @@ class BARBE:
 
     def get_counterfactual_explanation(self, data_row, wanted_class):
         """
-        Input:
-        Purpose:
-        Output:
+        Input: data_row (pandas Series) -> data row that should be modified to change class.
+               wanted_class (string)    -> string value of desired class from black box, found via
+                                            get_available_classes()
+        Purpose: Produce a counterfactual explanation, a modification to existing data to produce a new class, based on
+                  the rules learned by SigDirect.
+        Output: counter_value (list)                          -> new values assigned to the original data.
+                counter_rules (list<original_rule, new_rule>) -> rule that were changed to flip class.
+                new_class (string)                            -> new class as predicted by the SigDirect surrogate.
         """
 
         data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0]

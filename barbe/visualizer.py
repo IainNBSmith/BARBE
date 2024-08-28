@@ -5,6 +5,7 @@ from htmltools import css
 from pathlib import Path
 # from shiny.express import ui
 from barbe.utils.visualizer_utils import *
+from htmltools import tags, TagAttrValue
 import barbe
 import pickle
 import torch
@@ -66,7 +67,13 @@ app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
                                              max=20, step=1), id='tooltip_container'),
                                        'More bins captures more precise bounds of black box.', placement='left'),
                             ui.input_checkbox('set_class_setting', 'Use All Classes', value=True),
-                            ui.output_text('info'),
+                            ui.layout_columns(ui.tooltip(ui.span(ui.output_text('info'),
+                                                                 id='tooltip_container'),
+                                                         'Fidelity indicates the proportion of agreements between '
+                                                         'perturbed classes and SigDirect (BARBE surrogate) '
+                                                         'predictions.', placement='left'),
+                                                         ui.input_action_button('show_scale',
+                                                                                'Manually Set Scale')),
                             ui.input_action_button('data_explain', 'Explain'),
                             max_height="650px")),
                     #********** RULES **********#
@@ -104,6 +111,7 @@ def server(input, output, session):
     server_applicable_rules = reactive.value(None)
 
     active_pert = reactive.value(False)  # checks if a checkbox has been pre-checked
+    scale_visible = reactive.value(False)
 
     def set_suggested(values=None):
         ranges = server_ranges.get()
@@ -131,28 +139,38 @@ def server(input, output, session):
         if not reset_flag and server_prev.get() is None:
             server_prev.set(prev_value.copy())
 
-    def reset_data():
+    def reset_data(new_show=False):
         prev_value = list()
         prev_scale = list()
-        if server_data.get() is not None:
-            if server_ranges.get() is not None:  # remove existing data
-                for i in range(len(server_ranges.get())):
-                    prev_value.append(input['in_data_'+str(i)]())
-                    prev_scale.append(input['in_scale_'+str(i)]())
-                    # IAIN remove does not work for select (check files _input_select.py (parent div does not have an id to remove it) and _input_slider.py)
-                    ui.remove_ui(selector="div:has(> #in_data_" + str(i) + ")")
-                    ui.remove_ui(selector="div:has(> #in_scale_" + str(i) + ")")
+        #if server_data.get() is not None:
+        #    if server_ranges.get() is not None:  # remove existing data
+        if not active_pert:
+            return
+        if server_ranges.get() is None:  # remove existing data
+            return
+        for i in range(len(server_ranges.get())):
+            prev_value.append(input['in_data_'+str(i)]())
+            ui.update_selectize('in_data_' + str(i), label='')
+            if not new_show:
+                prev_scale.append(input['in_scale_'+str(i)]())
+            # IAIN remove does not work for select (check files _input_select.py (parent div does not have an id to remove it) and _input_slider.py)
+            ui.remove_ui(selector="div:has(> #in_data_" + str(i) + ")")
+            ui.remove_ui(selector="div:has(> #in_scale_" + str(i) + ")")
 
-            data = server_data.get()
-            features = server_features.get()
-            ranges = produce_ranges(data, server_categories.get())
-            server_ranges.set(ranges)
-            scales = server_scale.get()
-            #ui.notification_show("Set all values")
-            # for each feature add a slider or selection list to modify
-            default_value = data.iloc[0]
-            for i in range(len(ranges) - 1, -1, -1):
-                # IAIN add the possibility for categorical values (dropdown)
+        if new_show:
+            prev_scale = server_scale.get()
+
+        data = server_data.get()
+        features = server_features.get()
+        ranges = produce_ranges(data, server_categories.get())
+        server_ranges.set(ranges)
+        scales = server_scale.get()
+        #ui.notification_show("Set all values")
+        # for each feature add a slider or selection list to modify
+        default_value = data.iloc[0]
+        for i in range(len(ranges) - 1, -1, -1):
+            # IAIN add the possibility for categorical values (dropdown)
+            if scale_visible.get():
                 if input.data_file_option():
                     ui.insert_ui(
                         ui.input_numeric('in_scale_' + str(i), 'Scale', value=prev_scale[i], min=0, max=10 * scales[i]),
@@ -166,38 +184,48 @@ def server(input, output, session):
                         # id string of object relative to placement
                         selector="#slider_container",
                         where="afterBegin")
-
-                if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
-                    if not input.manual_data():
-                        ui.insert_ui(ui.input_slider('in_data_' + str(i),
-                                                                       str(features[i]),
-                                                                       value=prev_value[i],
-                                                                       min=ranges[i][0],
-                                                                       max=ranges[i][1],
-                                                                       sep='', width="80%"),
-                                     # id string of object relative to placement
-                                     selector="#slider_container",
-                                     where="afterBegin"
-                                     )
-                    else:
-                        ui.insert_ui(ui.input_numeric('in_data_' + str(i),
-                                                                        str(features[i]),
-                                                                        value=prev_value[i],
-                                                                        min=ranges[i][0],
-                                                                        max=ranges[i][1], width="80%"),
-                                     # id string of object relative to placement
-                                     selector="#slider_container",
-                                     where="afterBegin"
-                                     )
-                else:
-                    ui.insert_ui(ui.input_selectize('in_data_' + str(i),
+            else:
+                # IAIN this is how you VERY MANUALLY have to fix the label problem
+                props: dict[str, TagAttrValue] = {
+                    "class": 'div',
+                    "id": 'in_scale_' + str(i)
+                }
+                ui.insert_ui(
+                    ui.div(tags.div(**props)),
+                    # id string of object relative to placement
+                    selector="#slider_container",
+                    where="afterBegin")
+            if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
+                if not input.manual_data():
+                    ui.insert_ui(ui.input_slider('in_data_' + str(i),
                                                                    str(features[i]),
-                                                                   list(ranges[i]),
-                                                                   selected=str(prev_value[i]),
-                                                                   width="80%"),
+                                                                   value=prev_value[i],
+                                                                   min=ranges[i][0],
+                                                                   max=ranges[i][1],
+                                                                   sep='', width="80%"),
                                  # id string of object relative to placement
                                  selector="#slider_container",
-                                 where="afterBegin")
+                                 where="afterBegin"
+                                 )
+                else:
+                    ui.insert_ui(ui.input_numeric('in_data_' + str(i),
+                                                                    str(features[i]),
+                                                                    value=float(prev_value[i]),
+                                                                    min=float(ranges[i][0]),
+                                                                    max=float(ranges[i][1]), width="80%"),
+                                 # id string of object relative to placement
+                                 selector="#slider_container",
+                                 where="afterBegin"
+                                 )
+            else:
+                ui.insert_ui(ui.input_selectize('in_data_' + str(i),
+                                                               str(features[i]),
+                                                               list(ranges[i]),
+                                                               selected=str(prev_value[i]),
+                                                               width="80%"),
+                             # id string of object relative to placement
+                             selector="#slider_container",
+                             where="afterBegin")
 
     # ********** RENDERED ELEMENTS **********#
     @render.text
@@ -231,6 +259,13 @@ def server(input, output, session):
         return server_counter_rules.get()
 
     # ********** REACTIVE ELEMENTS **********#
+    @reactive.effect
+    @reactive.event(input.show_scale)
+    def _():
+        if not scale_visible.get():
+            scale_visible.set(True)
+            reset_data(new_show=True)
+            ui.notification_show('Scale will now appear beside data.')
 
     @reactive.effect
     @reactive.event(input.counterfactual_suggestions)
@@ -263,7 +298,13 @@ def server(input, output, session):
                 prediction = predictor.predict(reformat_input)
                 server_prediction.set(prediction[0])
                 #ui.notification_show(predictor.predict(server_data.get()), duration=100)
-                ui.notification_show("Predicted: " + str(prediction[0]) + " for current sample.")
+                if server_explainer.get() is not None:
+                    explainer = server_explainer.get()
+                    server_applicable_rules.set(barbe_rules_table(explainer.get_rules(applicable=reformat_input.iloc[0])))
+                    ui.notification_show("Predicted: " + str(prediction[0]) + " for current sample and reset "
+                                                                              "applicable rules.")
+                else:
+                    ui.notification_show("Predicted: " + str(prediction[0]) + " for current sample.")
             else:
                 ui.notification_show("Model Error: Invalid data format for selected model. "
                                      "Try a different model or format.")
@@ -305,7 +346,10 @@ def server(input, output, session):
                 else:
                     #ui.notification_show("Starting BARBE")
                     # add 1e-10 so zero is not exactly zero but should not produce variation in most cases
-                    scales = [input['in_scale_' + str(i)]() + 1e-10 for i in range(len(server_ranges.get()))]
+                    if scale_visible.get():
+                        scales = [input['in_scale_' + str(i)]() + 1e-10 for i in range(len(server_ranges.get()))]
+                    else:
+                        scales = server_scale.get()
                     #ui.notification_show(str(scales))
                     #ui.notification_show(str(list(features)))
                     #ui.notification_show(str(server_categories.get()))
@@ -357,7 +401,7 @@ def server(input, output, session):
     @reactive.effect
     @reactive.event(input.manual_data)
     def _():
-        reset_data()
+        reset_data(new_show=(not scale_visible.get()))
 
     # IAIN add that counterfactual is innactive until a explanation is produced (changing the loaded data or model reverts this)
     @reactive.effect
@@ -444,17 +488,29 @@ def server(input, output, session):
         # for each feature add a slider or selection list to modify
         default_value = data.iloc[0]
         for i in range(len(ranges)-1, -1, -1):
-            if input.data_file_option():
-                ui.insert_ui(ui.input_numeric('in_scale_' + str(i), 'Scale', value=scales[i], min=0, max=10*scales[i]),
-                             # id string of object relative to placement
-                             selector="#slider_container",
-                             where="afterBegin")
+            if scale_visible.get():
+                if input.data_file_option():
+                    ui.insert_ui(ui.input_numeric('in_scale_' + str(i), 'Scale', value=scales[i], min=0, max=10*scales[i]),
+                                 # id string of object relative to placement
+                                 selector="#slider_container",
+                                 where="afterBegin")
+                else:
+                    ui.insert_ui(
+                        ui.input_numeric('in_scale_' + str(i), 'Scale - locked', value=scales[i], min=scales[i], max=scales[i]),
+                        # id string of object relative to placement
+                        selector="#slider_container",
+                        where="afterBegin")
             else:
+                props: dict[str, TagAttrValue] = {
+                    "class": 'div',
+                    "id": 'in_scale_' + str(i)
+                }
                 ui.insert_ui(
-                    ui.input_numeric('in_scale_' + str(i), 'Scale - locked', value=scales[i], min=scales[i], max=scales[i]),
+                    ui.div(tags.div(**props)),
                     # id string of object relative to placement
                     selector="#slider_container",
                     where="afterBegin")
+
             if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
                 if not input.manual_data():
                     ui.insert_ui(ui.input_slider('in_data_' + str(i),
@@ -471,9 +527,9 @@ def server(input, output, session):
                     # IAIN breaks on some data (do not know why...)
                     ui.insert_ui(ui.input_numeric('in_data_' + str(i),
                                                   str(features[i]),
-                                                  value=default_value[features[i]],
-                                                  min=ranges[i][0],
-                                                  max=ranges[i][1], width="80%"),
+                                                  value=float(default_value[features[i]]),
+                                                  min=float(ranges[i][0]),
+                                                  max=float(ranges[i][1]), width="80%"),
                                  # id string of object relative to placement
                                  selector="#slider_container",
                                  where="afterBegin"

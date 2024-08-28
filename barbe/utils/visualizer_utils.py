@@ -32,10 +32,14 @@ def open_input_file(input_file, file_name):
 
     feature_names = list(data)
     # data = data.dropna()
-    feature_types = [type(data.iloc[0][feature]) for feature in feature_names]
-    #for feature in feature_names:
+    # IAIN import line to fix float value issues
+    for feature in feature_names:
+        if isinstance(data.iloc[0][feature], float):
+            if all(data[feature] % 1 == 0):
+                data[feature] = data[feature].astype(int)
     #    if len(list(np.unique(data[feature].astype(str)))) <= 10 and not np.all(np.isreal(list(data[feature]))):
     #        data[feature] = data[feature].astype(str)
+    feature_types = [type(data.iloc[0][feature]) for feature in feature_names]
 
     temp_perturber = BarbePerturber(training_data=data,
                                     dev_scaling_factor=1,
