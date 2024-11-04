@@ -70,3 +70,10 @@ fabric.properties
 
 # Pycharm
 .idea
+2018_boxplot.png
+barbe/dataset/FOS_data_saved.csv
+barbe/dataset/FoS_test.csv
+barbe/dataset/FoS_test_ada_boost.csv
+barbe/experiments/logs.txt
+barbe/experiments/rules_out.txt
+sigdirect/plog_full/
