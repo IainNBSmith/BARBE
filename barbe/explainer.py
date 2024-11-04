@@ -26,6 +26,8 @@ from barbe.counterfactual import BarbeCounterfactual
 
 DIST_INFO = {'Generic Distributions': {'uniform': 'Uniform', 'normal': 'Normal'},
              'Skewed Distributions': {'t-distribution': 't-Distribution', 'cauchy': 'Cauchy (*extreme cases)'}}
+BOUND_INFO = {'Loop-Based Bounding': {'--': 'Cut to Mean', '---': 'Cut to Sample'},
+              'Absolute Bounding': {'----': 'Set to Remainder (Max-Min)', '-----': 'Set to Max/Min'}}
 
 
 class BARBE:
@@ -42,6 +44,10 @@ class BARBE:
                 | Default: None
                input_categories (dict<list>) or   -> indicator for which values are categorical and the possible values.
                 |                (dict<dict>)         or direct assignment of values to labels.
+                | Default: None
+               input_bounds (list<(floats)>)      -> list of bounds in order (min, max), (None, max), (min, None), or None
+                |                                     setting bounds for each variable in the final output. Will be
+                |                                     checked for values that will easily be exceeded.
                 | Default: None
                verbose (boolean)                  -> Whether to provide verbose output during training.
                mode (string)                      -> Mode BARBE will run in, important for generating simulated data.
@@ -104,9 +110,10 @@ class BARBE:
         '''
 
     def __init__(self, training_data=None, feature_names=None, input_scale=None, input_categories=None,
-                 verbose=False, mode='tabular', input_sets_class=True,
+                 input_covariance=None, input_bounds=None, verbose=False, mode='tabular', input_sets_class=True,
                  n_perturbations=5000, perturbation_type='uniform', dev_scaling_factor=5, n_bins=5):
 
+        # IAIN consider adding more options to bound setting for BARBE side
         self._check_input_combination(training_data, feature_names, input_scale, input_categories, n_perturbations,
                                       dev_scaling_factor)
         input_categories = self._fix_input_categories(input_categories, feature_names)
@@ -125,12 +132,15 @@ class BARBE:
         self._perturber = BarbePerturber(training_data=training_data,
                                          input_scale=input_scale,
                                          input_categories=input_categories,
+                                         input_bounds=input_bounds,
+                                         input_covariance=input_covariance,
                                          perturbation_type=perturbation_type,
                                          dev_scaling_factor=self._dev_scaling_factor,
                                          uniform_training_range=False,
                                          df=(None if training_data is not None else 20))
         self._perturbed_data = None
         self._input_sets_class = input_sets_class
+        self._set_class = None
         self._input_data = None
         self._blackbox_classification = {'input': None, 'perturbed': None}
         self._surrogate_classification = {'input': None, 'perturbed': None}
@@ -190,7 +200,8 @@ class BARBE:
         input_model = BlackBoxWrapper(input_model)
 
         if self._input_sets_class:  # black box is true or false for input class
-            input_model.set_class(input_model.predict(input_row.copy()))
+            self._set_class = input_model.predict(input_row.copy())
+            input_model.set_class(self._set_class)
 
         # get black box predictions
         self._blackbox_classification['input'] = input_model.predict(input_row.copy())  # IAIN make this look better
@@ -321,8 +332,24 @@ class BARBE:
         # IAIN set default and some alternative options for comparison of classifications
         # IAIN set default and some alternative options for comparison of classifications
         # IAIN comparison_method(y_true, y_pred)
-        return comparison_method(self._blackbox_classification['perturbed'],
-                                 self._surrogate_classification['perturbed'])
+        if (comparison_model is None) and (comparison_data is None):
+            return comparison_method(self._blackbox_classification['perturbed'],
+                                     self._surrogate_classification['perturbed'])
+        elif (comparison_model is not None) and (comparison_data is None):
+            wrapped_comparison = BlackBoxWrapper(comparison_model)
+            if self._input_sets_class:
+                wrapped_comparison.set_class(self._blackbox_classification['input'])
+            return comparison_method(wrapped_comparison.predict(self._perturbed_data),
+                                     self._surrogate_classification['perturbed'])
+        elif (comparison_model is not None) and (comparison_data is not None):
+            wrapped_comparison = BlackBoxWrapper(comparison_model)
+            if self._input_sets_class:
+                wrapped_comparison.set_class(self._set_class)
+            if self._verbose:
+                print(self._verbose_header, " BBModel: ", wrapped_comparison.predict(comparison_data),
+                      " BARBE: ", self._surrogate_model.predict(comparison_data.to_numpy()))
+            return comparison_method(wrapped_comparison.predict(comparison_data),
+                                     self._surrogate_model.predict(comparison_data.to_numpy()))
 
     def get_rules(self, applicable=None):
         """
@@ -372,6 +399,9 @@ class BARBE:
         """
         self._surrogate_model.get_categories()
 
+    def predict(self, X):
+        return self._surrogate_model.predict(X)
+
     def explain(self, input_data, input_model, fit_new_surrogate=True, ignore_errors=False):
         """
         Input: input_data (pandas DataFrame row)                 -> The data to explain.
@@ -394,7 +424,7 @@ class BARBE:
             # fit the SigDirect model
             fit_tries = 0
             fit_success = False
-            while fit_tries < 5 and not fit_success:
+            while fit_tries < 10 and not fit_success:
                 fit_tries += 1
                 temp_data = input_data.copy()
                 fit_success = self._fit_surrogate_model(temp_data, input_model)
@@ -410,6 +440,7 @@ class BARBE:
             print(self._verbose_header, 'fidelity:', self.get_surrogate_fidelity())
         # expecting a fit model explain the result for the new data, unless refit it assumes the prediction is correct
         # explanation_temp = self.get_features(input_data, self._blackbox_classification['input'][0])
-        self._explanation = self.get_features(input_data, self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))[0])
+        self._explanation = self.get_features(input_data,
+                                              self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))[0])
 
         return self._explanation

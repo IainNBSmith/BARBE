@@ -34,6 +34,37 @@ $secondary-color: #FFDB05;
   grid-template-columns: 70% 30%;
 }
 
+#settings_close{
+  position:relative;
+  left:0;
+  width:15px;
+}
+
+#settings_container{
+  margin: 10%;
+  display:grid;
+  grid-template-columns: 30% 20% 50%;
+}
+
+#settings_background{
+  position:fixed;
+  z-index:1000;
+  right:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background-color: rgba(70, 67, 67, 0.3);
+}
+
+#settings_card{
+  position:relative;
+  overflow:auto;
+  left:20%;
+  top:10%;
+  width:60%;
+  height:80%;
+}
+
 .sidebar-title{
   color:$card-color;
   font-family: Helvetica, sans-serif;
@@ -42,7 +73,6 @@ $secondary-color: #FFDB05;
 
 #exp_rules{
   height:300px;
-  overflow:auto;
 }
 
 #cnt_rules{
@@ -64,6 +94,16 @@ th {
   border-bottom: 1px solid #ddd;
   position: sticky;
   top:0;
+}
+
+#settings_reset {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+#settings_reset:hover {
+  background-color: #4d0b0b;
+  color: #d9aeae;
 }
 
 .btn{

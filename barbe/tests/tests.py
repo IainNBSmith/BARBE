@@ -303,6 +303,54 @@ def test_iris_give_scale_category():
     # IAIN TODO: check in valid range the full edges do not matter
     data_row['sepal length (cm)'] = -10
     print("DATA:", data_row)
+    print("PERTURBED DATA: ", explainer.get_perturbed_data())
+    print("CONTRAST:", explainer.get_contrasting_rules(data_row))
+
+
+def test_iris_give_bounds():
+    # IAIN add traffic dataset to this work with trained classification being
+    #  the day of the week?
+    iris = datasets.load_iris()
+
+    iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+
+    # IAIN explain breaks for IRIS why??
+    data_row = iris_df.iloc[50]
+    training_labels = iris.target
+    training_data = iris_df
+
+    print("Running test: BARBE iris Run")
+    start_time = datetime.now()
+    bbmodel = RandomForestClassifier()
+    bbmodel.fit(training_data, training_labels)
+
+    training_data.to_csv("../dataset/iris_test.csv")
+    with open("../pretrained/iris_test_decision_tree.pickle", "wb") as f:
+        pickle.dump(bbmodel, f)
+
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
+    print("INPUT PREMADE PERTURBATION INFO")
+    print("SCALE FROM OTHER:", explainer.get_perturber(feature='scale'))
+    print("SCALE USED IF DIFFERENT:", [0.2, 0.1, 0.5, 0.1])
+    print("CATEGORIES:", explainer.get_perturber(feature='categories'))
+    explainer = BARBE(input_scale=[0.2, 100, 100, 100],
+                      input_categories=explainer.get_perturber(feature='categories'),
+                      input_bounds=[None, (None, 0.1), (0, None), (0, 1)],
+                      perturbation_type='t-distribution',
+                      feature_names=list(training_data),
+                      verbose=True, input_sets_class=True)
+    explanation = explainer.explain(data_row, bbmodel)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(explanation)
+    print(bbmodel.feature_importances_)
+    print("ALL RULES:", explainer.get_rules())
+    # example modification
+    # IAIN TODO: check in valid range the full edges do not matter
+    data_row['sepal length (cm)'] = -10
+    print("DATA:", data_row)
+    print("PERTURBED DATA: ", explainer.get_perturbed_data())
     print("CONTRAST:", explainer.get_contrasting_rules(data_row))
 
 

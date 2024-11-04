@@ -265,6 +265,7 @@ class LimeTabularExplainer(object):
 
         # Though set has no role to play if training data stats are provided
         self.scaler = None
+        # IAIN may need to modify this for the benifit of the doubt for LIME
         self.scaler = sklearn.preprocessing.StandardScaler(with_mean=False)
         self.scaler.fit(training_data)
         self.feature_values = {}
@@ -397,6 +398,7 @@ class LimeTabularExplainer(object):
         # along with prediction probabilities
         if self.mode == "classification":
             if len(yss.shape) == 1:
+                print(yss)
                 raise NotImplementedError("LIME does not currently support "
                                           "classifier models without probability "
                                           "scores. If this conflicts with your "
@@ -482,6 +484,7 @@ class LimeTabularExplainer(object):
                                           class_names=self.class_names)
         # IAIN from what I can tell this should be None (we open it up and assign it I see)
         ret_exp.scaled_data = scaled_data
+        model_array = {}
         if self.mode == "classification":
             ret_exp.predict_proba = yss[0]
             if top_labels:
@@ -496,23 +499,23 @@ class LimeTabularExplainer(object):
         for label in labels:
             (ret_exp.intercept[label],
              ret_exp.local_exp[label],
-             ret_exp.score, ret_exp.local_pred) = self.base.explain_instance_with_data(
-                    scaled_data,
-                    yss,
-                    distances,
-                    label,
-                    num_features,
-                    model_regressor=model_regressor,
-                    feature_selection=self.feature_selection,
-                    neighborhood_data_sd=sd_data,
-                    ohe=ohe)
+             ret_exp.score, ret_exp.local_pred, model_array[label]) = self.base.explain_instance_with_data(
+                        scaled_data,
+                        yss,
+                        distances,
+                        label,
+                        num_features,
+                        model_regressor=model_regressor,
+                        feature_selection=self.feature_selection,
+                        neighborhood_data_sd=sd_data,
+                        ohe=ohe)
 
         if self.mode == "regression":
             ret_exp.intercept[1] = ret_exp.intercept[0]
             ret_exp.local_exp[1] = [x for x in ret_exp.local_exp[0]]
             ret_exp.local_exp[0] = [(i, -1 * j) for i, j in ret_exp.local_exp[1]]
 
-        return ret_exp
+        return ret_exp, scaled_data, model_array
 
     def __data_inverse(self,
                        data_row,

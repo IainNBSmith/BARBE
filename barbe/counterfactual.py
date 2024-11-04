@@ -3,6 +3,9 @@ import numpy as np
 
 # TODO: add distance information to counterfactual
 # TODO: check why even if you pass the current class it will still suggest a change (maybe I am too aggressive with changes?)
+# TODO: Add input for rule changes that are allowed dict{feat_1:0, ...} 0 -> no changes, 1 -> + only, 2 -> - only, 3 -> +/-
+#  TODO: we do this cause then if dict[feat1]: make change (then more checking for specifics)
+# TODO: include option setting for how intense rule changes should be (e.g. only contrast or further...)
 
 class BarbeCounterfactual:
     __doc__ = '''
@@ -125,6 +128,7 @@ class BarbeCounterfactual:
         similar_rule = None
         similar_pv = None
         similar_distance = None
+        # first rule check, concerning exact rules (or contrasting rules)
         for i in range(len(self._all_rules)):
             rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
             print("IAIN checking all rules: ", rule_cls, new_class)
@@ -141,6 +145,7 @@ class BarbeCounterfactual:
             return similar_rule
 
         n_similar_features = 1
+        # find somewhat similar rules to change with (may have strong impact)
         for i in range(len(self._all_rules)):
             rule_vec, rule_cls, rule_conf, rule_pv = self._all_rules[i]
             if rule_cls == new_class:

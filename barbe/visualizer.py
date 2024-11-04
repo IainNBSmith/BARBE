@@ -1,5 +1,9 @@
+import string
+
 import pandas as pd
 from shiny import reactive, App, render, run_app, ui
+from shiny.session import require_active_session
+from shiny._utils import drop_none
 from htmltools import css
 
 from pathlib import Path
@@ -23,20 +27,37 @@ question_circle_fill = ui.HTML(
 # TODO: add generic error handling (Some done today - Aug 13)
 # TODO: clean up this code
 # TODO/Done Aug 20: make the numeric values display only 3-4 sigdigits
-# TODO: add a setting to get the prediction from the surrogate?
+# TODO/Done: add a setting to get the prediction from the surrogate?
 
 # TODO/Done Aug 20: make the numeric values have to be whole integers
 # TODO/Done Aug 20: Add manual scale values
 # TODO/Done Aug 20 (implicitly): Add selection for values to change
-# TODO: Add new values after doing counterfactual
+# TODO/Done: Add new values after doing counterfactual
+# TODO/Done: Change error notifications into type='error'
+
+# (October 16) TODO: Add advanced option for bound handling
+#       - Selectize menu with all the options for bound handling
+# (October 16) TODO: Clean up visualizer code, avoid repeats, handle all exceptions
+#       - Nasty one that has been there since the start, should be a function call
+#       - Cleaning up when reloading should be a function call
+# (October 16 - URGENT) TODO: Add checks for the values used in advanced settings against the value to perturb
+#       - When bounds are outside of the value it is a problem
+#       - When min is larger than max
+#       - When min == max
+#       - When current option for selectize is not in the possible options
+# (October 16) TODO: By default make BARBE use bounds from the dataset
+# (October 16) TODO: Fix visualizer issue where it needs to scroll when too many features are used
+# (October 16) TODO: Fix feature importance graph scales changing when it's size changes - keeps adding on
+#       - Save the graph itself and then when it is called use the original
+# (Someday) TODO: Add the save button for convenient opening where a user left off
+#print(Path(__file__) / 'visualizer_javascript.js')
 
 #********** PAGE FORMATTING **********#
 app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
+                       ui.include_js(path=Path(__file__).parent / 'utils' / 'visualizer_javascript.js'),
                 #********** LOAD/SAVE **********#
                  ui.layout_columns(
-                      ui.card(ui.input_file('data_file_name', 'Choose Data File', accept=[".csv", ".data"]),
-                               ui.input_checkbox('data_file_option', 'User Set Ranges'),
-                               ui.input_checkbox('data_perturbations', 'Replace Ranges with Perturbations')),
+                      ui.card(ui.input_file('data_file_name', 'Choose Data File', accept=[".csv", ".data"])),
                       ui.div(ui.input_checkbox('data_save', 'Save Ranges and Scale'),
                              ui.input_checkbox('explainer_save', 'Save Explainer'),
                              ui.input_action_button('save_data', 'Save', disabled=True), id="save_menu"),
@@ -48,6 +69,7 @@ app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
                           ui.div(id="slider_container"),
                           ui.input_checkbox('manual_data', 'Manually Set Values'),
                           ui.output_text('prediction'),
+                          ui.output_text('barbe_prediction'),
                           ui.input_action_button('data_info', 'Predict'),
                           id='sidebar', width=400, title="Data", open="closed"),
 
@@ -72,8 +94,8 @@ app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
                                                          'Fidelity indicates the proportion of agreements between '
                                                          'perturbed classes and SigDirect (BARBE surrogate) '
                                                          'predictions.', placement='left'),
-                                                         ui.input_action_button('show_scale',
-                                                                                'Manually Set Scale')),
+                                                         ui.input_action_button('explain_settings',
+                                                                                'Advanced Settings')),
                             ui.input_action_button('data_explain', 'Explain'),
                             max_height="650px")),
                     #********** RULES **********#
@@ -85,9 +107,9 @@ app_ui = ui.page_fluid(ui.tags.link(rel='stylesheet', href='styles.css'),
                                 ui.input_action_button('data_counterfactual', 'Counterfactual', disabled=True),
                                 max_height="400px"),
                                 col_widths=(8, 4)),
-                    ui.div(ui.output_table('applicable_rules'), id='exp_rules')
+                    ui.div(ui.output_data_frame('applicable_rules'), id='exp_rules')
                     ),
-                    ui.div(ui.output_table('explanation_rules'), id='exp_rules')
+                    ui.div(ui.output_data_frame('explanation_rules'), id='exp_rules')
                  )
 
 
@@ -98,20 +120,75 @@ def server(input, output, session):
     server_ranges = reactive.value(None)  # ranges or all values of features in loaded data
     server_types = reactive.value(None)  # types of features from loaded data
     server_scale = reactive.value(None)  # scale loaded by BarbePerturber
+    server_cov = reactive.value(None)
     server_categories = reactive.value(None)  # categorical information loaded by BarbePerturber
 
     server_predictor = reactive.value(None)  # black box model
     server_explainer = reactive.value(None)  # BARBE explainer
     server_prediction = reactive.value(None)  # prediction to display
+    server_barbe_prediction = reactive.value(None)  # prediction from barbe
     server_rules = reactive.value(None)  # rules table from BARBE
     server_plot = reactive.value(None)  # plot to display of feature importance
     server_counter_rules = reactive.value(None)
     server_counter = reactive.value({'': ''})
     server_prev = reactive.value(None)
     server_applicable_rules = reactive.value(None)
+    # server_explainer_popup = {'feature_i_settings': {'bounds', 'scale'} or {'possible_values', 'change'}}
+    server_explainer_popup = reactive.value(None)  # settings for a popup card if known
+    server_visible_events = reactive.value([])
 
     active_pert = reactive.value(False)  # checks if a checkbox has been pre-checked
     scale_visible = reactive.value(False)
+
+    def get_settings_values():
+        advanced_settings = server_explainer_popup.get()
+        identifier = category_identifier(server_ranges.get())
+        ui.notification_show('Getting Scales')
+        scales = correct_scales(server_scale.get(), advanced_settings, identifier)
+        ui.notification_show('Getting Categories')
+        try:
+            categories = correct_categories(server_categories.get(), advanced_settings, identifier, ui)
+        except Exception as e:
+            ui.notification_show(str(e))
+            assert False
+        ui.notification_show('Getting Covariance')
+        covariance = correct_covariance(server_cov.get(), scales, advanced_settings, identifier)
+        ui.notification_show('Getting Bounds')
+        try:
+            bounds = correct_bounds(advanced_settings, identifier)
+        except Exception as e:
+            ui.notification_show(str(e))
+        return scales, categories, covariance, bounds
+
+    def validate_settings(input_data, scales, categories, covariance, bounds):
+        error_string = ""
+        input_data = input_data.to_numpy()
+        features = server_features.get()
+        ranges = server_ranges.get()
+        for i in range(len(ranges)):
+            if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
+                try:
+                    if bounds is not None and bounds[i] is not None:
+                        if bounds[i][0] is not None and input_data[i] < bounds[i][0]:
+                            error_string += ('lower bound for ' + features[i] + ', ' + str(bounds[i][0]) +
+                                             ', is lower than input value ' + str(input_data[i]) + '\n')
+                        if bounds[i][1] is not None and input_data[i] > bounds[i][1]:
+                            error_string += ('upper bound for ' + features[i] + ', ' + str(bounds[i][1]) +
+                                             ', is higher than input value ' + str(input_data[i]) + '\n')
+                except Exception as e:
+                    ui.notification_show(str(bounds))
+                    ui.notification_show(str(features))
+                    ui.notification_show(str(input_data))
+                    ui.notification_show(str(e))
+                    assert False
+            else:
+                if categories is not None:
+                    if input_data[i] not in categories[i]:
+                        error_string += ('possible values for ' + features[i] + ', ' + str(categories[i]) +
+                                         ', does not contain input value ' + str(input_data[i]) + '\n')
+
+        return error_string
+
 
     def set_suggested(values=None):
         ranges = server_ranges.get()
@@ -170,31 +247,16 @@ def server(input, output, session):
         default_value = data.iloc[0]
         for i in range(len(ranges) - 1, -1, -1):
             # IAIN add the possibility for categorical values (dropdown)
-            if scale_visible.get():
-                if input.data_file_option():
-                    ui.insert_ui(
-                        ui.input_numeric('in_scale_' + str(i), 'Scale', value=prev_scale[i], min=0, max=10 * scales[i]),
-                        # id string of object relative to placement
-                        selector="#slider_container",
-                        where="afterBegin")
-                else:
-                    ui.insert_ui(
-                        ui.input_numeric('in_scale_' + str(i), 'Scale - locked', value=scales[i], min=scales[i],
-                                         max=scales[i]),
-                        # id string of object relative to placement
-                        selector="#slider_container",
-                        where="afterBegin")
-            else:
-                # IAIN this is how you VERY MANUALLY have to fix the label problem
-                props: dict[str, TagAttrValue] = {
-                    "class": 'div',
-                    "id": 'in_scale_' + str(i)
-                }
-                ui.insert_ui(
-                    ui.div(tags.div(**props)),
-                    # id string of object relative to placement
-                    selector="#slider_container",
-                    where="afterBegin")
+            # IAIN this is how you VERY MANUALLY have to fix the label problem
+            props: dict[str, TagAttrValue] = {
+                "class": 'div',
+                "id": 'in_scale_' + str(i)
+            }
+            ui.insert_ui(
+                ui.div(tags.div(**props)),
+                # id string of object relative to placement
+                selector="#slider_container",
+                where="afterBegin")
             if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
                 if not input.manual_data():
                     ui.insert_ui(ui.input_slider('in_data_' + str(i),
@@ -232,8 +294,15 @@ def server(input, output, session):
     def prediction():
         prediction = server_prediction.get()
         if prediction is None:
-            return 'Prediction: No prediction yet!'
+            prediction = 'No prediction yet!'
         return 'Prediction: ' + str(prediction)
+
+    @render.text
+    def barbe_prediction():
+        barbe_prediction = server_barbe_prediction.get()
+        if barbe_prediction is None:
+            barbe_prediction = 'BARBE is not trained yet!'
+        return 'Barbe Prediction: ' + str(barbe_prediction)
 
     @render.plot
     def explanation_plot():
@@ -246,33 +315,251 @@ def server(input, output, session):
             return "Fidelity:" + str(explainer.get_surrogate_fidelity())
         return None
 
-    @render.table
+    @render.data_frame
     def explanation_rules():
-        return server_rules.get()
+        if server_rules.get() is None:
+            return None
+        return render.DataGrid(server_rules.get(), width='100%', filters=True, summary=False)
 
-    @render.table
+    @render.data_frame
     def applicable_rules():
-        return server_applicable_rules.get()
+        if server_applicable_rules.get() is None:
+            return None
+        return render.DataGrid(server_applicable_rules.get(), width='100%', summary=False)
 
     @render.table
     def counter_rules():
         return server_counter_rules.get()
 
     # ********** REACTIVE ELEMENTS **********#
+    def create_reactive_button(x, y, symbol="+"):
+        #ui.notification_show("Do a Thing")
+        button_label = 'button_' + str(x) + '_' + str(y)
+        ui.insert_ui(ui.input_action_button(button_label, symbol if x != y else "", disabled=((x == y) or (y < x))),
+                     '#column_spot',
+                     where='beforeEnd')
+        if button_label not in server_visible_events.get():
+            new_code = string.Template("@reactive.effect\n"
+                                       "@reactive.event(input.button_${x}_${y})\n"
+                                       "def _():\n"
+                                       "\tcurrent_server = server_explainer_popup.get()\n"
+                                       "\tnew_label = get_next_label(current_server['cov'][${x}][${y}])\n"
+                                       "\tui.update_action_button('button_${x}_${y}', "
+                                       "label=new_label)\n"
+                                       "\tui.update_action_button('button_${y}_${x}', "
+                                       "label=new_label)\n"
+                                       "\tsession=require_active_session(None)\n"
+                                       "\tsession.send_input_message('button_${x}_${y}', "
+                                       "drop_none({'id': 'button_${x}_${y}', 'new_label': new_label}))\n"
+                                       "\tsession.send_input_message('button_${y}_${x}', "
+                                       "drop_none({'id': 'button_${y}_${x}', 'new_label': new_label}))\n"
+                                       "\tcurrent_server['cov'][${x}][${y}] = new_label\n"
+                                       "\tcurrent_server['cov'][${y}][${x}] = new_label\n"
+                                       "\tserver_explainer_popup.set(current_server)").substitute(locals())
+            new_code = compile(new_code, '<string>', 'single')
+            exec(new_code, {'input': input, 'reactive': reactive, 'ui': ui, 'get_next_label': get_next_label,
+                            'server_explainer_popup': server_explainer_popup,
+                            'require_active_session': require_active_session,
+                            'drop_none': drop_none})
+            new_events = server_visible_events.get()
+            new_events.append(button_label)
+            server_visible_events.set(new_events)
+        #else:
+        #    ui.notification_show('already there! click the button!!')
+
     @reactive.effect
     @reactive.event(input.show_scale)
     def _():
         if not scale_visible.get():
             scale_visible.set(True)
             reset_data(new_show=True)
+            ui.update_action_button('show_scale', disabled=True)
             ui.notification_show('Scale will now appear beside data.')
+
+    @reactive.effect
+    @reactive.event(input.explain_settings)
+    def _():
+
+        # add a floating card to the ui which will include these settings
+        ui.insert_ui(ui.div(ui.card(ui.input_action_button('settings_close', "X"),
+                                    ui.div(id='settings_container'),
+                                    id='settings_card'),
+                            id='settings_background'),
+           selector="#explanation_rules",
+           where="afterBegin")
+
+        prev_value = list()
+        if server_ranges.get() is None:  # remove existing data
+            return
+
+        prev_scale = server_scale.get()
+
+        data = server_data.get()
+        features = server_features.get()
+        ranges = produce_ranges(data, server_categories.get())
+        server_ranges.set(ranges)
+        scales = server_scale.get()
+        # ui.notification_show("Set all values")
+        # for each feature add a slider or selection list to modify
+        default_value = data.iloc[0]
+        settings = server_explainer_popup.get()
+        for i in range(len(ranges) - 1, -1, -1):
+            # IAIN add the possibility for categorical values (dropdown)
+            settings_identifier = "feature_" + str(i) + "_settings"
+            if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
+                # bounds parsed as None, (Min, Max), "Min, Max", "Min Max" (otherwise return an error)
+                scale_value = '(' + str(ranges[i][0]) + "," + str(ranges[i][1]) + ")" \
+                    if settings is None or settings[settings_identifier]['bounds'] is None else (
+                    str(settings[settings_identifier]['bounds']))
+                ui.insert_ui(
+                    ui.input_text('in_bounds_' + str(i), 'Bounds', value=scale_value,
+                                  placeholder="(Min, Max) or None"),
+                    # id string of object relative to placement
+                    selector="#settings_container",
+                    where="afterBegin")
+                # scale check that it is valid (>=0)
+                scale_value = prev_scale[i] \
+                    if settings is None else (
+                    settings[settings_identifier]['scale'])
+                ui.insert_ui(
+                    ui.input_numeric('in_scale_' + str(i), 'Scale', value=scale_value, min=0, max=10 * scales[i]),
+                    # id string of object relative to placement
+                    selector="#settings_container",
+                    where="afterBegin")
+                ui.insert_ui(
+                    ui.div(str(features[i])),
+                    # id string of object relative to placement
+                    selector="#settings_container",
+                    where="afterBegin")
+            else:
+                # possible values to set for categories (default all) must contain at least the current value (or error)
+                possible_value = list(ranges[i]) \
+                    if settings is None else (
+                    list(settings[settings_identifier]['possible_values']))
+                #ui.notification_show(str(possible_value))
+                ui.insert_ui(
+                    ui.input_selectize('in_values_possible_' + str(i), "Possible Values",
+                                       list(ranges[i]), selected=possible_value,
+                                       multiple=True),
+                    # id string of object relative to placement
+                    selector="#settings_container",
+                    where="afterBegin")
+                # whether this value can change (if not then scale = 0 for it)
+                # IAIN maybe add a tooltip for a title option or all of them that states 0 is no change
+                change_value = False \
+                    if settings is None else (
+                    settings[settings_identifier]['change'])
+                ui.insert_ui(
+                    ui.input_checkbox('in_change_' + str(i), 'Lock Value', value=change_value),
+                    # id string of object relative to placement
+                    selector="#settings_container",
+                    where="afterBegin")
+                ui.insert_ui(
+                    ui.div(str(features[i])),
+                    # id string of object relative to placement
+                    selector="#settings_container",
+                    where="afterBegin")
+
+            # IAIN add more options down below (or change options) based on the model selected
+            #  for example, uniform needs scale + sizes (can go up or down in a different shape)
+            #               t-distribution can have degrees of freedom
+            #               normal can have multivariate options -1, 0, 1 for negative, none, and positive correlation
+            # settings_use
+
+        # (DONE) TODO: IAIN add the multivariate button setup (its own function)
+        # (DONE) TODO:  these will all use the default behavior you just made when being created
+        # (DONE) TODO: IAIN add the automatic state setting
+        # (DONE) TODO: add multivariate state reading by icon
+        # (DONE) TODO: add javascript to these buttons so the color changes based on the state they are in
+        # TODO: make all the settings actually affect BARBE when set and saved + add reset button to ignore changes
+
+        ui.insert_ui(ui.div(ui.layout_column_wrap(width=1 / (len(ranges)+1), id='column_spot'), id='column_container'),
+                     '#settings_container',
+                     where='afterEnd')
+        if settings is None:
+            corrected_cov = correct_cov_values(server_cov.get())
+            server_explainer_popup.set({'cov': corrected_cov})
+        else:
+            corrected_cov = settings['cov']
+
+        for x in range(-1, len(ranges)):
+            for y in range(-1, len(ranges)):
+                if x >= 0 and y >= 0:
+                    create_reactive_button(x, y, symbol=corrected_cov[x][y])
+                else:
+                    if (x == -1) and (y == -1):
+                        ui.insert_ui(ui.div('Feature Relative Variance'),
+                                     '#column_spot',
+                                     where='beforeEnd')
+                    else:
+                        feature_position = x if x > y else y
+                        ui.insert_ui(ui.div(features[feature_position]),
+                                     '#column_spot',
+                                     where='beforeEnd')
+
+        ui.insert_ui(ui.div(ui.layout_columns(ui.input_action_button('settings_use', 'Save Settings'),
+                                       ui.input_action_button('settings_reset', 'Reset'),
+                                       col_widths=(-1, 7, 3, -1))),
+            # id string of object relative to placement
+            selector="#column_container",
+            where="afterEnd")
+
+    @reactive.effect
+    @reactive.event(input.settings_close)
+    def _():
+        ui.remove_ui(selector="div:has(> #settings_card)")
+        ui.remove_ui(selector="div:has(> #settings_background)")
+
+    @reactive.effect
+    @reactive.event(input.settings_reset)
+    def _():
+        server_explainer_popup.set(None)
+        ui.remove_ui(selector="div:has(> #settings_card)")
+        ui.remove_ui(selector="div:has(> #settings_background)")
+
+    @reactive.effect
+    @reactive.event(input.settings_use)
+    def _():
+        # TODO: make all of the settings get updated and after closing if a model is trained then make sure to remove it
+        # TODO:  so that a user cannot pick options that the model would not have access to and perform poorly on
+        settings = server_explainer_popup.get()
+        if settings is None:
+            settings = {}
+        ranges = server_ranges.get()
+        for i in range(len(ranges) - 1, -1, -1):
+            # IAIN add the possibility for categorical values (dropdown)
+            settings_identifier = "feature_" + str(i) + "_settings"
+            #ui.notification_show(settings_identifier)
+            settings[settings_identifier] = {}
+            if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
+                # bounds parsed as None, (Min, Max), "Min, Max", "Min Max" (otherwise return an error)
+                #ui.notification_show(str(input['in_bounds_' + str(i)]()))
+                temp_bounds = format_bounds(input['in_bounds_' + str(i)]())
+                #ui.notification_show(temp_bounds)
+                if temp_bounds is not None and isinstance(temp_bounds, str):
+                    ui.notification_show('Error: ' + temp_bounds, type='error')
+                    return
+                settings[settings_identifier]['bounds'] = temp_bounds
+                #ui.notification_show("got formatted bounds")
+                settings[settings_identifier]['scale'] = input['in_scale_' + str(i)]()
+                #ui.notification_show("got scale")
+            else:
+                # possible values to set for categories (default all) must contain at least the current value (or error)
+                settings[settings_identifier]['possible_values'] = list(input['in_values_possible_' + str(i)]())
+                ui.update_select('in_data_' + str(i), choices=list(input['in_values_possible_' + str(i)]()))
+                settings[settings_identifier]['change'] = input['in_change_' + str(i)]()
+
+        server_explainer_popup.set(settings)
+        # close the menu
+        ui.remove_ui(selector="div:has(> #settings_card)")
+        ui.remove_ui(selector="div:has(> #settings_background)")
 
     @reactive.effect
     @reactive.event(input.counterfactual_suggestions)
     def _():
         if input.counterfactual_suggestions() is '':
             set_suggested()
-            ui.notification_show('Reset data values.')
+            ui.notification_show('Reset data values.', type='warning')
         else:
             #ui.notification_show(input.counterfactual_suggestions())
             suggest = eval(input.counterfactual_suggestions())
@@ -300,6 +587,8 @@ def server(input, output, session):
                 #ui.notification_show(predictor.predict(server_data.get()), duration=100)
                 if server_explainer.get() is not None:
                     explainer = server_explainer.get()
+                    barbe_prediction = explainer.predict(reformat_input.iloc[0].to_numpy().reshape(1, -1))
+                    server_barbe_prediction.set(barbe_prediction[0])
                     server_applicable_rules.set(barbe_rules_table(explainer.get_rules(applicable=reformat_input.iloc[0])))
                     ui.notification_show("Predicted: " + str(prediction[0]) + " for current sample and reset "
                                                                               "applicable rules.")
@@ -307,12 +596,14 @@ def server(input, output, session):
                     ui.notification_show("Predicted: " + str(prediction[0]) + " for current sample.")
             else:
                 ui.notification_show("Model Error: Invalid data format for selected model. "
-                                     "Try a different model or format.")
+                                     "Try a different model or format.",
+                                     type='error')
         else:
             missing_model = 'black-box' if predictor is None else ''
             missing_data = 'data' if predict_input is None else ''
             ui.notification_show("Error: Element(s) " + missing_model + " " +
-                                 missing_data + " is missing.")
+                                 missing_data + " is missing.",
+                                 type='error')
 
     @reactive.effect
     @reactive.event(input.data_explain)
@@ -332,30 +623,37 @@ def server(input, output, session):
                 prediction = predictor.predict(reformat_input)
                 server_prediction.set(prediction[0])
                 ui.notification_show("Predicted: " + str(prediction[0]) + " for current sample.")
-
+                # ui.notification_show("Settings Extraction")
+                input_bounds, modified_category, new_scale, change_category = (
+                    extract_advanced_settings(server_explainer_popup.get(), server_ranges.get()))
                 # now run the explainer
                 settings = {'perturbation_type': input.dist_setting(),
                             'dev_scaling_factor': input.dev_setting(),
                             'input_sets_class': not input.set_class_setting(),
                             'n_perturbations': input.pert_setting(),
                             'n_bins': input.category_setting()}
-                check_values = check_settings(settings)
+                ui.notification_show("Settings Check")
+                check_values = check_settings(settings, reformat_input, server_ranges.get(), server_features.get())
                 #ui.notification_show("Checked Settings")
                 if check_values is not None:
-                    ui.notification_show("Error: settings " + check_values + " must all be whole numbers.")
+                    ui.notification_show("Error: settings " + check_values + " must all be whole numbers.",
+                                         type='error')
                 else:
                     #ui.notification_show("Starting BARBE")
                     # add 1e-10 so zero is not exactly zero but should not produce variation in most cases
-                    if scale_visible.get():
-                        scales = [input['in_scale_' + str(i)]() + 1e-10 for i in range(len(server_ranges.get()))]
-                    else:
-                        scales = server_scale.get()
                     #ui.notification_show(str(scales))
                     #ui.notification_show(str(list(features)))
                     #ui.notification_show(str(server_categories.get()))
-                    explainer, explanation = fit_barbe_explainer(scales, features, server_categories.get(),
+                    ui.notification_show("Get Values from settings")
+                    scales, categories, covariance, bounds = get_settings_values()
+                    error_settings = validate_settings(reformat_input.iloc[0], scales, categories, covariance, bounds)
+                    if error_settings != "":
+                        ui.notification_show(error_settings, type='error')
+                        return
+                    ui.notification_show("Getting Explainer")
+                    explainer, explanation = fit_barbe_explainer(scales, features, categories, covariance, bounds,
                                                                  reformat_input.iloc[0], predictor,
-                                                    input.data_file_option(), settings=settings)
+                                                    False, settings=settings)
                     #ui.notification_show(explanation)
                     if explanation is not None and len(explanation) > 0:
                         #ui.notification_show(str(explanation))
@@ -363,8 +661,12 @@ def server(input, output, session):
                         #ui.notification_show("Produced BARBE plots.")
                         server_rules.set(barbe_rules_table(explainer.get_rules()))
                         server_applicable_rules.set(barbe_rules_table(explainer.get_rules(applicable=reformat_input.iloc[0])))
-                        #ui.notification_show("Retrieved BARBE rules.")
+                        ui.notification_show("Retrieved BARBE rules.")
                         server_explainer.set(explainer)
+
+                        barbe_prediction = explainer.predict(reformat_input.iloc[0].to_numpy().reshape(1, -1))
+                        server_barbe_prediction.set(barbe_prediction[0])
+                        ui.notification_show('BARBE predicted.')
 
                         ui.update_action_button('data_counterfactual', disabled=False)
                         ui.update_select('class_setting', choices=explainer.get_available_classes())
@@ -373,16 +675,18 @@ def server(input, output, session):
                             server_data.set(explainer.get_perturbed_data())
                             reset_data()
                     else:
-                        ui.notification_show("Error: Mismatched sample input and BARBE prediction, try again or change sample.")
+                        ui.notification_show(str(explainer), type='error')
+                        ui.notification_show("Error: Mismatched sample input and BARBE prediction, try again or change sample.",
+                                             type='error')
 
             else:
                 ui.notification_show("Model Error: Invalid data format for selected model. "
-                                     "Try a different model or format.")
+                                     "Try a different model or format.", type='error')
         else:
             missing_model = 'black-box' if predictor is None else ''
             missing_data = 'data' if predict_input is None else ''
             ui.notification_show("Error: Element(s) " + missing_model + " " +
-                                 missing_data + " is missing.")
+                                 missing_data + " is missing.", type='error')
 
 
     @reactive.effect
@@ -391,6 +695,8 @@ def server(input, output, session):
         ui.update_action_button('data_counterfactual', disabled=True)
         ui.update_select('class_setting', choices=[])
         server_prediction.set(None)
+        server_barbe_prediction.set(None)
+        server_explainer.set(None)
         # open predictor pickle, use later by passing to BARBE
         input_model = open_input_model(input.predictor_file_name()[0]["datapath"],
                                        input.predictor_file_name()[0]["name"])
@@ -404,32 +710,6 @@ def server(input, output, session):
         reset_data(new_show=(not scale_visible.get()))
 
     # IAIN add that counterfactual is innactive until a explanation is produced (changing the loaded data or model reverts this)
-    @reactive.effect
-    @reactive.event(input.data_perturbations)
-    def _():
-        if not input.data_perturbations():
-            if active_pert.get():
-                ui.notification_show("Data may need to be reloaded to reset option.")
-            else:
-                active_pert.set(True)
-        else:
-            reset_data()
-
-    @reactive.effect
-    @reactive.event(input.data_file_option)
-    def _():
-        if input.data_file_option():
-            ui.update_numeric('dev_setting', label='Deviation Scaling - locked to 1', value=1, min=1, max=1)
-            if server_ranges.get() is not None:
-                scales = server_scale.get()
-                for i in range(len(server_ranges.get())):
-                    ui.update_numeric('in_scale_' + str(i), label='Scale', value=scales[i], min=0, max=10*scales[i])
-        else:
-            ui.update_numeric('dev_setting', label='Deviation Scaling', value=5, min=1, max=100)
-            if server_ranges.get() is not None:
-                scales = server_scale.get()
-                for i in range(len(server_ranges.get())):
-                    ui.update_numeric('in_scale_' + str(i), label='Scale - locked', value=scales[i], min=scales[i], max=scales[i])
 
     @reactive.effect
     @reactive.event(input.data_counterfactual)
@@ -470,8 +750,10 @@ def server(input, output, session):
         ui.update_select('counterfactual_suggestions', choices=server_counter.get())
         server_prev.set(None)
         server_prediction.set(None)
+        server_barbe_prediction.set(None)
+        server_explainer_popup.set(None)
         # read in elements from the file
-        data, features, types, ranges, scales, categories = open_input_file(input.data_file_name()[0]["datapath"],
+        data, features, types, ranges, scales, cov, categories = open_input_file(input.data_file_name()[0]["datapath"],
                                                         input.data_file_name()[0]["name"])
         if server_ranges.get() is not None:  # remove existing data
             for i in range(len(server_ranges.get())):
@@ -484,32 +766,20 @@ def server(input, output, session):
         server_data.set(data)
         server_types.set(types)
         server_scale.set(scales)
+        server_cov.set(cov)
         server_categories.set(categories)
         # for each feature add a slider or selection list to modify
         default_value = data.iloc[0]
         for i in range(len(ranges)-1, -1, -1):
-            if scale_visible.get():
-                if input.data_file_option():
-                    ui.insert_ui(ui.input_numeric('in_scale_' + str(i), 'Scale', value=scales[i], min=0, max=10*scales[i]),
-                                 # id string of object relative to placement
-                                 selector="#slider_container",
-                                 where="afterBegin")
-                else:
-                    ui.insert_ui(
-                        ui.input_numeric('in_scale_' + str(i), 'Scale - locked', value=scales[i], min=scales[i], max=scales[i]),
-                        # id string of object relative to placement
-                        selector="#slider_container",
-                        where="afterBegin")
-            else:
-                props: dict[str, TagAttrValue] = {
-                    "class": 'div',
-                    "id": 'in_scale_' + str(i)
-                }
-                ui.insert_ui(
-                    ui.div(tags.div(**props)),
-                    # id string of object relative to placement
-                    selector="#slider_container",
-                    where="afterBegin")
+            props: dict[str, TagAttrValue] = {
+                "class": 'div',
+                "id": 'in_scale_' + str(i)
+            }
+            ui.insert_ui(
+                ui.div(tags.div(**props)),
+                # id string of object relative to placement
+                selector="#slider_container",
+                where="afterBegin")
 
             if len(ranges[i]) == 2 and not isinstance(ranges[i][0], str):
                 if not input.manual_data():
