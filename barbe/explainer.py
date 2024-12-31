@@ -11,6 +11,7 @@ import warnings
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+from barbe.utils.evaluation_measures import euclidean_weights, nearest_neighbor_weights
 
 from copy import deepcopy
 import numpy as np
@@ -205,11 +206,11 @@ class BARBE:
 
         # get black box predictions
         self._blackbox_classification['input'] = input_model.predict(input_row.copy())  # IAIN make this look better
-        print(self._perturbed_data)
+        #print(self._perturbed_data)
         self._blackbox_classification['perturbed'] = input_model.predict(pd.DataFrame(self._perturbed_data.copy(),
                                                                                       columns=self._feature_names))
-        print(input_data)
-        print(pd.DataFrame(self._perturbed_data, columns=self._feature_names).iloc[0])
+        #print(input_data)
+        #print(pd.DataFrame(self._perturbed_data, columns=self._feature_names).iloc[0])
         # fit and get predictions for surrogate model
         self._surrogate_model = SigDirectWrapper(self._feature_names, n_bins=self._n_bins, verbose=self._verbose)
         self._surrogate_model.fit(self._perturbed_data.copy(), self._blackbox_classification['perturbed'])
@@ -272,11 +273,13 @@ class BARBE:
         """
         return self._surrogate_model.get_contrast_sets(data_row)
 
-    def get_counterfactual_explanation(self, data_row, wanted_class):
+    def get_counterfactual_explanation(self, data_row, wanted_class, n_counterfactuals=1):
         """
-        Input: data_row (pandas Series) -> data row that should be modified to change class.
-               wanted_class (string)    -> string value of desired class from black box, found via
-                                            get_available_classes()
+        Input: data_row (pandas Series)  -> data row that should be modified to change class.
+               wanted_class (string)     -> string value of desired class from black box, found via
+                                             get_available_classes()
+               n_counterfactuals (int>0) -> number of counterfactual examples with slight differences to produce.
+                | Default: 1
         Purpose: Produce a counterfactual explanation, a modification to existing data to produce a new class, based on
                   the rules learned by SigDirect.
         Output: counter_value (list)                          -> new values assigned to the original data.
@@ -286,47 +289,66 @@ class BARBE:
 
         data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0]
         print("IAIN DATA CLASS SURROGATE: ", data_cls)
-        aa = self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05, new_class=wanted_class,
-                                                     old_class=data_cls)
-        print("IAIN CONTRAST ", aa)
-        self._counterfactual.fit(self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05,
-                                                                         new_class=wanted_class),
+        #aa = self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05,
+        #                                             new_class=wanted_class)
+        #print("IAIN CONTRAST ", aa)
+        self._counterfactual.fit(self._surrogate_model.get_all_rules(raw_rules=True),
                                  self._surrogate_model.get_ohe_simple())
         original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)).copy())
-        counter_predict, counter_rules = self._counterfactual.predict(original_enc.copy(), data_cls, new_class=wanted_class)
-        print("IAIN getting prediction")
-        print(counter_predict)
+        counter_predict, counter_rules = self._counterfactual.predict(original_enc.copy(), data_cls,
+                                                                      new_class=wanted_class,
+                                                                      n_counterfactuals=n_counterfactuals)
+        #print("IAIN getting prediction")
+        #print(counter_predict)
+        counter_all_rules = []
+        counter_all_values = []
+        counter_all_predict = []
         # counter_predict = self._surrogate_model._decode([counter_predict])
-        counter_value = self._surrogate_model._decode([counter_predict])
+        for i in range(n_counterfactuals):
+            counter_p = counter_predict[i]
+            counter_r = counter_rules[i]
+            counter_v = self._surrogate_model._decode([counter_p])
+            #print("COUNTER: ", i, counter_v)
+            # TODO: I think that sigdirect needs to segment images before training
 
-        for i in range(len(original_enc[0])):
-            if original_enc[0][i] == counter_predict[i] and counter_predict[i] == 1:
-                temp = np.zeros(len(original_enc[0])).astype(int)
-                temp[i] = 1
-                position = self._surrogate_model._decode(temp.reshape((1, -1)))[0]
-                ind_use = np.where(np.array(position) != None)[0][0]
-                print(ind_use)
-                print(counter_value)
-                print(data_row.to_numpy().reshape(1, -1))
-                counter_value[0][ind_use] = data_row.to_numpy().reshape(1, -1)[0][ind_use]
+            for i in range(len(original_enc[0])):
+                if original_enc[0][i] == counter_p[i] and counter_p[i] == 1:
+                    temp = np.zeros(len(original_enc[0])).astype(int)
+                    temp[i] = 1
+                    position = self._surrogate_model._decode(temp.reshape((1, -1)))[0]
+                    ind_use = np.where(np.array(position) != None)[0][0]
+                    #print(ind_use)
+                    #print(counter_v)
+                    #print(data_row.to_numpy().reshape(1, -1))
+                    counter_v[0][ind_use] = data_row.to_numpy().reshape(1, -1)[0][ind_use]
 
-        # IAIN temp fix nan
-        for i in range(len(counter_value[0])):
-            if counter_value[0][i] is None or (not isinstance(counter_value[0][i], str) and math.isnan(counter_value[0][i])):
-                counter_value[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
+            # fix nans
+            for i in range(len(counter_v[0])):
+                if counter_v[0][i] is None or (not isinstance(counter_v[0][i], str) and math.isnan(counter_v[0][i])):
+                    counter_v[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
 
-        new_class = self._surrogate_model.predict(np.array(counter_value).copy())[0]
-        print("IAIN NEW CLASS: ", new_class)
-
-        counter_rules = [(self._surrogate_model.raw_rule_translation(a[0], a[1]),
-                          self._surrogate_model.raw_rule_translation(b, wanted_class)) for a, b in counter_rules]
+            new_class = self._surrogate_model.predict(np.array(counter_v))[0]
+            #print("IAIN NEW CLASS: ", new_class)
+            counter_all_predict.append(new_class)
+            counter_all_rules.append([(self._surrogate_model.raw_rule_translation(a[0], a[1]),
+                                       self._surrogate_model.raw_rule_translation(b, wanted_class)) for a, b in counter_r])
+            counter_all_values.append(counter_v)
         #for a, b in counter_rules:
         #    print("IAIN RULES: ", a, b)
-
-        return counter_value, counter_rules, new_class
+        return counter_all_values, counter_all_rules, counter_all_predict
 
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
-                               comparison_method=accuracy_score):
+                               comparison_method=accuracy_score, weights=None, original_data=None):
+        if weights is not None and weights in 'euclidean':
+            if comparison_data is None:
+                weights = euclidean_weights(original_data, self._perturbed_data)
+            else:
+                weights = euclidean_weights(original_data, comparison_data.to_numpy())
+        elif weights is not None and weights in 'nearest-neighbors':
+            if comparison_data is None:
+                weights = nearest_neighbor_weights(original_data, self._perturbed_data)
+            else:
+                weights = nearest_neighbor_weights(original_data, comparison_data.to_numpy())
         # IAIN check if comparison model, data, and method is f(a,b) is comparing vectors
         # IAIN compare the surrogate to the original input model
         # IAIN set default and some alternative options for comparison of classifications
@@ -334,13 +356,15 @@ class BARBE:
         # IAIN comparison_method(y_true, y_pred)
         if (comparison_model is None) and (comparison_data is None):
             return comparison_method(self._blackbox_classification['perturbed'],
-                                     self._surrogate_classification['perturbed'])
+                                     self._surrogate_classification['perturbed'],
+                                     sample_weight=weights)
         elif (comparison_model is not None) and (comparison_data is None):
             wrapped_comparison = BlackBoxWrapper(comparison_model)
             if self._input_sets_class:
                 wrapped_comparison.set_class(self._blackbox_classification['input'])
             return comparison_method(wrapped_comparison.predict(self._perturbed_data),
-                                     self._surrogate_classification['perturbed'])
+                                     self._surrogate_classification['perturbed'],
+                                     sample_weight=weights)
         elif (comparison_model is not None) and (comparison_data is not None):
             wrapped_comparison = BlackBoxWrapper(comparison_model)
             if self._input_sets_class:
@@ -349,7 +373,8 @@ class BARBE:
                 print(self._verbose_header, " BBModel: ", wrapped_comparison.predict(comparison_data),
                       " BARBE: ", self._surrogate_model.predict(comparison_data.to_numpy()))
             return comparison_method(wrapped_comparison.predict(comparison_data),
-                                     self._surrogate_model.predict(comparison_data.to_numpy()))
+                                     self._surrogate_model.predict(comparison_data.to_numpy()),
+                                     sample_weight=weights)
 
     def get_rules(self, applicable=None):
         """
