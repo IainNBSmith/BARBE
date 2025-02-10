@@ -1,6 +1,9 @@
 """
 This code contains tests that ensure the BARBE package is working correctly.
 """
+import lime1.lime_tabular
+from VAELIME.lime2.lime_tabular import *
+from barbe.utils.lime_interface import LimeNewPert, VAELimeNewPert
 
 '''
     (COMPLETE/July 6th) TODO: Get SigDirect to be able to compile
@@ -31,7 +34,7 @@ This code contains tests that ensure the BARBE package is working correctly.
     (Aug 21st) TODO: Add names to glass dataset
     (Aug 22nd) TODO: Perturb categorical as one hot values or find a different method
     '''
-from barbe.utils.lime_interface import LimeWrapper
+from barbe.utils.lime_interface import LimeNewPert
 from datetime import datetime
 import os
 import pandas as pd
@@ -233,27 +236,69 @@ def test_simple_text():
 
 
 def test_iris_dataset():
-    # IAIN add traffic dataset to this work with trained classification being
-    #  the day of the week?
+    # TODO: bring this test to Osmar
     iris = datasets.load_iris()
+    training_data = iris.data
 
+    temp_lime_explainer = (
+        VAELimeNewPert(training_data=iris.data,
+                                               feature_names=iris.feature_names,
+                                               discretizer='quartile',
+                                               # training_labels=bbmodel.predict(iris_training),
+                                               discretize_continuous=False,
+                                               categorical_features=[],
+                                               categorical_names=[]))
     iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
 
-    data_row = iris_df.iloc[50]
+    data_row = iris_df.iloc[10]  # 50 got very wrong, 10 is good
     training_labels = iris.target
     training_data = iris_df
-
-    print("Running test: BARBE iris Run")
-    start_time = datetime.now()
     bbmodel = RandomForestClassifier()
     bbmodel.fit(training_data, training_labels)
+    print('BBMODEL')
+    print('Feature Importance: ', bbmodel.feature_importances_)
+    print(bbmodel.score(training_data, training_labels))
+    print(confusion_matrix(training_labels, bbmodel.predict(training_data)))
+    lime_explanations = temp_lime_explainer.explain_instance(data_row=data_row,
+                                                                          predict_fn=bbmodel.predict_proba,
+                                                                          labels=(0, 1, 2),
+                                                                          num_features=iris.data.shape[1],
+                                                                          num_samples=5000)
+    #lime_explanations.show_in_notebook(show_table=True, show_all=False)
+    print('LIME')
+    print(iris.feature_names)
+    print('Feature Importance: ', lime_explanations.as_list())
+    lime_pert_data = pd.DataFrame(temp_lime_explainer.perturbed_data, columns=[str(i) for i in range(4)])
+    print(confusion_matrix(bbmodel.predict(temp_lime_explainer.perturbed_data),
+                           temp_lime_explainer.predict(lime_pert_data)))
+    print(confusion_matrix(bbmodel.predict(training_data), temp_lime_explainer.predict(training_data)))
+    print(bbmodel.predict(data_row.to_numpy().reshape(1,-1)))
+    print(bbmodel.predict_proba(data_row.to_numpy().reshape(1, -1)))
+    new_data = temp_lime_explainer.scale_data(data_row.to_numpy().reshape(1, -1))[0]
+    print(new_data)
+    for label in temp_lime_explainer.base.local_model.keys():
+        print(label, ": ", temp_lime_explainer.base.local_model[label].predict(new_data[temp_lime_explainer.base.used_features[label]].reshape(1, -1)))
+    #assert False
+    print("Running test: BARBE iris Run")
+    start_time = datetime.now()
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=True)
+    explainer = BARBE(training_data=training_data,
+                      verbose=False,
+                      input_sets_class=False,
+                      perturbation_type='normal',
+                      dev_scaling_factor=2)
     explanation = explainer.explain(data_row, bbmodel)
     print("Test Time: ", datetime.now() - start_time)
+    print('BARBE')
+    #self._blackbox_classification = {'input': None, 'perturbed': None}
+    #self._surrogate_classification = {'input': None, 'perturbed': None}
+    print(confusion_matrix(explainer._blackbox_classification['perturbed'],
+                           explainer._surrogate_classification['perturbed']))
+    print(confusion_matrix(bbmodel.predict(training_data).astype(str),
+                           explainer._surrogate_model.predict(training_data)))
     print(data_row)
-    print(explanation)
-    print(bbmodel.feature_importances_)
+    print(list(training_data))
+    print('Feature Importance: ', explanation)
     print("ALL RULES:", explainer.get_rules())
     # example modification
     # IAIN TODO: check in valid range the full edges do not matter
@@ -394,6 +439,7 @@ def test_loan_open():
     #  TODO: based on results here I think it is a formatting innaccury, should pass categorical info from the perturber to be certain
     data = pd.read_csv("../dataset/train_loan_raw.csv", index_col=0)
     print(data.dtypes)
+    data = data.dropna()
     y = data['Loan_Status']
     data = data.drop(['Loan_Status'], axis=1)
     with open("../pretrained/loan_test_decision_tree.pickle", "rb") as f:
@@ -401,16 +447,45 @@ def test_loan_open():
 
     explainer = BARBE(training_data=data, input_categories=None, verbose=True, input_sets_class=True,
                       dev_scaling_factor=1, perturbation_type='uniform')
+    print("HOW FROM EXPLAINER: ", explainer.get_perturber('categories'))
+    cov = explainer.get_perturber('covariance')
+    np.fill_diagonal(cov, explainer.get_perturber('scale')**0.5)
+    # Lots of tuning to get the right mix of scale value modifications and perturber
+    #  should run tests with all data to see if there is a trend and we can avoid this step
     explainer = BARBE(training_data=None, input_categories=explainer.get_perturber('categories'),
-                      input_scale=explainer.get_perturber('scale'),
+                      input_scale=(explainer.get_perturber('scale')**2.5)/1,
+                      input_means=explainer.get_perturber('means'),
                       feature_names=list(data),
-                      verbose=True, input_sets_class=True,
-                      dev_scaling_factor=1, perturbation_type='uniform')
+                      input_covariance=cov/100,
+                      verbose=True, input_sets_class=False,
+                      higher_frequent_category_odds=True,
+                      #dev_scaling_factor=0.1,
+                      perturbation_type='normal',
+                      n_perturbations=500)
+    # TODO: consider only dividing the variation on categorical values
+    # TODO: only normal distribution seems to work, see what the other ones do...
+    # TODO: also try to standardize the variation and see if that works better in general
+    # explainer.get_perturber('scale')**0.5 works for t-distribution (and works), so it is feature dependent
+    # **0.1 worked for uniform
     explanation = explainer.explain(data.iloc[0], model)
-    print(confusion_matrix(model.predict(data), y))
-    print(model.predict(data))
-    print(explainer.get_surrogate_fidelity())
-    print(np.unique(explainer._perturbed_data[:, 0]))
+    print("EVALUATION")
+    print("CONFUSION: ", confusion_matrix(model.predict(data), y))
+    print("PREDICTIONS: ", model.predict(data))
+    a = explainer.get_surrogate_fidelity()
+    b = explainer.get_surrogate_fidelity(comparison_data=data, original_data=data.iloc[0], comparison_model=model,
+                                         weights='nearest-neighbors')
+    b2 = explainer.get_surrogate_fidelity(comparison_data=data, original_data=data.iloc[0], comparison_model=model,
+                                         weights='euclidean')
+    b3 = explainer.get_surrogate_fidelity(comparison_data=data, original_data=data.iloc[0], comparison_model=model)
+    c = confusion_matrix(y, explainer._surrogate_model.predict(data))
+    print("CONFUSION DATA: \n", confusion_matrix(model.predict(data), y))
+    print("CONFUSION SURROGATE DATA: \n", c)
+    print("CONFUSION PERTURBED: \n", confusion_matrix(explainer._blackbox_classification['perturbed'],
+                                            explainer._surrogate_classification['perturbed']))
+    # pert, original, euclidean, nearest
+    print("FIDELITY: ", a, b3, b2, b)
+    # print(np.unique(explainer._perturbed_data[:, 0]))
+
 
 def test_iris_counterfactual():
     # IAIN add traffic dataset to this work with trained classification being
@@ -429,17 +504,20 @@ def test_iris_counterfactual():
     bbmodel.fit(training_data, training_labels)
     # IAIN do we need the class to be passed into the explainer? Probably not...
     explainer = BARBE(training_data=training_data, verbose=True, input_sets_class=False,
-                      dev_scaling_factor=2, perturbation_type='uniform')
+                      dev_scaling_factor=3, perturbation_type='normal', n_bins=10)
     explanation = explainer.explain(data_row, bbmodel)
-    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='0')
+    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='0', n_counterfactuals=5)
     print("Test Time: ", datetime.now() - start_time)
     print(explainer.get_surrogate_fidelity())
     print("APPLIED RULES: ", explainer.get_rules(applicable=data_row))
     print(data_row)
     print(counterfactual[0])
-    print(counterfactual[2])
-    print(bbmodel.predict(data_row.to_numpy().reshape(1, -1)))
-    print(bbmodel.predict(counterfactual[0]))
+    print(counterfactual[1])
+    print("BARBE Expected Classes: ", counterfactual[2])
+    print("Original Class: ", bbmodel.predict(data_row.to_numpy().reshape(1, -1)))
+    print(bbmodel.predict(counterfactual[0][0]))
+    print(bbmodel.predict(counterfactual[0][1]))
+    print(bbmodel.predict(counterfactual[0][2]))
 
 def test_glass_dataset():
     # From this test we learned that a sample must be discretized into bins
@@ -519,10 +597,10 @@ def test_glass_counterfactual():
     bbmodel.fit(training_data, training_labels)
 
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=True,
-                      perturbation_type='cauchy', dev_scaling_factor=2)
+    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=False,
+                      perturbation_type='normal', dev_scaling_factor=5)
     explanation = explainer.explain(data_row, bbmodel)
-    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class=0)
+    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='7')
     print("Test Time: ", datetime.now() - start_time)
     print(data_row)
     print(counterfactual[0])
@@ -532,6 +610,62 @@ def test_glass_counterfactual():
     print(explainer.get_surrogate_fidelity())
     # explainer.get_rules()
 
+
+def test_loan_counterfactual():
+    # From this test we learned that a sample must be discretized into bins
+    #  then it has scale assigned by the training sample and only then can it
+    #  be perturbed
+
+    training_data = pd.read_csv("../dataset/loan_test.csv", index_col=0)
+    data_row = training_data.iloc[0]
+    # For overfit
+    # data_row = training_data.iloc[5]
+    # training_labels = training_data['class']
+
+    print("Running test: BARBE Glass Counterfactual")
+    start_time = datetime.now()
+    with open('../pretrained/loan_test_decision_tree.pickle', 'rb') as file:
+        bbmodel = pickle.load(file)
+
+    # IAIN do we need the class to be passed into the explainer? Probably not...
+    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=False,
+                      perturbation_type='normal', dev_scaling_factor=1)
+    input_categories = explainer.get_perturber(feature='categories')
+    print(input_categories)
+    print(data_row)
+    input_categories[0] = {'Male': 1}
+    input_categories[1] = {'Yes': 1}
+    input_categories[2] = {'1': 1}
+    input_categories[9] = {'1.0': 1}
+
+    input_scale = explainer.get_perturber(feature='scale') / 2
+    #input_bounds = explainer.get_
+    # TODO: find out why there is not any agreement make sure that we trust it being wrong
+    explainer = BARBE(input_scale=input_scale, input_bounds=[None, None, None, None, None, [4000, 10000], [0, 2000],
+                                                             None, None, None, None],
+                      input_categories=input_categories, feature_names=list(training_data),
+                      verbose=False, input_sets_class=False,
+                      perturbation_type='normal', n_bins=5, n_perturbations=5000)
+    explanation = explainer.explain(data_row, bbmodel)
+    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='Y', n_counterfactuals=3)
+    print("Test Time: ", datetime.now() - start_time)
+    print(data_row)
+    print(counterfactual[0])
+    print(counterfactual[1])
+    print(counterfactual[2])
+    pd_og = pd.DataFrame(columns=list(training_data))
+    pd_og.loc[0] = data_row
+    print(bbmodel.predict(pd_og))
+    #print(counterfactual)
+    pd_cf = pd.DataFrame(columns=list(training_data))
+    pd_cf.loc[0] = counterfactual[0][0][0]
+    print(bbmodel.predict(pd_cf))
+    pd_cf.loc[0] = counterfactual[0][1][0]
+    print(bbmodel.predict(pd_cf))
+    pd_cf.loc[0] = counterfactual[0][2][0]
+    print(bbmodel.predict(pd_cf))
+    print(explainer.get_surrogate_fidelity())
+    # explainer.get_rules()
 
 
 def test_barbe_categorical(n_perturbations=5000):

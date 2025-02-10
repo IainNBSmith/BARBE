@@ -1,5 +1,5 @@
 """
-A script to evaluate performance of lime using a 
+A script to evaluate performance of lime1 using a
 synthetic datasets created based on arguments of the code.
 """
 
@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import make_classification
 
-from lime.lime_tabular import LimeTabularExplainer
+from lime1.lime_tabular import LimeTabularExplainer
 
 RANDOM_SEED=1
 random.seed(RANDOM_SEED)
@@ -72,7 +72,7 @@ def get_lime_features(explanation, length):
         print(tuples)
     features = [x[0] for x in sorted(tuples, key=lambda x:x[1], reverse=True)][:length]
     if verbose:
-        print('lime features:', features)
+        print('lime1 features:', features)
     return features
 
 def interpret_data(X, y, func, clf, samples_per_instance, n_features_lime, make_discretize, discretizer):
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     parser.add_argument("--discretizer", choices=["entropy", "decile", "quartile"], default=None)
 
     parser.add_argument("--dt_max_depth", type=int, help='what should the maximum depth of the decision tree be', default=10)
-    parser.add_argument("--n_features_lime", type=int, help="how many features should a lime explanation have", default=10)
+    parser.add_argument("--n_features_lime", type=int, help="how many features should a lime1 explanation have", default=10)
 
     parser.add_argument("-v", "--verbose", action="store_true", help="add verbosity", default=False)
     args = parser.parse_args()

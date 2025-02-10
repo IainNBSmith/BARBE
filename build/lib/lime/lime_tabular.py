@@ -13,13 +13,13 @@ import sklearn
 import sklearn.preprocessing
 from sklearn.utils import check_random_state
 
-from lime.discretize import QuartileDiscretizer
-from lime.discretize import DecileDiscretizer
-from lime.discretize import EntropyDiscretizer
-from lime.discretize import BaseDiscretizer
-from lime.discretize import StatsDiscretizer
-from lime import explanation
-from lime import lime_base
+from lime1.discretize import QuartileDiscretizer
+from lime1.discretize import DecileDiscretizer
+from lime1.discretize import EntropyDiscretizer
+from lime1.discretize import BaseDiscretizer
+from lime1.discretize import StatsDiscretizer
+from lime1 import explanation
+from lime1 import lime_base
 
 
 # IAIN again, do we need this?

@@ -9,15 +9,9 @@ from numpy.random import Generator, PCG64
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 from sklearn.decomposition import PCA
+from barbe.discretizer import CategoricalEncoder
 import warnings
-
-
-def check_numeric(x):
-    try:
-        float(x)
-        return True
-    except ValueError:
-        return False
+from sklearn.utils import check_random_state
 
 
 class BarbePerturber:
@@ -83,45 +77,30 @@ class BarbePerturber:
                 | Default: None
         '''
 
-    def __init__(self, training_data=None, input_scale=None, input_categories=None, input_bounds=None,
-                 input_covariance=None, perturbation_type='uniform', covariance_mode='full',
-                 bounding_method='distribute-mean', uniform_training_range=False, uniform_scaled=True,
-                 dev_scaling_factor=1, df=None, random_seed=None):
+    def __init__(self, training_data=None,
+                 input_feature_names=None, input_scale=None, input_covariance=None, input_means=None,
+                 input_categories=None,
+                 input_bounds=None,
+                 perturbation_type='uniform', bounding_method='distribute-mean', dev_scaling_factor=1,
+                 uniform_training_range=False, uniform_scaled=True, df=None, covariance_mode='full',
+                 use_mean_categorical_odds=True, standardized_categorical_variance=0.3334,  # new is 0<float<1 or None
+                 find_non_categorical_bounds=False,
+                 random_seed=None):
+        #standardized_categorical_variance = None
+        # standardized_categorical_variance = None
+        #print("PERTURBER INIT: ", dev_scaling_factor)
         self._input_mode = ""  # either training or premade
         if input_scale is not None:
             input_scale = np.array(input_scale)
-        self._check_input(training_data, input_scale, input_categories)
+        #self._check_input(training_data, input_scale, input_categories)
         # check and modify training data
         #print("IAIN IN LOOP")
-        if input_categories is None or (not input_categories and training_data is not None):
-            self._categorical_features = []  # indicators of which columns are categorical
-            self._feature_original_types = {}  # indicates the original type of all categorical values (supplied if given input_categories)
-            self._categorical_key = dict()
-            #print("IAIN discrete conversion")
-            training_data = self._training_discrete_conversion(training_data.to_numpy())
-        else:
-            #print("IAIN NOT RIGHT", input_categories)
-            self._feature_original_types = {}
-            self._categorical_key = input_categories
-            self._categorical_features = list(input_categories.keys())
-            if any([isinstance(self._categorical_key[key], list) for key in self._categorical_key.keys()]):
-                for key in self._categorical_key.keys():
-                    if isinstance(self._categorical_key[key], list):
-                        temp_replacement = dict()
-                        count = 0
-                        for item in self._categorical_key[key]:
-                            temp_replacement[str(item)] = count
-                            count += 1
-                        self._categorical_key[key] = temp_replacement
-            #self._feature_original_types = {}
-            for key in input_categories.keys():
-                #print("IAIN POTENTIAL ISSUE: ", input_categories)
-                self._feature_original_types[key] = type(list(input_categories[key].keys())[0])
-            #self._feature_original_types = [type(input_categories[key][list(input_categories[key].keys())[0]])
-            #                                for key in input_categories.keys()]
 
-        self._encoder = PCA(n_components=(training_data.shape[1] if training_data.shape[1] <= 30 else 30))
-        training_data = self._encoder.fit_transform(training_data)
+        self._encoder = CategoricalEncoder(category_threshold=10,
+                                           find_non_categorical_bounds=find_non_categorical_bounds)
+        training_data = self._encoder.fit_transform(training_data=training_data,
+                                                    initial_key=input_categories,
+                                                    data_features=input_feature_names)
         self._covariance_mode = covariance_mode
         self._bounding_method = bounding_method
         self._n_features = training_data.shape[1] \
@@ -132,37 +111,42 @@ class BarbePerturber:
         self._df = 20 if self._df is None else self._df
 
         self._means = self._calculate_means(training_data) \
-            if input_scale is None else [0 for _ in range(len(input_scale))]  # required to recenter input
+            if input_means is None and training_data is not None else \
+            ([0 for _ in range(len(input_scale))] if input_means is None else input_means)  # required to recenter input
 
         # original value is considered the mean if not declared
         self._original_value = self._means
 
         # do not reduce the deviation if input_scale is given
-        self._scale = self._calculate_scale(training_data) / dev_scaling_factor \
+        self._standardized_categorical_variance = standardized_categorical_variance
+        self._scale = self._calculate_scale(training_data) \
             if input_scale is None else input_scale
+
         #  whether uniform data should be generated based on the training data range
         self._uniform_training_range = uniform_training_range
         # whether uniform perturbation should scale to deviation in training data (independent of training range)
         self._uniform_scaled = uniform_scaled
         self._max, self._min = self._calculate_range(training_data,
                                                      input_shape=len(input_scale) if input_scale is not None else None)
-        # IAIN potentially add non-diagonal input scale values in future
-        #self._covariance = self._calculate_covariance(training_data) / dev_scaling_factor \
-        #    if input_covariance is None and input_scale is None else \
-        #    (input_covariance if input_covariance is not None else np.diag(input_scale))
 
+        # find and adjust variance values
         self._covariance = self._calculate_covariance(training_data) \
-           if input_covariance is None and input_scale is None else \
-           (input_covariance if input_covariance is not None else np.diag(input_scale))
-        if input_covariance is None and input_scale is None:
-            self._covariance[np.diag_indices_from(self._covariance)] = \
-                (self._covariance[np.diag_indices_from(self._covariance)] / dev_scaling_factor)
+            if input_covariance is None and input_scale is None else \
+            (input_covariance if input_covariance is not None else np.diag(input_scale))
+        # self._covariance = self._covariance  # / (dev_scaling_factor ** (1 / 2))
+        self._fix_categorical_variance()
+        self._scale = self._scale / dev_scaling_factor
+        self._covariance = self._covariance / dev_scaling_factor
+        #if input_covariance is None and input_scale is None:
+        #    self._covariance[np.diag_indices_from(self._covariance)] = \
+        #        self._covariance[np.diag_indices_from(self._covariance)] * dev_scaling_factor  # ** (1 / 2))
 
         self._distribution = perturbation_type
-        self._bounds = self._check_bounds(input_bounds)
+        self._bounds = self._check_bounds(input_bounds) \
+            if not find_non_categorical_bounds else self._encoder.get_bounds()
+        self._use_mean_categorical_odds = use_mean_categorical_odds
 
-        self._random_state = Generator(PCG64()) \
-            if random_seed is None else np.random.default_rng(seed=random_seed)
+        self._random_state = check_random_state(random_seed)
 
     def _check_input(self, input_data, input_scale, input_categories):
         # IAIN check that at either input data is not none or scale and categories are both not none
@@ -231,6 +215,32 @@ class BarbePerturber:
                                   "to correct either reduce scale with dev_scaling or modify bounds.")
         return fixed_bounds
 
+    def _fix_categorical_variance(self):
+        # makes the categorical variables use standardized variance if given
+        if self._standardized_categorical_variance is not None:
+            categorical_indices = self._encoder.get_categorical_indices()
+            for i in categorical_indices:
+                old_covariance_val = self._covariance[i, i]
+                if self._standardized_categorical_variance == "means":
+                    self._covariance[i, i] = self._means[i]
+                else:
+                    self._covariance[i, i] = self._standardized_categorical_variance**2
+                for j in range(self._covariance.shape[0]):
+                    if i != j:
+                        new_cov_ij = ((self._covariance[i, i] * np.sqrt(self._covariance[j, j])) *
+                                      (self._covariance[i, j] / np.sqrt(old_covariance_val * self._covariance[j, j])))
+                        self._covariance[i, j] = new_cov_ij
+                        self._covariance[j, i] = new_cov_ij
+                        #if np.isnan(self._covariance[i, j]):
+                        #    print("OH NO!")
+                        #    print(old_covariance_val, self._standardized_categorical_variance)
+                if self._standardized_categorical_variance == "means":
+                    self._scale[i] = self._means[i]
+                else:
+                    self._scale[i] = self._standardized_categorical_variance
+
+        return None
+
     def _get_dev_from_mode(self, i):
         # get a deviation value based on the mode used to produce perturbations
         if self._distribution in 'uniform':
@@ -245,43 +255,33 @@ class BarbePerturber:
             return self._scale[i] * 5, self._scale[i] * 5
         return None
 
-    def _training_discrete_conversion(self, training_array, category_threshold=10):
-        # conversion from discrete values -> numeric values
-        for i in range(training_array.shape[1]):
-            unique_values = list(np.unique(training_array[:, i].astype(str)))
-            try:
-                unique_values.remove('nan')
-            except ValueError:
-                pass
-            if not all([check_numeric(value) for value in unique_values]):
-                #print("IAIN UNIQUES ", unique_values)
-                #print(all([check_numeric(value) for value in unique_values]))
-                #print([check_numeric(value) for value in unique_values])
-                pass
-            if (len(unique_values) <= category_threshold or
-                    not all([check_numeric(value) for value in unique_values])):
-                self._categorical_features.append(i)
-                #print("UNIQUES IAIN: ", type(unique_values[0]))
-                self._feature_original_types[i] = type(unique_values[0])
-                # self._feature_original_types.append(type(unique_values[0]))
-                self._categorical_key[i] = dict()
-                for j in range(len(unique_values)):
-                    value = str(unique_values[j])
-                    self._categorical_key[i][value] = j
-                    training_array[((training_array[:, i]).astype(str) == value), i] = j
-        #print(self._categorical_key)
-        #print(training_array)
-        return training_array.astype(float)
-
     def _conversion_input(self, input_array):
         self._original_value = input_array
-        for i in self._categorical_features:
-            try:
-                input_array[i] = self._categorical_key[i][str(input_array[i])]
-            except Exception as e:
-                raise ValueError(str(self._categorical_key) + " " +
-                                 str(i) + " " + str(input_array) + " " + str(self._categorical_features) + " " + str(e))
-        return self._encoder.transform(input_array.reshape(1, -1))
+        enc_og = self._encoder.transform(input_array)
+        # TODO: when using means the bias is very important see about good default values
+        #  TODO: so far 1 does seem to work well but does not make sense in application
+        # TODO: best run so far was using means and bias of 1 with a good split between classes and 83% nearest acc
+        if self._use_mean_categorical_odds:
+            new_input = self._encoder.rescale_categorical(enc_og, means=self._means, current_category_bias="avg_means")
+            #new_input = self._encoder.rescale_categorical(enc_og, means=self._means, current_category_bias=0)
+        #    bias_added = new_input.to_numpy() - self._means  # NEW Jan 22
+        #    categorical_indices = self._encoder.get_categorical_indices()
+        #    for i in categorical_indices:
+        #        if new_input[i] > (1+(1e-8)):
+        #            for j in range(self._covariance.shape[0]):
+        #                if i != j:
+        #                    sqrtj_var = np.sqrt(self._covariance[j, j]) * np.sqrt(self._covariance[i, i])
+        #                    #if np.isnan(sqrtj_var):
+        #                    #    print("OH NO2!")
+        #                    #    print(self._covariance[j, j], self._covariance[i, i])
+        #                    self._covariance[i, j] -= bias_added[i]*(sqrtj_var/self._adjusting_factor[i])
+        #                    self._covariance[j, i] -= bias_added[i]*(sqrtj_var/self._adjusting_factor[i])
+            return new_input
+
+        else:
+            return self._encoder.rescale_categorical(enc_og,
+                                                     means=np.zeros(len(self._encoder._encoder_feature_values)),
+                                                     current_category_bias=0)
 
     def _perturbed_discrete_conversion(self, perturbed_array):
         # IAIN we may want to make this into a one hot instead i.e. 1,2,3,4 = 00, 01, 10, 11
@@ -302,9 +302,11 @@ class BarbePerturber:
         perturbed_array = perturbed_array.astype(object)
         # IAIN for change this should consider all values from the perturbed array that represent that feature
         #  nearest value becomes simpler as we only take the highest value from among the changed values and use it.
-        for i in self._categorical_features:
-            perturbed_array[:, i] = nearest_values(perturbed_array[:, i],
-                                                   [item for key, item in self._categorical_key[i].items()])
+        categorical_features = self._encoder.get_categorical_features()
+        categorical_key = self._encoder.get_encoder_key()
+        for feature in categorical_features:
+            perturbed_array[:, i] = nearest_values(perturbed_array[feature],
+                                                   [item for key, item in categorical_key[i].items()])
             replacement_values = np.array([None for i in range(perturbed_array.shape[0])])
             for dvalue in self._categorical_key[i].keys():
                 replacement_values[(perturbed_array[:, i] == self._categorical_key[i][str(dvalue)])] = dvalue
@@ -324,7 +326,9 @@ class BarbePerturber:
                 np.array([-2 for _ in range(input_shape)]))
 
     def _calculate_scale(self, training_array):
-        return np.nanstd(training_array, axis=0)
+        #print(training_array)
+        #print(training_array.dtypes)
+        return np.nanstd(training_array.to_numpy().astype(np.float64), axis=0)
 
     def _calculate_means(self, training_array):
         return np.nanmean(training_array, axis=0)
@@ -332,7 +336,8 @@ class BarbePerturber:
     def _rescale_data(self, unscaled_data, scaling_mean=None):
         if scaling_mean is None:
             scaling_mean = self._means
-        scaled_data = (unscaled_data * list(self._scale)) + scaling_mean
+        #print((unscaled_data * self._scale.T).shape)
+        scaled_data = np.array(unscaled_data * self._scale) + np.array(scaling_mean)
         return scaled_data
 
     def _bounding_distribute(self, values, min_b, max_b, over_value):
@@ -389,7 +394,9 @@ class BarbePerturber:
         return scaled_data
 
     def _calculate_covariance(self, training_array):
-        full_cov = np.cov(training_array.T)
+        #print(training_array)
+        #np.nanstd(training_array.to_numpy().astype(np.float64), axis=0)
+        full_cov = np.cov(training_array.to_numpy().T.astype(np.float64))
         #print("IAIN USED FOR COV", training_array)
         if self._covariance_mode in 'full':
             return full_cov
@@ -416,7 +423,12 @@ class BarbePerturber:
         elif self._distribution in 'normal':
             # location scale size
             #print(self._covariance)
-            return_data = self._encoder.inverse_transform(self._random_state.multivariate_normal(row_array.flatten(), self._covariance, size=num_perturbations))
+            #print("ROW TO PERTURB: ", row_array.to_numpy().reshape(1, -1))
+            #print("COV: \n", self._covariance)
+            return_data = self._encoder.inverse_transform(self._random_state.multivariate_normal(row_array.to_numpy().reshape(1, -1).astype(np.float64)[0],
+                                                                                                 self._covariance,
+                                                                                                 size=num_perturbations)
+                                                          )
         elif self._distribution in 'cauchy':
             # size (requires scaling)
             return_data = self._encoder.inverse_transform(self._rescale_data(self._random_state.standard_cauchy(size=(num_perturbations, self._n_features)),
@@ -426,27 +438,144 @@ class BarbePerturber:
             return_data = self._encoder.inverse_transform(self._rescale_data(self._random_state.standard_t(self._df, size=(num_perturbations,
                                                                                     self._n_features)),
                                       scaling_mean=row_array))
+
+        elif self._distribution in 'standard-normal':
+            return_data = self._encoder.inverse_transform(
+                self._rescale_data(self._random_state.normal(0, 1, size=(num_perturbations, self._n_features)),
+                                   scaling_mean=row_array))
+
         return self._bound_data(return_data)
 
     def get_discrete_values(self):
-        return self._categorical_key.copy()
+        return self._encoder.get_encoder_key()
 
     def get_scale(self):
-        return self._scale
+        return self._scale.copy()
+
+    def get_means(self):
+        return self._means.copy()
 
     def get_cov(self):
-        return self._covariance
+        return self._covariance.copy()
 
     def produce_perturbation(self, num_perturbations, data_row=None):
         if data_row is None:
             data_row = self._means
         else:
-            data_row = self._conversion_input(data_row.to_numpy())
+            data_row = self._conversion_input(data_row)
         self._check_bounds(self._bounds, check_mean=data_row)
         # returns perturbed data
         perturbed_data = self._fetch_perturbation_rows(data_row, num_perturbations)
-        perturbed_data[0, :] = self._original_value  # make sure to include the row in training
-        perturbed_data = self._perturbed_discrete_conversion(perturbed_data)
+        perturbed_data.iloc[0] = self._original_value  # make sure to include the row in training
+        #perturbed_data = self._encoder.inverse_transform(perturbed_data)
+        #print(perturbed_data.iloc[0:10])
+        #print(self._means)
+        #print(self._scale)
+        #assert False
+        return perturbed_data
+
+
+class ClassBalancedPerturber(BarbePerturber):
+    def __init__(self, balanced_threshold=0.01,
+                 max_iterations=10,
+                 balance_mode='curr-other',
+                 **kwargs):
+        BarbePerturber.__init__(self, **kwargs)
+        self._iterations = 0
+        self._max_iterations = max_iterations
+        self._classes = None
+        self._balance_tolerance = balanced_threshold
+        self._num_perts = None
+        self._balance_mode = balance_mode  # pure-balance, curr-other
+        self._current_class = None
+        self._final_balance = None
+
+    def _get_class_counts(self, pert_classes):
+        if self._classes is None:
+            self._classes = np.unique(pert_classes)
+
+        pert_classes = np.array(pert_classes)
+        class_counts = {}
+        for c in self._classes:
+            class_counts[c] = (np.sum(pert_classes == c) / self._num_perts)
+        return class_counts
+
+    def _check_threshold_balance(self, class_counts):
+        # check if the value is within tolerance of the even threshold for the smallest amount of data
+        if self._balance_mode != 'curr-other':
+            n_total_classes = len(self._classes)
+            for c, proportion in class_counts.items():
+                proportion_comparison = ((1 / n_total_classes) - self._balance_tolerance) \
+                    if ((1 / n_total_classes) > self._balance_tolerance) \
+                    else (1 / n_total_classes)
+                if proportion < proportion_comparison:
+                    return False
+            return True
+        else:
+            total_other = 0
+            total_current = 0
+            for c, proportion in class_counts.items():
+                if c == self._current_class:
+                    total_current = proportion
+                else:
+                    total_other += proportion
+            balance_check = lambda x: x >= 0.5 - self._balance_tolerance
+            return balance_check(total_current) and balance_check(total_other)
+
+    def _undersample_classes(self, pert_data, pert_classes):
+        selected_rows = np.array([])
+        balance_dict = {}
+        if self._balance_mode != 'curr-other':
+            for c in self._classes:
+                satisfied_pos = np.argwhere(pert_classes == c).reshape((1, -1))[0]
+                choice_size = int(self._num_perts//len(self._classes))
+                # only select as much data as there is in the dataset
+                choice_size = choice_size if len(satisfied_pos) >= choice_size else len(satisfied_pos)
+                selected_rows = np.append(selected_rows, np.random.choice(satisfied_pos, size=choice_size, replace=False))
+                balance_dict[c] = choice_size
+        else:
+            total_other_classes = np.sum(pert_classes != self._current_class)
+            for c in self._classes:
+                satisfied_pos = np.argwhere(pert_classes == c).reshape((1, -1))[0]
+                if c == self._current_class:
+                    choice_size = int(self._num_perts//2)
+                else:
+                    # keep the proportions within the others the same, just get them to the right amount
+                    choice_size = int(((self._num_perts/2) * (len(satisfied_pos)/total_other_classes)) // 1)
+                # only select as much data as there is in the dataset
+                choice_size = choice_size if len(satisfied_pos) >= choice_size else len(satisfied_pos)
+                selected_rows = np.append(selected_rows,
+                                          np.random.choice(satisfied_pos, size=choice_size, replace=False))
+                balance_dict[c] = choice_size
+
+        self._final_balance = balance_dict
+        return pert_data.iloc[selected_rows]
+
+    def get_number_iterations(self):
+        return self._iterations
+
+    def get_balance(self):
+        return self._final_balance.copy()
+
+    def produce_balanced_perturbation(self, num_perturbations, bbmodel, data_row=None):
+        perturbed_data = self.produce_perturbation(num_perturbations, data_row=data_row)
+        pert_classes = bbmodel.predict(perturbed_data)
+        if self._balance_mode == 'curr-other':
+            self._current_class = pert_classes[0]  # first will be input from produce_perturbation
+        self._classes = np.unique(pert_classes)
+        self._num_perts = num_perturbations
+        class_counts = self._get_class_counts(pert_classes)
+        self._iterations = 1
+        while self._iterations < self._max_iterations and self._check_threshold_balance(class_counts):
+            new_perturbed = self.produce_perturbation(num_perturbations, data_row=data_row)
+            perturbed_data = perturbed_data.append(new_perturbed, ignore_index=True)
+            new_classes = bbmodel.predict(new_perturbed)
+            pert_classes = np.append(pert_classes, new_classes)
+            class_counts = self._get_class_counts(pert_classes)
+            self._iterations += 1
+        # error message if max iterations hit?
+        perturbed_data = self._undersample_classes(perturbed_data, pert_classes)
+        perturbed_data.iloc[0] = self._original_value
         return perturbed_data
 
 
@@ -508,7 +637,7 @@ class ClusteredPerturber(BarbePerturber):
         if data_row is None and data_cluster is None:
             data_row = self._all_means[0]
         else:
-            data_row = self._conversion_input(data_row.to_numpy())
+            data_row = self._conversion_input(data_row)
 
         self._set_cluster_values(data_row=data_row)
         if data_row is None and data_cluster is not None:

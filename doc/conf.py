@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# lime documentation build configuration file, created by
+# lime1 documentation build configuration file, created by
 # sphinx-quickstart on Fri Mar 18 16:20:40 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -33,11 +33,11 @@ MOCK_MODULES = ['numpy', 'scipy', 'scipy.sparse', 'sklearn',
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
-import lime
-import lime.lime_text
-import lime.lime_tabular
-import lime.explanation
-import lime.lime_base
+import lime1
+import lime1.lime_text
+import lime1.lime_tabular
+import lime1.explanation
+import lime1.lime_base
 
 # -- General configuration ------------------------------------------------
 
@@ -68,7 +68,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'lime'
+project = u'lime1'
 copyright = u'2016, Marco Tulio Ribeiro'
 author = u'Marco Tulio Ribeiro'
 
@@ -244,7 +244,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'lime.tex', u'lime Documentation',
+    (master_doc, 'lime1.tex', u'lime1 Documentation',
      u'Marco Tulio Ribeiro', 'manual'),
 ]
 
@@ -274,7 +274,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'lime', u'lime Documentation',
+    (master_doc, 'lime1', u'lime1 Documentation',
      [author], 1)
 ]
 
@@ -288,8 +288,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'lime', u'lime Documentation',
-     author, 'lime', 'One line description of project.',
+    (master_doc, 'lime1', u'lime1 Documentation',
+     author, 'lime1', 'One line description of project.',
      'Miscellaneous'),
 ]
 

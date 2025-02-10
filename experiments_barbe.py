@@ -44,16 +44,16 @@ import experiments_config
 # if experiments_config.LIME_PATH not in sys.path:
 #     sys.path.append(experiments_config.LIME_PATH)
 
-LIME_PATH = '.\\lime'
+LIME_PATH = 'lime1'
 SIGDIRECT_PATH = '.\\sigdirect'
 sys.path.insert(1, LIME_PATH)
 sys.path.insert(2, SIGDIRECT_PATH)
 
 print(sys.path)
 
-import lime
-import lime.lime_tabular
-import lime.barbe as barbe
+import lime1
+import lime1.lime_tabular
+import lime1.barbe as barbe
 import anchor
 import rbo
 
@@ -612,8 +612,8 @@ def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classif
         discretizers = ['decile', 'eightile', 'sixile', 'quartile']
         for i in range(1):
             try:
-                # IAIN replaced lime.lime_tabular with lime.barbe ...
-                # IAIN this is left as is because the method is still lime
+                # IAIN replaced lime1.lime_tabular with lime1.barbe ...
+                # IAIN this is left as is because the method is still lime1
                 # IAIN, for Moriom this is all you need to run BARBE in the current form
                 explainer = barbe.BarbeExplainer(train_df2.values,
                                                                    categorical_features=categorical_feature_indices,
@@ -637,8 +637,8 @@ def evaluate_explanations_parallel(dataset_name, clf, train_df, test_df, classif
         discretizers = ['decile', 'eightile', 'sixile', 'quartile'] 
         for i in range(1):
             try:
-                # IAIN replaced lime.lime_tabular with lime.barbe ...
-                # IAIN this is left as is because the method is still lime
+                # IAIN replaced lime1.lime_tabular with lime1.barbe ...
+                # IAIN this is left as is because the method is still lime1
                 explainer = lime.lime_tabular.LimeTabularExplainer(train_df2.values,  
                                                        categorical_features=categorical_feature_indices, 
                                                        feature_names=all_features,

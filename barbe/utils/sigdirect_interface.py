@@ -15,6 +15,7 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder, KBinsDiscretizer
 
 # IAIN requires main folder to contain rule.py
 from sigdirect import SigDirect
+#from sklearn.decomposition import PCA
 import numpy as np
 
 
@@ -30,14 +31,23 @@ class SigDirectWrapper:
         # IAIN this should have settings for sigdirect and more accurate utilities
         # IAIN intention is for the user to get the same flexibility as scikit
         # IAIN adjusting settings worked!!
+        # IAIN confidence=0.5 and alpha=0.001 and early_stopping=True gets 0.2222
         self._sigdirect_model = SigDirect(
-                clf_version=1,
-                alpha=0.1,
+                clf_version=2,  # 1 is without better trimming version 2 is SigD2
+                alpha=0.001,  #0.01 may be ok
                 early_stopping=False,
-                confidence_threshold=0.2,
+                confidence_threshold=0.5,  # IAIN very dependent on grid and npert
                 is_binary=True,
                 get_logs=False,
                 other_info=None)
+        #self._sigdirect_model = SigDirect(
+        #    clf_version=1,
+        #    alpha=0.1,
+        #    early_stopping=False,
+        #    confidence_threshold=0.2,
+        #    is_binary=True,
+        #    get_logs=False,
+        #    other_info=None)
         self._n_bins = n_bins
         self._oh_enc = None
         self._kb_discrete = None
@@ -55,23 +65,33 @@ class SigDirectWrapper:
         for i in range(X.shape[1]):
             unique_features = np.unique(X[:, i])
             # check that there are little enough unique values to be considered discrete
-            if len(unique_features) <= 10:
+            #print(unique_features)
+            #print(len(unique_features))
+            if len(unique_features) <= 20:
                 self._categorical_features[i] = unique_features
             elif not np.isscalar(unique_features):
                 assert ValueError(self._verbose_header + " ERROR: features with more than 10 distinct values must be "
                                                          "scalar.")
         self._not_categorical = [i for i in range(X.shape[1]) if i not in list(self._categorical_features.keys())]
 
+        #print(self._categorical_features)
+        #print(self._not_categorical)
+        #self._pca = PCA(n_components=X.shape[1] if X.shape[1] <= 30 else 30)
         self._oh_enc = OneHotEncoder(categories='auto', handle_unknown='ignore',
                                      min_frequency=None)
         self._kb_discrete = KBinsDiscretizer(n_bins=self._n_bins, encode='ordinal', strategy='quantile')
+        #print(self._not_categorical)
+        #print(X)
+        #assert False
+        print(self._categorical_features)
         self._kb_discrete.fit(X[:, self._not_categorical])
         # two encoding modes, one with mixture of bins and discrete the other only has bins
         if list(self._categorical_features.keys()):
             self._oh_enc.fit(np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
-                                       self._categorical_transform(X), axis=1))
+                                       X[:, list(self._categorical_features.keys())], axis=1))
         else:
             self._oh_enc.fit(self._kb_discrete.transform(X))
+
         self._new_feature_order = self._not_categorical + list(self._categorical_features.keys())
 
     def _categorical_transform(self, X):
@@ -87,15 +107,24 @@ class SigDirectWrapper:
         if self._verbose:
             print(self._verbose_header, "before encoding:", X.shape, X)
         if list(self._categorical_features.keys()):
-            return np.asarray(self._oh_enc.transform(
+            #print(np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
+            #              self._categorical_transform(X), axis=1))
+            #print(X)
+            #print(self._not_categorical)
+            ret_X = np.asarray(self._oh_enc.transform(
                 np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
-                          self._categorical_transform(X), axis=1)).todense()).astype(int)
+                          X[:, list(self._categorical_features.keys())], axis=1)).todense()).astype(int)
         else:
-            return np.asarray(self._oh_enc.transform(self._kb_discrete.transform(X)).todense()).astype(int)
+            ret_X = np.asarray(self._oh_enc.transform(self._kb_discrete.transform(X)).todense()).astype(int)
+
+        return ret_X
 
     def _decode(self, enc_X):
+        # TODO: IAIN we need to find what values were affected by the PCA and put those into the rule instead
         partial_decoding = self._oh_enc.inverse_transform(enc_X)[0]
         partial_usable = [i for i in range(len(partial_decoding)) if partial_decoding[i] is not None]
+        #partial_decoding[[True if temp is None else False for temp in partial_decoding]] =
+        #self._pca.inverse_transform(
         if self._verbose:
             print(self._verbose_header, "before decoding:", enc_X)
             print(self._verbose_header, "OneHot decode:", partial_decoding)
@@ -114,10 +143,11 @@ class SigDirectWrapper:
                 return_list[moved_index] = self._kb_discrete.bin_edges_[converted_index][int(partial_decoding[i])]
             else:
                 converted_index = np.where(moved_index == np.array(list(self._categorical_features.keys())))[0][0]
-                print(converted_index, i, np.array(list(self._categorical_features.keys())))
-                print(self._categorical_features)
+                #print(converted_index, i, np.array(list(self._categorical_features.keys())))
+                #print(self._categorical_features)
                 # IAIN URGENT (CHECK IF THE MOVED INDEX IS CORRECT HERE)
-                return_list[moved_index] = self._categorical_features[moved_index][int(partial_decoding[i])]
+                #print(return_list)
+                return_list[moved_index] = partial_decoding[i]
 
         return [return_list]
 
@@ -132,20 +162,22 @@ class SigDirectWrapper:
         X = X.fillna(0)
         X = X.to_numpy()
         y = self._y_conversion(y)
-        print(X[0,:])
+        #print(X[0,:])
         self._create_encoder(X)
         if self._verbose:
             print(self._verbose_header, self._encode(X))
             print(self._verbose_header, "training y:", y)
         # train sigdirect on one hot encoding of input data [0, 1, 0, 1, 1, ...]
-        print(self._encode(X))
+        #print(self._encode(X))
         self._sigdirect_model.fit(self._encode(X), y)
 
     def _y_reconversion(self, y):
         return self._pred_map[y]
 
     def predict(self, X):
-        # print("IAIN NEW: ", X[0,:])
+        # print("IAIN NEW: ", X)
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
         return self._y_reconversion(self._sigdirect_model.predict(self._encode(X)))
 
     def _generate_rules(self, data_row, true_label):
@@ -219,10 +251,14 @@ class SigDirectWrapper:
         """
         #print("IAIN in ohe simple")
         # original_size = self._rules[0][0][2].shape[1]
-        print(self._rules)
+        #print(self._rules)
         for item in self._rules:
-            original_size = self._rules[item][0][2].shape[1]
-            break
+            #print(item)
+            try:
+                original_size = self._rules[item][0][2].shape[1]
+                break
+            except:
+                print(self._rules[item])
         try:
             ohe_key = np.zeros(original_size).astype(int)
             prev_ind = None
@@ -231,7 +267,7 @@ class SigDirectWrapper:
                 temp = np.zeros(original_size).astype(int)
                 temp[i] = 1
                 position = self._decode(temp.reshape((1, -1)))[0]
-                # print("IAIN OHE POSITION: ", position)
+                #print("IAIN OHE POSITION: ", position)
                 ind_use = np.where(np.array(position) != None)
                 # print("IAIN OHE IND USE: ", ind_use)
                 if prev_ind is None or prev_ind == ind_use:
@@ -240,11 +276,12 @@ class SigDirectWrapper:
                     counter = 1
                 ohe_key[i] = counter
                 prev_ind = ind_use
-        except UnboundLocalError:
-            assert ValueError(self._verbose_header + " ERROR: no rules available. Check input data and settings.")
+            return ohe_key
+        except:
+            raise ValueError(self._verbose_header + " ERROR: no rules available. Check input data and settings.")
 
         #print("IAIN SIMPLE OHE: ", ohe_key)
-        return ohe_key
+        return None
 
     def get_applicable_rules(self, input_point):
         rules_subset = self._rules
@@ -272,8 +309,7 @@ class SigDirectWrapper:
         return rules_translation
 
 
-
-    def get_all_rules(self, rules_subset=None):
+    def get_all_rules(self, rules_subset=None, raw_rules=False):
         if rules_subset is None:
             rules_subset = self._rules
 
@@ -290,8 +326,14 @@ class SigDirectWrapper:
                 # decode one hot vector and get text version of the rule
                 rule_items = self._decode(temp.reshape((1, -1)))[0]
                 rule_text = self._rule_translation(rule_items)
-                rules_translation.append((rule_text + " -> " + str(class_label), class_label,
-                                          rule_support, rule_confidence, rule_p))
+                if raw_rules:
+                    rules_translation.append((temp.reshape((1, -1))[0],
+                                              class_label,
+                                              10**rule_p,
+                                              0))
+                else:
+                    rules_translation.append((rule_text + " -> " + str(class_label), class_label,
+                                              rule_support, rule_confidence, rule_p))
         # format [(rule text, support, confidence, rule_p), ...]
         return rules_translation
 
@@ -301,7 +343,7 @@ class SigDirectWrapper:
         encoded_value = self._encode(data_row.to_numpy().reshape(1, -1))
         len_encoding = len(encoded_value[0])
         data_antecedent = self._decode(encoded_value)[0]
-        print(data_antecedent)
+        #print(data_antecedent)
 
         # Get the kingfisher association rules
         label_quality = self._generate_rules(data_row, self.predict(data_row.to_numpy().reshape(1, -1)))
@@ -362,7 +404,7 @@ class SigDirectWrapper:
             return final_rules
         return [(self._rule_translation(rule_item) + ' -> ' + str(c), c, p, m) for rule_item, c, p, m in final_rules]
 
-    def get_features(self, data_row, true_label):
+    def get_features(self, data_row, true_label, next_best_class):
         # IAIN now one thing to try is when decoding we just check where relevant bins to the sample appear,
         #  I'm pretty sure we would still do decoding for this though
         # print("Bins:", self._kb_discrete.bin_edges_)
@@ -382,7 +424,7 @@ class SigDirectWrapper:
                                       reverse=False)
 
         # applicable rules, except the ones in applied rules.
-        applicable_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x != true_label]),
+        applicable_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x == next_best_class]),
                                          key=lambda x: (
                                              len(x[0].get_items()),
                                              - x[0].get_confidence() * x[0].get_support(),
@@ -415,116 +457,254 @@ class SigDirectWrapper:
                 print(self._verbose_header, "item of note in applied", rule.get_items())
                 print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
 
-            if np.sum(temp & original_point_sd.astype(int)) != temp.sum():
-                continue
-            else:
-                applied_rules.append(rule)
+            # IAIN that one is my fault had not all(...)
+            #if all([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))]):
+            applicability = sum([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))])
+            useful_applicability = sum([(temp[i] == original_point_sd[0][i]) and (original_point_sd[0][i] != 0) for i in range(len(temp))])
+            #print(temp)
+            #print(original_point_sd)
+            #print([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))])
+            #print(applicability)
+            #print(len(temp))
+            #assert False
+            applied_rules.append(rule)
+            influence = applicability / len(temp)
+            #if applicability != len(temp):
+            #    influence = 0
             # rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
             rule_items = self._decode(temp.reshape((1, -1)))[0]
+            rule_applicable = self._decode(np.array([(temp[i] == original_point_sd[0][i]) and (temp[i] != 0) for i in range(len(temp))]).reshape((1, -1)))[0]
             #         rule_items = temp ## TEXT (uncomment for TEXT)
-            for item, val in enumerate(rule_items):
-                if val is None:
-                    continue
-                #                 if val==0: ## TEXT (uncomment for TEXT)
-                #                     continue ## TEXT (uncomment for TEXT)
-                #                 if item not in bb_features:
-                bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), 1))
+            rule_items = [item for item in enumerate(rule_items)]
+            rule_applicable = [item for item in enumerate(rule_applicable)]
+            for i in range(len(rule_items)):
+                item, val = rule_items[i]
+                citem, cval = rule_applicable[i]
+                if val is not None:
+                    equiv_check = cval is not None
+                    print("IAIN HERE: ")
+                    print(item, citem, val, cval)
+                    influence_sign = 1 if item == citem and val != cval else 1
+                    # to change back remove the temp + 2 to only temp
+                    influence_modifier = influence_sign*((1+2*useful_applicability) / (2*sum(temp)+2))
+                    # FOR OLD
+                    #bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(),
+                    #                          sum(temp), useful_applicability))
+                    bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(),
+                                                  sum(temp), useful_applicability, True, equiv_check))
             #                     bb_features[item] += counter
             #                 bb_features[item] = max(bb_features[item],  rule.get_confidence()/len(rule.get_items()))
-            counter -= 1
+           # counter -= 1
         set_size_1 = len(bb_features)
 
         # Second, add applicable rules
-        applicable_rules = []
-        for rule, ohe, original_point_sd in applicable_sorted_rules:
-            temp = np.zeros(original_point_sd.shape[1]).astype(int)
-            temp[rule.get_items()] = 1
-            if self._verbose:
-                print(self._verbose_header, "item of note in applicable rules", rule.get_items())
-                print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
+        if True:
+            applicable_rules = []
+            for rule, ohe, original_point_sd in applicable_sorted_rules:
+                temp = np.zeros(original_point_sd.shape[1]).astype(int)
+                temp[rule.get_items()] = 1
+                if self._verbose:
+                    print(self._verbose_header, "item of note in applicable rules", rule.get_items())
+                    print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
 
-            if np.sum(temp & original_point_sd.astype(int)) != temp.sum():
-                continue
-            else:
+                #if all([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))]):
+                applicability = sum(
+                    [(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))])
+                useful_applicability = sum(
+                    [(temp[i] == original_point_sd[0][i]) and (original_point_sd[0][i] != 0) for i in range(len(temp))])
+
+                influence = - 1
+                #if applicability != len(temp):
+                #    influence = 0
                 applicable_rules.append(rule)
-            rule_items = self._decode(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
-            #         rule_items = temp ## TEXT (uncomment for TEXT)
-            for item, val in enumerate(rule_items):
-                if val is None:
-                    continue
-                if item not in bb_features:
-                    #                 bb_features[item] += rule.get_support()
-                    bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), counter))
-            counter -= 1
+                rule_items = self._decode(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
+                rule_applicable = self._decode(
+                    np.array([(temp[i] == original_point_sd[0][i]) and (temp[i] != 0) for i in range(len(temp))]).reshape((1, -1)))[0]
+                #         rule_items = temp ## TEXT (uncomment for TEXT)
+                rule_items = [item for item in enumerate(rule_items)]
+                rule_applicable = [item for item in enumerate(rule_applicable)]
+                for i in range(len(rule_items)):
+                    item, val = rule_items[i]
+                    citem, cval = rule_applicable[i]
+                    #print("Item Val Pair: ", item, val)
+                    if val is not None:
+                        equiv_check = cval is not None
+                        #                 bb_features[item] += rule.get_support()
+                        influence_sign = -1 if item == citem and val != cval else 1
+                        # influence_modifier = influence_sign*((1+2*useful_applicability) / (2*sum(temp)+2))
+                        # FOR OLD
+                        #bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(),
+                        #                          sum(temp), useful_applicability))
+                        bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(),
+                                                  sum(temp), useful_applicability, False, equiv_check))
+                #counter -= 1
 
         # Third, add other rules.
-        other_rules = []
-        for rule, ohe, original_point_sd in other_sorted_rules:
-            temp = np.zeros(original_point_sd.shape[1]).astype(int)
-            # tell you where the ohe is encoded
-            temp[rule.get_items()] = 1
-            if self._verbose:
-                print(self._verbose_header, "item of note in other", rule.get_items())
-                print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
-            # avoid applicable rules
-            if np.array_equal(temp, temp & original_point_sd.astype(int)):  # error??? it was orig...[0].astype
-                continue
-            #             elif temp.sum()==1:
-            #                 continue
-            elif temp.sum() - np.sum(temp & original_point_sd.astype(int)) > 1:  # error???
-                continue
-            #             else:
-            rule_items = self._decode(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
-            #         rule_items = temp ## TEXT (uncomment for TEXT)
-            seen_set = 0
-            for item, val in enumerate(rule_items):
-                if val is None:
-                    continue
-                if item not in bb_features:
-                    #                 bb_features[item] += rule.get_support()
-                    #                     bb_features[item] += counter
-                    candid_feature = item
-                    pass
-                else:
-                    seen_set += 1
-            if seen_set == temp.sum() - 1:  # and (item not in bb_features):
+        # IAIN try every rule and make rules less similar to the current value the least important
+        if False:
+            other_rules = []
+            for rule, ohe, original_point_sd in other_sorted_rules:
+                temp = np.zeros(original_point_sd.shape[1]).astype(int)
+                # tell you where the ohe is encoded
+                temp[rule.get_items()] = 1
                 if self._verbose:
-                    print(self._verbose_header, "black box candid", bb_features[candid_feature])
-                # bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or
-                #  indicated as not used
-                bb_features[candid_feature].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), counter))
-                other_rules.append(rule)
-            # what if we subtract the rule's support instead
-            counter -= 1
+                    print(self._verbose_header, "item of note in other", rule.get_items())
+                    print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
+                # avoid applicable rules
+                #if np.array_equal(temp, temp & original_point_sd.astype(int)):  # error??? it was orig...[0].astype
+                #    continue
+                #             elif temp.sum()==1:
+                #                 continue
+                #elif temp.sum() - np.sum(temp & original_point_sd.astype(int)) > 1:  # error???
+                #    continue
+                #             else:
+                rule_items = self._decode(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
+                #         rule_items = temp ## TEXT (uncomment for TEXT)
+                n_matched_features = sum([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))])
+                seen_set = 0
+                #counter = 1 if rule.ge
+                for item, val in enumerate(rule_items):
+                    if val is not None:
+                        bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(), sum(temp), counter))
+                        #other_rules.append(rule)
+                #if seen_set == temp.sum() - 1:  # and (item not in bb_features):
+                #    if self._verbose:
+                #        print(self._verbose_header, "black box candid", bb_features[candid_feature])
+                    # bb_features[candid_feature] += counter # IAIN this should be on the scale of the other rules or
+                    #  indicated as not used
 
-        if self._verbose:
-            print(self._verbose_header, "black box features", bb_features)
-            print(self._verbose_header, "rules", applicable_rules,
-                  applied_rules,
-                  other_rules)
+                # what if we subtract the rule's support instead
+                counter -= 1
 
-        bb_features = evaluation_function(bb_features)
-        feature_value_pairs = sorted(bb_features.items(), key=lambda x: x[1], reverse=True)
+        #if self._verbose:
+        #    print(self._verbose_header, "black box features", bb_features)
+        #    print(self._verbose_header, "rules", applicable_rules,
+        #          applied_rules,
+        #          other_rules)
+
+        bb_features = old_evaluation_function(bb_features)
+        feature_value_pairs = sorted(bb_features.items(), key=lambda x: abs(x[1]), reverse=True)
 
         return [(self._feature_names[k], v) for k, v in feature_value_pairs]
 
 
-def evaluation_function(bb_features):
+def old_evaluation_function(bb_features):
+    # expect dict<feature, list<(support, confidence, log_p, counter)>]>
+    # return dict<feature, float>
+    eval_bb_features = defaultdict(int)
+    for feature, tlist in bb_features.items():
+        temp_eval = 0
+        n_appearances = 0
+        pos_rules = 0
+        for support, confidence, pvalue, n_rules, counter, class_val, fulfill in tlist:
+            if n_rules == 1 or n_rules/2 <= counter:
+                pos_rules += 1 if (class_val and fulfill) or (not class_val and not fulfill) else 0
+                # pos_rules += 1 if n_rules == counter and class_val else 0
+                #sign = 1 if class_val else -1
+                #sign = -sign if n_rules != counter and not class_val else sign
+                sign = 1
+                adj_p = -pvalue if -pvalue <= 100 else 100
+                temp_eval += sign*support#*confidence*adj_p
+                n_appearances += 1
+        if n_appearances != 0:
+            eval_bb_features[feature] = temp_eval #/ n_appearances
+        else:
+            eval_bb_features[feature] = temp_eval
+        #if pos_rules < n_appearances - pos_rules:
+        #    eval_bb_features[feature] = -eval_bb_features[feature]
+    return eval_bb_features
+
+
+def new_evaluation_function(bb_features):
     # expect dict<feature, list<(support, confidence, log_p, counter)>]>
     # return dict<feature, float>
     eval_bb_features = defaultdict(int)
     SMALL_FLOAT = 1e-9
     high_importance = 0
+    highest_positive_rules = 0
     for feature, tlist in bb_features.items():
         temp_eval = 0
-        for support, confidence, pvalue, counter in tlist:
-            if counter > 0 or feature not in eval_bb_features.keys():
-                temp_eval += np.sign(counter) * ( (1/(support+SMALL_FLOAT)) * (1/(confidence+SMALL_FLOAT)) *
-                                                  (1/((10**pvalue)+SMALL_FLOAT)) )
-        temp_eval /= len(tlist)
-        eval_bb_features[feature] = temp_eval
-        if temp_eval > high_importance:
-            high_importance = temp_eval
-    for feature in eval_bb_features.keys():
-        eval_bb_features[feature] /= high_importance
+        temp_positive_rules = 0
+        temp_points_to = 0
+        rule_satisfied = False
+        # rule.get_support(), rule.get_confidence(), rule.get_log_p(),
+        # sum(temp), useful_applicability, False, item == citem and val != cval)
+        for support, confidence, logp, rule_len, n_satisfied, isc, ist in tlist:
+            if n_satisfied == rule_len:
+                rule_satisfied = True
+                dynamic_weight = ((2*n_satisfied + 1)) / ((2*rule_len + 2))
+                #dynamic_weight = 1 - dynamic_weight if rule_len == n_satisfied or not ist else dynamic_weight
+                dynamic_weight = dynamic_weight if isc else -dynamic_weight
+
+                adj_pval = abs(logp) if abs(logp) <= 100 else 100
+                temp_eval += dynamic_weight * adj_pval
+
+                temp_positive_rules += dynamic_weight
+                #  if adj_counter != 0:
+                if dynamic_weight != 0:
+                    temp_points_to += 1
+        if not rule_satisfied:
+            for support, confidence, logp, rule_len, n_satisfied, isc, ist in tlist:
+                if n_satisfied >= rule_len/2 or rule_len == 1:
+                    dynamic_weight = ((2*n_satisfied + 1)) / ((2*rule_len + 2))
+                    dynamic_weight = dynamic_weight if (isc and ist) or (not isc and ist) else -dynamic_weight
+
+                    adj_pval = abs(logp) if abs(logp) <= 100 else 100
+                    temp_eval += dynamic_weight * adj_pval
+
+                    temp_positive_rules += dynamic_weight
+                    #  if adj_counter != 0:
+                    if dynamic_weight != 0:
+                        temp_points_to += 1
+
+        if temp_positive_rules != 0:
+            # if swapping back then remove the absolute and absolute sorting
+            temp_eval /= abs(temp_positive_rules)
+        eval_bb_features[feature] = temp_eval  #temp_points_to*
+        highest_positive_rules = temp_points_to if temp_points_to > highest_positive_rules else highest_positive_rules
+        #if temp_eval > high_importance:
+        #    high_importance = temp_eval
+    #if highest_positive_rules > 0:
+    #    for feature in eval_bb_features.keys():
+    #        eval_bb_features[feature] /= highest_positive_rules
+    return eval_bb_features
+
+
+def ot_new_evaluation_function(bb_features):
+    # expect dict<feature, list<(support, confidence, log_p, counter)>]>
+    # return dict<feature, float>
+    eval_bb_features = defaultdict(int)
+    SMALL_FLOAT = 1e-9
+    high_importance = 0
+    highest_positive_rules = 0
+    for feature, tlist in bb_features.items():
+        temp_eval = 0
+        temp_positive_rules = 0
+        temp_points_to = 1
+        # rule.get_support(), rule.get_confidence(), rule.get_log_p(),
+        # sum(temp), useful_applicability, False, item == citem and val != cval)
+        for support, confidence, logp, rule_len, n_satisfied, isc, ist in tlist:
+            if n_satisfied >= rule_len/2 or rule_len == 1:
+                dynamic_weight = ((2*n_satisfied + 1)) / ((2*rule_len + 2))  # (n_satisfied + 1)  #
+                dynamic_weight = dynamic_weight if (isc and ist) or (not isc and not ist) else -dynamic_weight
+                # count_hurts = 1/(2**temp_points_to) if n_satisfied != rule_len else 2  # make 2 if not good
+
+                adj_pval = abs(logp) if abs(logp) <= 100 else 100
+                temp_eval += dynamic_weight * adj_pval * support * confidence
+
+                temp_positive_rules += dynamic_weight * support * confidence  # removed count_hurts from div term
+                #  if adj_counter != 0:ope
+                if dynamic_weight != 0 and n_satisfied != rule_len:
+                    temp_points_to += 1
+
+        if temp_positive_rules != 0:
+            # if swapping back then remove the absolute and absolute sorting
+            temp_eval /= abs(temp_positive_rules)
+        eval_bb_features[feature] = temp_eval*temp_points_to
+        highest_positive_rules = temp_points_to if temp_points_to > highest_positive_rules else highest_positive_rules
+        #if temp_eval > high_importance:
+        #    high_importance = temp_eval
+    if highest_positive_rules > 0:
+        for feature in eval_bb_features.keys():
+            eval_bb_features[feature] /= highest_positive_rules
     return eval_bb_features

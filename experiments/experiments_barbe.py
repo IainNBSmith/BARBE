@@ -44,15 +44,15 @@ import experiments_config
 # if experiments_config.LIME_PATH not in sys.path:
 #     sys.path.append(experiments_config.LIME_PATH)
 
-# LIME_PATH = 'D:\\MSc\\Research\\Test-Barbe-Local\\lime'
+# LIME_PATH = 'D:\\MSc\\Research\\Test-Barbe-Local\\lime1'
 # SIGDIRECT_PATH = 'D:\\MSc\\Research\\Test-Barbe-Local\\sigdirect'
 # sys.path.insert(1, LIME_PATH)
 # sys.path.insert(2, SIGDIRECT_PATH)
 
 print(sys.path)
 
-import lime
-import lime.lime_tabular
+import lime1
+import lime1.lime_tabular
 import anchor
 import rbo
 

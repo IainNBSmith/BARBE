@@ -1,0 +1,14 @@
+,0,1,2,3,4,5,6,7
+0,Method,Evaluation,Fidelity (Original),Fid. Var.,Euclidean Fidelity,Euc. Var.,Nearest Neighbor Fidelity,NN. Var.
+1,normal,Perturbed,0.0,0.0,0.0,0.0,0.0,0.0
+2,normal,Single Blind,0.0,0.0,0.0,0.0,0.0,0.0
+3,normal,Double Blind,0.0,0.0,0.0,0.0,0.0,0.0
+4,uniform,Perturbed,0.0,0.0,0.0,0.0,0.0,0.0
+5,uniform,Single Blind,0.0,0.0,0.0,0.0,0.0,0.0
+6,uniform,Double Blind,0.0,0.0,0.0,0.0,0.0,0.0
+7,cauchy,Perturbed,0.0,0.0,0.0,0.0,0.0,0.0
+8,cauchy,Single Blind,0.0,0.0,0.0,0.0,0.0,0.0
+9,cauchy,Double Blind,0.0,0.0,0.0,0.0,0.0,0.0
+10,t-distribution,Perturbed,0.0,0.0,0.0,0.0,0.0,0.0
+11,t-distribution,Single Blind,0.0,0.0,0.0,0.0,0.0,0.0
+12,t-distribution,Double Blind,0.0,0.0,0.0,0.0,0.0,0.0

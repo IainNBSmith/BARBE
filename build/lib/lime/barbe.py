@@ -1,15 +1,15 @@
 # DONE/TODO: separate BARBE code from LIME (Jun 7)
 # DONE/TODO: make the code called in experiments_barbe.py call to barbe.py (Jun 11)
-# DONE/TODO: find locations where lime is used (Jun 11)
+# DONE/TODO: find locations where lime1 is used (Jun 11)
 # TODO: create relevant comments indicating execution of BARBE code
 # TODO: modify header comments to my preferred style
 # TODO: ensure that all the options that are possible function correctly (save this to a test file)
 '''
- Done/TODO: make the code actually use and run sigdirect (it was calling base lime from what I could tell) (Jun 11)
+ Done/TODO: make the code actually use and run sigdirect (it was calling base lime1 from what I could tell) (Jun 11)
     - Manually changed settings to set barbe_mode and model_regressor to 'BARBE' and SigDirect()
       in future these should be obvious defaults or removed entirely to avoid confusion since
-      the other modes are directly lime code.
-    - Add a TODO: remove lime code that will never run with these settings (avoid issues with having lime code)
+      the other modes are directly lime1 code.
+    - Add a TODO: remove lime1 code that will never run with these settings (avoid issues with having lime1 code)
         - This has a ways to go as much code is used in options that may never be applied, need to check this.
         - Add a TODO: is the explain_instance function ever used or is it only explain_instance_with_data? (remove?)
         - Add a TODO: make the code only call functions from within the object if possible (see get_all_rules)
@@ -36,14 +36,14 @@ from sklearn.utils import check_random_state
 
 # eventually these must be modified into our own versions of the code
 #  that goal is for the end of summer
-# IAIN I can write this better (all lime Discretizers)
-from lime.discretize import QuartileDiscretizer
-from lime.discretize import DecileDiscretizer
-from lime.discretize import EntropyDiscretizer
-from lime.discretize import BaseDiscretizer
-from lime.discretize import StatsDiscretizer
-# IAIN do not know if this is lime or not
-from lime import explanation
+# IAIN I can write this better (all lime1 Discretizers)
+from lime1.discretize import QuartileDiscretizer
+from lime1.discretize import DecileDiscretizer
+from lime1.discretize import EntropyDiscretizer
+from lime1.discretize import BaseDiscretizer
+from lime1.discretize import StatsDiscretizer
+# IAIN do not know if this is lime1 or not
+from lime1 import explanation
 from . import lime_base
 
 import os
@@ -427,7 +427,7 @@ class BarbeBase(object):
         return (0, feature_value_pairs, prediction_score, predicted_label)
 
 
-# replace instances of lime tabular explainer with BarbeExplainer
+# replace instances of lime1 tabular explainer with BarbeExplainer
 class BarbeExplainer(object):
     '''
     Purpose: Explains predictions on tabular data using Sigdirect.
@@ -529,24 +529,24 @@ class BarbeExplainer(object):
         if discretize_continuous and not sp.sparse.issparse(training_data):
             # Set the discretizer if training data stats are provided
             if self.training_data_stats:
-                # IAIN lime code
+                # IAIN lime1 code
                 discretizer = StatsDiscretizer(training_data, self.categorical_features,
                                                self.feature_names, labels=training_labels,
                                                data_stats=self.training_data_stats)
 
             if discretizer == 'quartile':
-                # IAIN lime code
+                # IAIN lime1 code
                 self.discretizer = QuartileDiscretizer(
                     training_data, self.categorical_features,
                     self.feature_names, labels=training_labels)
             elif discretizer == 'decile':
-                # IAIN lime code
+                # IAIN lime1 code
                 self.discretizer = DecileDiscretizer(
                     training_data, self.categorical_features,
                     self.feature_names, labels=training_labels)
                 print('Hi There: ', self.discretizer)
             elif discretizer == 'entropy':
-                # IAIN lime code
+                # IAIN lime1 code
                 self.discretizer = EntropyDiscretizer(
                     training_data, self.categorical_features,
                     self.feature_names, labels=training_labels)
@@ -793,7 +793,7 @@ class BarbeExplainer(object):
                 discretized_feature_names[f] = self.discretizer.names[f][int(
                     discretized_instance[f])]
 
-        # IAIN lime code that we seem not to change
+        # IAIN lime1 code that we seem not to change
         print("IAIN using TableDomainMapper")  # it does use this so we must see
         # IAIN uses scaled_data[0]??
         domain_mapper = TableDomainMapper(feature_names,
@@ -802,7 +802,7 @@ class BarbeExplainer(object):
                                           categorical_features=categorical_features,
                                           discretized_feature_names=discretized_feature_names,
                                           feature_indexes=feature_indexes)
-        # IAIN lime?
+        # IAIN lime1?
         ret_exp = explanation.Explanation(domain_mapper,
                                           mode=self.mode,
                                           class_names=self.class_names)

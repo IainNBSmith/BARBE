@@ -3,7 +3,7 @@
 """
 import pandas as pd
 
-from lime.lime_tabular import LimeTabularExplainer
+from lime1.lime_tabular import LimeTabularExplainer
 import numpy as np
 import scipy as sp
 from sklearn.metrics import pairwise_distances
@@ -37,7 +37,7 @@ class LimeWrapper:
     def produce_perturbation(self, data_row, num_samples, bbmodel):
         # TODO
         # IAIN when the encoder is written into sigdirect then we need only call the
-        #  lime method for inverse rather than worry about this one
+        #  lime1 method for inverse rather than worry about this one
 
         # IAIN may need to scale the data inside of this function
         # self.__data_inverse_barbe(data_row, num_samples, predict_fn, barbe_mode)

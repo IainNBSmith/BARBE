@@ -1,0 +1,12 @@
+,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
+0,Metric,Approach,Distribution,N Important,Stability 5,Stability N/2,Feat 1 Stab,Feat 2 Stab,Feat 3 Stab,Feat 4 Stab,Feat 5 Stab,Gender,Married,Dependents,Education,Self_Employed,ApplicantIncome,CoapplicantIncome,LoanAmount,Loan_Amount_Term,Credit_History,Property_Area
+1,Average Support,BARBE,standard-normal,6,0.37522045855379194,0.37522045855379194,0.8,0.08888888888888889,0.17777777777777778,0.1111111111111111,0.06666666666666667,0,0,0,0,0.08708708708708708,0,0,0,0,0,
+2,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.09759759759759759,0,0,0,0,0,
+3,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0.8018018018018018,0.8018018018018018,0.1036036036036036,0,0,0,0.8018018018018018,0,
+4,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.10510510510510511,0,0,0,0,0,
+5,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.0990990990990991,0,0,0,0,0,
+6,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.10960960960960961,0,0,0,0,0,
+7,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.0960960960960961,0,0,0,0,0,
+8,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.0960960960960961,0,0,0,0,0,
+9,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.1036036036036036,0.057057057057057055,0,0,0,0.057057057057057055,
+10,Average Support,BARBE,standard-normal,6,0,0,0,0,0,0,0,0,0,0,0,0.0990990990990991,0,0,0,0,0,

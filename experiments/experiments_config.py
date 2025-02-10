@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
-#LIME_PATH = '/cshome/alamanik/lime-dev/lime/'
+#LIME_PATH = '/cshome/alamanik/lime1-dev/lime1/'
 #XLIME_PATH = '/cshome/motalleb/DM/my_method/xlime/'
-#SIGDIRECT_PATH = '/cshome/alamanik/lime-dev/sigdirect/'
+#SIGDIRECT_PATH = '/cshome/alamanik/lime1-dev/sigdirect/'
 
 #DATA_ROOT_DIR = './dataset'
 

@@ -7,6 +7,7 @@ This file contains the explainer part of BARBE and will call to all other parts 
 
 import pickle
 import warnings
+from collections import Counter
 
 import pandas as pd
 from sklearn.metrics import confusion_matrix
@@ -21,7 +22,7 @@ import math
 from barbe.utils.sigdirect_interface import SigDirectWrapper
 # from barbe.utils.lime_interface import LimeWrapper
 from barbe.utils.bbmodel_interface import BlackBoxWrapper
-from barbe.perturber import BarbePerturber
+from barbe.perturber import BarbePerturber, ClassBalancedPerturber
 from barbe.counterfactual import BarbeCounterfactual
 
 
@@ -109,36 +110,62 @@ class BARBE:
         print("ALL RULES:", explainer.get_rules())
         
         '''
+    # ************** GLOBALLY USED SETTINGS ************** #
+    DEFAULT_STANDARDIZED_CATEGORY_VARIANCE = 0.3334  # in perturber categories will have a consistent variance
+    # DEFAULT_STANDARDIZED_CATEGORY_VARIANCE = None  # run perturber with variances the same as before
+    DEFAULT_T_DIST_FREEDOM = 20  # when using t-distribution with no data sets the degrees of freedom
 
-    def __init__(self, training_data=None, feature_names=None, input_scale=None, input_categories=None,
-                 input_covariance=None, input_bounds=None, verbose=False, mode='tabular', input_sets_class=True,
-                 n_perturbations=5000, perturbation_type='uniform', dev_scaling_factor=5, n_bins=5):
+    # ************** UNIMPLEMENTED SETTINGS ************** #
+    DEFAULT_DEVIATION_SCALING_METHODS = {  # reason: requires testing to implement, change dev scaling to call or int
+        'normal': lambda x: x**2,
+        'uniform': lambda x: x/2,
+        't-distribution': lambda x: (x**2)/3,
+        'cauchy': lambda x: x/10
+    }  # handles modification to deviation that improve performance
+    DEFAULT_CATEGORY_FREQUENCY_ODDS = True  # reason: requires testing, need to remove the option if this is better
+
+    def __init__(self, training_data=None,
+                 feature_names=None, input_scale=None, input_categories=None, input_covariance=None, input_means=None,
+                 input_bounds=None, input_sets_class=True,
+                 mode='tabular',  n_perturbations=5000, n_bins=5, perturbation_type='uniform', dev_scaling_factor=5,
+                 higher_frequent_category_odds=True,
+                 balance_classes=False,
+                 verbose=False):
 
         # IAIN consider adding more options to bound setting for BARBE side
+        # TODO: add more requirement checks
+        #  like: - higher_frequent_category_odds=True requires that input_means is given (at least for the categorical
+        #           values) - we may want to modify format of the means passed into the method to make usage clearer
         self._check_input_combination(training_data, feature_names, input_scale, input_categories, n_perturbations,
                                       dev_scaling_factor)
-        input_categories = self._fix_input_categories(input_categories, feature_names)
+        #input_categories = self._fix_input_categories(input_categories, feature_names)
 
         self._dev_scaling = dev_scaling_factor is not None
         self._dev_scaling_factor = dev_scaling_factor \
-            if self._dev_scaling and input_scale is not None else 1
+            if self._dev_scaling and input_scale is None else 1
         self._verbose = verbose
         self._verbose_header = "BARBE:"
         self._n_perturbations = n_perturbations
         self._mode = mode
+        self._balanced_classes = balance_classes
         self._feature_names = list(training_data) \
             if feature_names is None else feature_names
         # OLD CODE WHEN LIME PERTURBER WAS USED
         # self._perturber = LimeWrapper(training_data, training_labels)
-        self._perturber = BarbePerturber(training_data=training_data,
-                                         input_scale=input_scale,
-                                         input_categories=input_categories,
-                                         input_bounds=input_bounds,
-                                         input_covariance=input_covariance,
-                                         perturbation_type=perturbation_type,
-                                         dev_scaling_factor=self._dev_scaling_factor,
-                                         uniform_training_range=False,
-                                         df=(None if training_data is not None else 20))
+        PertClass = BarbePerturber if not self._balanced_classes else ClassBalancedPerturber
+        self._perturber = PertClass(training_data=training_data,
+                                    input_scale=input_scale,
+                                    input_categories=input_categories,
+                                    input_bounds=input_bounds,
+                                    input_covariance=input_covariance,
+                                    input_means=input_means,
+                                    input_feature_names=self._feature_names,
+                                    perturbation_type=perturbation_type,
+                                    standardized_categorical_variance=BARBE.DEFAULT_STANDARDIZED_CATEGORY_VARIANCE,
+                                    use_mean_categorical_odds=higher_frequent_category_odds,
+                                    dev_scaling_factor=self._dev_scaling_factor,
+                                    uniform_training_range=False,
+                                    df=(None if training_data is not None else BARBE.DEFAULT_T_DIST_FREEDOM))
         self._perturbed_data = None
         self._input_sets_class = input_sets_class
         self._set_class = None
@@ -189,20 +216,20 @@ class BARBE:
 
     def _fit_surrogate_model(self, input_data, input_model):
         # differently produce perturbations for text and tabular data
-        if self._mode in 'tabular':
-            self._generate_perturbed_tabular(input_data.copy())
-        elif self._mode in 'text':
-            self._generate_perturbed_text(input_data)
+        # wrap model so prediction call is always the same
+        input_model = BlackBoxWrapper(input_model)
 
         input_row = pd.DataFrame(columns=self._feature_names, index=[0])
         input_row.iloc[0] = input_data.to_numpy().reshape((1, -1))
 
-        # wrap model so prediction call is always the same
-        input_model = BlackBoxWrapper(input_model)
-
         if self._input_sets_class:  # black box is true or false for input class
             self._set_class = input_model.predict(input_row.copy())
             input_model.set_class(self._set_class)
+
+        if self._mode in 'tabular':
+            self._generate_perturbed_tabular(input_data.copy(), bbmodel=input_model)
+        elif self._mode in 'text':
+            self._generate_perturbed_text(input_data)
 
         # get black box predictions
         self._blackbox_classification['input'] = input_model.predict(input_row.copy())  # IAIN make this look better
@@ -245,12 +272,17 @@ class BARBE:
         elif self._mode in 'text':
             # IAIN should currently pass an error
             pass
-        pass
 
-    def _generate_perturbed_tabular(self, input_data):
+    def _generate_perturbed_tabular(self, input_data, bbmodel=None):
         # calls to set method to perturb the data, based on the mode
-        self._perturbed_data = self._perturber.produce_perturbation(self._n_perturbations,
-                                                                    data_row=input_data)
+        if not self._balanced_classes:
+            # ignore model if not making balanced classes
+            self._perturbed_data = self._perturber.produce_perturbation(self._n_perturbations,
+                                                                        data_row=input_data)
+        else:
+            self._perturbed_data = self._perturber.produce_balanced_perturbation(self._n_perturbations,
+                                                                                 bbmodel,
+                                                                                 data_row=input_data)
 
     def _generate_perturbed_text(self, input_data):
         # calls to set method to perturb the data, based on the mode
@@ -288,7 +320,7 @@ class BARBE:
         """
 
         data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0]
-        print("IAIN DATA CLASS SURROGATE: ", data_cls)
+        #print("IAIN DATA CLASS SURROGATE: ", data_cls)
         #aa = self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05,
         #                                             new_class=wanted_class)
         #print("IAIN CONTRAST ", aa)
@@ -341,14 +373,18 @@ class BARBE:
                                comparison_method=accuracy_score, weights=None, original_data=None):
         if weights is not None and weights in 'euclidean':
             if comparison_data is None:
-                weights = euclidean_weights(original_data, self._perturbed_data)
+                weights = euclidean_weights(self._perturber._encoder.transform(original_data),
+                                            self._perturber._encoder.transform(self._perturbed_data))
             else:
-                weights = euclidean_weights(original_data, comparison_data.to_numpy())
+                weights = euclidean_weights(self._perturber._encoder.transform(original_data),
+                                            self._perturber._encoder.transform(comparison_data).to_numpy())
         elif weights is not None and weights in 'nearest-neighbors':
             if comparison_data is None:
-                weights = nearest_neighbor_weights(original_data, self._perturbed_data)
+                weights = nearest_neighbor_weights(self._perturber._encoder.transform(original_data),
+                                            self._perturber._encoder.transform(self._perturbed_data))
             else:
-                weights = nearest_neighbor_weights(original_data, comparison_data.to_numpy())
+                weights = nearest_neighbor_weights(self._perturber._encoder.transform(original_data),
+                                            self._perturber._encoder.transform(comparison_data).to_numpy())
         # IAIN check if comparison model, data, and method is f(a,b) is comparing vectors
         # IAIN compare the surrogate to the original input model
         # IAIN set default and some alternative options for comparison of classifications
@@ -358,6 +394,11 @@ class BARBE:
             return comparison_method(self._blackbox_classification['perturbed'],
                                      self._surrogate_classification['perturbed'],
                                      sample_weight=weights)
+        #elif (comparison_model is None) and (comparison_data is not None):
+        #    return comparison_method(self._blackbox_classification['perturbed'],
+        #                             self._surrogate_classification['perturbed'],
+        #                             sample_weight=weights)
+
         elif (comparison_model is not None) and (comparison_data is None):
             wrapped_comparison = BlackBoxWrapper(comparison_model)
             if self._input_sets_class:
@@ -403,7 +444,23 @@ class BARBE:
             return self._perturber.get_scale()
         elif feature in 'categories':
             return self._perturber.get_discrete_values()
+        elif feature in 'covariance':
+            return self._perturber.get_cov()
+        elif feature in 'means':
+            return self._perturber.get_means()
         return None
+
+    def get_next_best_class(self):
+        # pass the second most abundant class in the perturbed data to the input
+        current_label = self._blackbox_classification['input']
+        occurences = Counter(self._blackbox_classification['perturbed'])
+        most_abundant_label = None
+        for clabel in occurences.keys():
+            if (most_abundant_label is None and
+                (clabel != current_label and
+                 occurences[clabel] > occurences[most_abundant_label])):
+                most_abundant_label = clabel
+        return most_abundant_label
 
     def get_features(self, input_data, true_label):
         """
@@ -414,7 +471,7 @@ class BARBE:
                   rule is present but not used when predicting the input data.
         Output: list<(feature, sum of support)>, all features used when predicting the input data and the total support.
         """
-        return self._surrogate_model.get_features(input_data, true_label)
+        return self._surrogate_model.get_features(input_data, true_label, self.get_next_best_class())
 
     def get_categories(self):
         """
@@ -455,6 +512,10 @@ class BARBE:
                 fit_success = self._fit_surrogate_model(temp_data, input_model)
             if not fit_success:
                 if not ignore_errors:
+                    #print(self._blackbox_classification['input'])
+                    #print(self._surrogate_classification['input'])
+                    #print(confusion_matrix(self._blackbox_classification['perturbed'],
+                    #                       self._surrogate_classification['perturbed']))
                     raise AssertionError('BARBE ERROR: model did not successfully match input data in 5 tries.')
                 else:
                     return None
@@ -468,4 +529,4 @@ class BARBE:
         self._explanation = self.get_features(input_data,
                                               self._surrogate_model.predict(input_data.to_numpy().reshape(1, -1))[0])
 
-        return self._explanation
+        return self._explanation.copy()
