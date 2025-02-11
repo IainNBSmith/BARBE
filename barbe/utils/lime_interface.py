@@ -166,7 +166,7 @@ class LimeNewPert(LimeTabularExplainer):
         if self.encoder is not None:
             X = self.encoder.transform(X).to_numpy()
             if len(X.shape) < 2:
-                X = X.reshape(-1, 1)
+                X = X.reshape(1, -1)  # needs to be 1, -1
         X_np = self.scale_data(X)
         model_predictions = None
         for c_label in self.base.used_features.keys():
@@ -685,7 +685,7 @@ class VAELimeNewPert(VAELimeTabularExplainer):
         if self.encoder is not None:
             X = self.encoder.transform(X).to_numpy()
             if len(X.shape) < 2:
-                X = X.reshape(-1, 1)
+                X = X.reshape(1, -1)
         X_np = self.scale_data(X)
         #X_np = X
         model_predictions = None
@@ -1227,8 +1227,8 @@ class SLimeNewPert(SLimeTabularExplainer):
         if self.encoder is not None:
             X = self.encoder.transform(X).to_numpy()
             if len(X.shape) < 2:
-                X = X.reshape(-1, 1)
-        X_np = self.scale_data(X)
+                X = X.reshape(1, -1)
+        X_np = self.scale_data(X)  # it's this thing's fault...
         #X_np = X
         model_predictions = None
         for c_label in self.base.used_features.keys():
@@ -1312,12 +1312,10 @@ class SLimeNewPert(SLimeTabularExplainer):
                     flag = True
                     where_stop = k
             # fix unending loops
-            if num_samples != n_max and n_max > int(test_result[where_stop][1]) > 2 * num_samples:
+            if num_samples != n_max:
                 num_samples = min(int(test_result[where_stop][1]), 2 * num_samples)
                 if num_samples > n_max:
                     num_samples = n_max
-            elif n_max <= int(test_result[where_stop][1]):
-                num_samples = n_max
             else:
                 exit_loop = True
 

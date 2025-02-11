@@ -255,7 +255,10 @@ def baseline_distribution_experiment(iris_training, iris_training_label, iris_pe
                     #print(pert_row)
                     #print(list(iris_training))
                     input_row.iloc[0] = pert_row.to_numpy().reshape((1, -1))
-                    splanation = explainer.explain(input_row.copy(), bbmodel)
+                    splanation = explainer.explain(pert_row.copy(), bbmodel)
+                    #print(explainer.perturber.get_balance())
+                    #print(explainer.perturber.get_number_iterations())
+                    #assert False
                     top_features[j] = list()
 
                     temp_pert = 0
@@ -264,24 +267,12 @@ def baseline_distribution_experiment(iris_training, iris_training_label, iris_pe
                                                                                                         errors='ignore'),
                                                                      weights=None,
                                                                      original_data=pert_row)
-                    temp_double_f = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                                     comparison_data=iris_wb_test.drop('target', axis=1,
-                                                                                                       errors='ignore'),
-                                                                     weights=None,
-                                                                     original_data=pert_row)
+                    temp_double_f = explainer.perturber.get_number_iterations()
                     fidelity_pert[i + j * local_test_end].append(temp_pert)
                     fidelity_single_blind[i + j * local_test_end].append(temp_single_f)
                     fidelity_double_blind[i + j * local_test_end].append(temp_double_f)
-                    temp_single = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                                   comparison_data=iris_training.drop('target', axis=1,
-                                                                                                      errors='ignore'),
-                                                                   weights='euclidean',
-                                                                   original_data=pert_row)
-                    temp_double = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                                   comparison_data=iris_wb_test.drop('target', axis=1,
-                                                                                                     errors='ignore'),
-                                                                   weights='euclidean',
-                                                                   original_data=pert_row)
+                    temp_single = explainer.perturber.get_balance()['Yes']
+                    temp_double = explainer.perturber.get_balance()['No']
                     fidelity_single_blind_e[i + j * local_test_end].append(temp_single)
                     fidelity_double_blind_e[i + j * local_test_end].append(temp_double)
 
@@ -606,24 +597,17 @@ def lore_distribution_experiment(iris_training, iris_training_label, iris_pertur
         iris_wb_test = iris_wb_test.drop('target', inplace=False, axis=1, errors='ignore')
         top_features = [[] for _ in range(10)]
         for j in range(10):
+            print("Indiv: ", i, ", Rep: ", j)
             iris_wb_training = iris_training.sample(frac=1/3, random_state=random_seeds[j])
             iris_wb_training = iris_wb_training.append(iris_add_to_training, ignore_index=True)
             try:
+                #assert False
                 iris_numpy = iris_training.to_numpy()
                 #print(np.unique(bbmodel.predict(iris_training)))
                 #print(np.unique(iris_training_label))
                 #print(np.unique(bbmodel.predict(iris_test)))
                 #assert False
                 explainer = LoreExplainer(iris_wb_training)
-                #explainer = LoreExplainer(training_data=iris_wb_training,
-                #                          training_labels=iris_training_label,
-                #                          feature_names=list(iris_training),
-                #                          discretizer=lime_discretizer,
-                #                          discretize_continuous=False,
-                #                          sample_around_instance=True)
-                                         #categorical_features=iris_category_values,
-                                         #categorical_names=iris_category_features)
-                #print("TRAINING LABELS: ", list(iris_wb_training['target']))
                 print("Sample to Perturb: ", iris_test.iloc[i])
                 splanation, info = explainer.explain(input_data=iris_test,
                                                      input_index=i,
@@ -772,6 +756,7 @@ def lore_distribution_experiment(iris_training, iris_training_label, iris_pertur
                 fidelity_single_diff_n[i+j*local_test_end].append(None)
 
                 hit_rate[i+j*local_test_end].append(0)
+                avg_features[i + j * local_test_end].append(None)
 
         stability[i].append(calculate_stability(top_features))
         loose_stability[i].append(calculate_loose_stability(top_features, len(list(iris_test))))
@@ -820,12 +805,13 @@ def lore_distribution_experiment(iris_training, iris_training_label, iris_pertur
             temp_single_std = (temp_single_std / (mean_count - 1))
             temp_double_std = (temp_double_std / (mean_count - 1))
             # print(barbe_dist[j])
-            if mean_count != 0:
+
                 # add standard deviations as info
-                if (len(averages_print) - 1) / 3 <= j:
-                    averages_print.append([barbe_dist[j], "Perturbed"])
-                    averages_print.append([barbe_dist[j], "Single Blind"])
-                    averages_print.append([barbe_dist[j], "Double Blind"])
+            if (len(averages_print) - 1) / 3 <= j:
+                averages_print.append([barbe_dist[j], "Perturbed"])
+                averages_print.append([barbe_dist[j], "Single Blind"])
+                averages_print.append([barbe_dist[j], "Double Blind"])
+            if mean_count != 0:
                 averages_print[(j * 3) + 1].append(temp_pert_acc / mean_count)
                 averages_print[(j * 3) + 1].append(temp_pert_std)
                 averages_print[(j * 3) + 2].append(temp_single_acc / mean_count)
@@ -1000,6 +986,7 @@ def lime_distribution_experiment(iris_training, iris_training_label, iris_pertur
         for distribution in barbe_dist:
             top_features = [[] for _ in range(10)]
             for j in range(10):
+                print("Subj: ", i, ", Rep: ", j)
                 iris_wb_training = iris_training.sample(frac=1 / 3, random_state=random_seeds[j])
                 try:
                     iris_numpy = iris_training.to_numpy()
@@ -1888,7 +1875,7 @@ def test_distribution_experiment_breast_cancer():
         #                             n_perturbations=pert_c,
         #                             use_barbe_perturbations=False,
         #                             dev_scaling=1)
-        if False:
+        if True:
             lime_distribution_experiment(breast_cancer_training,
                                          breast_cancer_training_label,
                                          breast_cancer_perturb,
@@ -1896,10 +1883,10 @@ def test_distribution_experiment_breast_cancer():
                                          pre_trained_model=ptmodel,
                                          lime_version=LimeNewPert,
                                          local_test_end=50,
-                                         data_name="neural_stability_FINAL_fixed_missing_breast_cancer",
+                                         data_name="SLIMETHISONE_RDONE_FINAL_fixed_missing_breast_cancer",
                                          n_perturbations=1000,
                                          use_barbe_perturbations=False,
-                                         use_slime=False,
+                                         use_slime=True,
                                          dev_scaling=1)
             #lime_distribution_experiment(breast_cancer_training,
             #                             breast_cancer_training_label,
@@ -1913,18 +1900,19 @@ def test_distribution_experiment_breast_cancer():
             #                             use_barbe_perturbations=False,
             #                             use_slime=True,
             #                             dev_scaling=1)
-            lime_distribution_experiment(breast_cancer_training,
-                                         breast_cancer_training_label,
-                                         breast_cancer_perturb,
-                                         breast_cancer_test,
-                                         pre_trained_model=ptmodel,
-                                         lime_version=LimeNewPert,
-                                         local_test_end=50,
-                                         data_name="balanced_neural_stability_FINAL_fixed_missing_breast_cancer",
-                                         n_perturbations=1000,
-                                         use_barbe_perturbations=True,
-                                         use_slime=False,
-                                         dev_scaling=1)
+        assert False
+        lime_distribution_experiment(breast_cancer_training,
+                                     breast_cancer_training_label,
+                                     breast_cancer_perturb,
+                                     breast_cancer_test,
+                                     pre_trained_model=ptmodel,
+                                     lime_version=LimeNewPert,
+                                     local_test_end=50,
+                                     data_name="BALLIN_DONE_fixed_missing_breast_cancer",
+                                     n_perturbations=1000,
+                                     use_barbe_perturbations=True,
+                                     use_slime=False,
+                                     dev_scaling=1)
             #assert False
         if False:
             baseline_distribution_experiment(breast_cancer_training,
@@ -2565,18 +2553,19 @@ def test_distribution_experiment_loan():
                                          n_perturbations=1000,
                                          use_barbe_perturbations=False,
                                          dev_scaling=1)
-        lime_distribution_experiment(loan_training,
-                                     loan_training_label,
-                                     loan_perturb,
-                                     loan_test,
-                                     use_slime=False,
-                                     pre_trained_model=ptmodel,
-                                     lime_version=LimeNewPert,
-                                     local_test_end=50,
-                                     data_name="slime_DONE_neural_stability_loan",
-                                     n_perturbations=2500,
-                                     use_barbe_perturbations=False,
-                                     dev_scaling=1)
+        if False:
+            lime_distribution_experiment(loan_training,
+                                         loan_training_label,
+                                         loan_perturb,
+                                         loan_test,
+                                         use_slime=False,
+                                         pre_trained_model=ptmodel,
+                                         lime_version=LimeNewPert,
+                                         local_test_end=50,
+                                         data_name="slime_DONE_neural_stability_loan",
+                                         n_perturbations=2000,
+                                         use_barbe_perturbations=False,
+                                         dev_scaling=1)
         if False:
             lime_distribution_experiment(loan_training,
                                          loan_training_label,
@@ -2624,20 +2613,23 @@ def test_distribution_experiment_loan():
                                             n_bins=10,
                                             use_class_balance=False,
                                             dev_scaling=dev_n)
-                if False:
-                    distribution_experiment(loan_training,
-                                            loan_training_label,
-                                            loan_perturb,
-                                            loan_test,
-                                            # lime_version=LimeNewPert,
-                                            pre_trained_model=ptmodel,
-                                            local_test_end=50,
-                                            data_name="barbe_DONE_neural_stability_balance_loan",
-                                            n_perturbations=1000,
-                                            # use_barbe_perturbations=False,
-                                            use_class_balance=True,
-                                            n_bins=10,
-                                            dev_scaling=1)
+                if True:
+                    for i in range(0, 25, 5):
+                        loan_perturb = data.iloc[i:i+5].reset_index()
+                        loan_perturb = loan_perturb.drop(['index'], axis=1)
+                        distribution_experiment(loan_training,
+                                                loan_training_label,
+                                                loan_perturb,
+                                                loan_test,
+                                                # lime_version=LimeNewPert,
+                                                pre_trained_model=ptmodel,
+                                                local_test_end=5,
+                                                data_name="barbe_FDONE_items_"+str(i)+"_neural_stability_balance_loan",
+                                                n_perturbations=1000,
+                                                # use_barbe_perturbations=False,
+                                                use_class_balance=True,
+                                                n_bins=10,
+                                                dev_scaling=1)
                 if False:
                     lore_distribution_experiment(loan_training,
                                                  loan_training_label,
@@ -2725,7 +2717,7 @@ def test_distribution_experiment_aus_rain():
         #                             n_perturbations=pert_c,
         #                             use_barbe_perturbations=False,
         #                             dev_scaling=1)
-        if False:
+        if True:
             baseline_distribution_experiment(loan_training,
                                              loan_training_label,
                                              loan_perturb,
@@ -2733,7 +2725,7 @@ def test_distribution_experiment_aus_rain():
                                              # lime_version=LimeNewPert,
                                              pre_trained_model=ptmodel,
                                              local_test_end=50,
-                                             data_name="stability_aus_rain",
+                                             data_name="perturber_aus_rain",
                                              n_perturbations=1000,
                                              # use_barbe_perturbations=False,
                                              use_class_balance=True,
@@ -2812,18 +2804,18 @@ def test_distribution_experiment_aus_rain():
                                             use_class_balance=True,
                                             n_bins=10,
                                             dev_scaling=1)
-                if True:
+                if False:
                     lore_distribution_experiment(loan_training,
                                                  loan_training_label,
                                                  loan_perturb,
                                                  loan_test,
                                                  pre_trained_model=ptmodel,
-                                                 local_test_end=50,
-                                                 data_name="neural_stability_aus_rain",
+                                                 local_test_end=25,
+                                                 data_name="neural_SECOND_HALF_DONE_aus_rain",
                                                  n_perturbations=1000,
                                                  # use_barbe_perturbations=False,
                                                  dev_scaling=1)
-                if True:
+                if False:
                     lime_distribution_experiment(loan_training,
                                                  loan_training_label,
                                                  loan_perturb,
@@ -2831,9 +2823,9 @@ def test_distribution_experiment_aus_rain():
                                                  use_slime=False,
                                                  pre_trained_model=ptmodel,
                                                  lime_version=LimeNewPert,
-                                                 local_test_end=50,
+                                                 local_test_end=25,
                                                  data_name="slime_DONE_neural_stability_aus_rain",
-                                                 n_perturbations=3000,
+                                                 n_perturbations=2000,
                                                  use_barbe_perturbations=False,
                                                  dev_scaling=1)
                 #lime_distribution_experiment(loan_training,
@@ -3151,8 +3143,10 @@ def test_aus_rain_cv_model():
 
 
 #test_distribution_experiment_iris()
-if __name__ == '__name__':
-    simple_distribution_experiment_simulated()
+if __name__ == '__main__':
+    #test_distribution_experiment_aus_rain()
+    test_distribution_experiment_breast_cancer()
+    #test_distribution_experiment_loan()
 
 
 # TODO: add a timeseries dataset

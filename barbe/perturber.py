@@ -502,12 +502,14 @@ class ClassBalancedPerturber(BarbePerturber):
 
     def _check_threshold_balance(self, class_counts):
         # check if the value is within tolerance of the even threshold for the smallest amount of data
+        print("Checking: ", class_counts)
         if self._balance_mode != 'curr-other':
             n_total_classes = len(self._classes)
             for c, proportion in class_counts.items():
                 proportion_comparison = ((1 / n_total_classes) - self._balance_tolerance) \
                     if ((1 / n_total_classes) > self._balance_tolerance) \
                     else (1 / n_total_classes)
+                print("My check: ", proportion_comparison, proportion)
                 if proportion < proportion_comparison:
                     return False
             return True
@@ -520,6 +522,8 @@ class ClassBalancedPerturber(BarbePerturber):
                 else:
                     total_other += proportion
             balance_check = lambda x: x >= 0.5 - self._balance_tolerance
+            #print("My check: ", total_current, total_other)
+            #print("My check: ", balance_check(total_current), balance_check(total_other))
             return balance_check(total_current) and balance_check(total_other)
 
     def _undersample_classes(self, pert_data, pert_classes):
@@ -565,8 +569,8 @@ class ClassBalancedPerturber(BarbePerturber):
         self._classes = np.unique(pert_classes)
         self._num_perts = num_perturbations
         class_counts = self._get_class_counts(pert_classes)
-        self._iterations = 1
-        while self._iterations < self._max_iterations and self._check_threshold_balance(class_counts):
+        self._iterations = 0
+        while self._iterations < self._max_iterations and not self._check_threshold_balance(class_counts):
             new_perturbed = self.produce_perturbation(num_perturbations, data_row=data_row)
             perturbed_data = perturbed_data.append(new_perturbed, ignore_index=True)
             new_classes = bbmodel.predict(new_perturbed)
