@@ -148,6 +148,9 @@ class BarbePerturber:
 
         self._random_state = check_random_state(random_seed)
 
+    def get_encoded_feature_names(self):
+        return self._encoder.get_feature_values()
+
     def _check_input(self, input_data, input_scale, input_categories):
         # IAIN check that at either input data is not none or scale and categories are both not none
         # IAIN give error message or warning in some cases to note that category scales should be 1-2 depending on the number

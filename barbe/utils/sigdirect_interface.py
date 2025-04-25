@@ -107,10 +107,6 @@ class SigDirectWrapper:
         if self._verbose:
             print(self._verbose_header, "before encoding:", X.shape, X)
         if list(self._categorical_features.keys()):
-            #print(np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
-            #              self._categorical_transform(X), axis=1))
-            #print(X)
-            #print(self._not_categorical)
             ret_X = np.asarray(self._oh_enc.transform(
                 np.append(self._kb_discrete.transform(X[:, self._not_categorical]),
                           X[:, list(self._categorical_features.keys())], axis=1)).todense()).astype(int)
@@ -120,8 +116,32 @@ class SigDirectWrapper:
         return ret_X
 
     def _decode(self, enc_X):
+        part_X = self._oh_enc.inverse_transform(enc_X)
+        if list(self._categorical_features.keys()):
+            #ret_X = np.asarray(self._oh_enc.transform(
+            #    np.append((X[:, self._not_categorical]),
+            #              X[:, list(self._categorical_features.keys())], axis=1)).todense()).astype(int)
+            categorical_feature_len = len(list(self._categorical_features.keys()))
+            numeric_part = np.array(part_X[:, :(part_X.shape[1] - categorical_feature_len)], dtype=float)
+            dec_numeric = self._kb_discrete.inverse_transform(X=np.nan_to_num(numeric_part))
+            dec_numeric[np.isnan(numeric_part)] = None
+            dec_X = np.append(dec_numeric,
+                              part_X[:, (part_X.shape[1] - categorical_feature_len):], axis=1)
+
+        else:
+            dec_X = self._kb_discrete.inverse_transform(part_X)
+
+        # return them to their original order
+        order = np.argsort(self._new_feature_order)
+        return dec_X[:, order]
+
+
+    def _old_decode(self, enc_X):
         # TODO: IAIN we need to find what values were affected by the PCA and put those into the rule instead
         partial_decoding = self._oh_enc.inverse_transform(enc_X)[0]
+
+        # TODO: IAIN need to fix decoding
+        #print("IAIN PARTIAL: ", partial_decoding)
         partial_usable = [i for i in range(len(partial_decoding)) if partial_decoding[i] is not None]
         #partial_decoding[[True if temp is None else False for temp in partial_decoding]] =
         #self._pca.inverse_transform(
@@ -129,9 +149,6 @@ class SigDirectWrapper:
             print(self._verbose_header, "before decoding:", enc_X)
             print(self._verbose_header, "OneHot decode:", partial_decoding)
             print(partial_usable, partial_decoding[partial_usable])
-            #print(self._kb_discrete.bin_edges_[partial_usable][0])
-            #print(self._verbose_header, "corresponding bins",
-            #      self._kb_discrete.bin_edges_[partial_usable][0][partial_decoding[partial_usable].astype(int)])
 
         # do not need to fully decode I only need to handle which bin value is assigned
         return_list = [None for i in range(len(partial_decoding))]
@@ -139,8 +156,13 @@ class SigDirectWrapper:
             moved_index = self._new_feature_order[i]
             if moved_index in self._not_categorical:
                 converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
-
-                return_list[moved_index] = self._kb_discrete.bin_edges_[converted_index][int(partial_decoding[i])]
+                bin_pos = (int(partial_decoding[i]) + 2) if int(partial_decoding[i]) == 0 else (
+                        int(partial_decoding[i]) + 1)
+                bin_min = self._kb_discrete.bin_edges_[converted_index][bin_pos-1]
+                bin_max = self._kb_discrete.bin_edges_[converted_index][bin_pos]
+                #print("BIN EDGES: ", self._kb_discrete.bin_edges_[converted_index])
+                #assert False
+                return_list[moved_index] = (bin_max + bin_min)/2
             else:
                 converted_index = np.where(moved_index == np.array(list(self._categorical_features.keys())))[0][0]
                 #print(converted_index, i, np.array(list(self._categorical_features.keys())))
@@ -201,13 +223,18 @@ class SigDirectWrapper:
         return predicted_label
 
     def _get_bin_bounds(self, bin_index, current_item):
+        # called to get the bounds then do other ops
+        # bin index is acquired elsewhere
         bin_size = len(self._kb_discrete.bin_edges_[bin_index])
-        item_index = np.where(self._kb_discrete.bin_edges_[bin_index] == current_item)[0]
+        # find the first bound where the
+        item_index = np.min(np.where(self._kb_discrete.bin_edges_[bin_index] >= current_item))
+        print("GOD WHY OH GOD: ", item_index)
         if item_index == 0:
             return None, current_item
-        if item_index == bin_size - 2:
+        if item_index == bin_size - 1:
             return current_item, None
-        return current_item, self._kb_discrete.bin_edges_[bin_index][item_index+1][0]
+        # TODO: may need to swap back
+        return self._kb_discrete.bin_edges_[bin_index][item_index-1], current_item
 
     def get_categories(self):
         return self._oh_enc.categories_
@@ -217,6 +244,21 @@ class SigDirectWrapper:
             return None
         # print('IAIN sig_side: ', self._decode(raw_enc.reshape((1,-1))))
         return self._rule_translation(self._decode(raw_enc.reshape((1,-1)))[0]) + " -> " + impl_str
+
+    def get_bounded_translation(self, enc_value):
+        translated_value = dict()
+        for i in range(len(enc_value)):
+            item = enc_value[i]
+            moved_index = i
+            if item is not None:
+                if moved_index in self._not_categorical:
+                    converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
+                    translated_value[str(self._feature_names[i])] = self._get_bin_bounds(converted_index, item)
+                else:
+                    translated_value[str(self._feature_names[moved_index])] = str(item)
+
+        return translated_value
+
 
     def _rule_translation(self, rule_items):
         rule_text = ""
@@ -325,13 +367,12 @@ class SigDirectWrapper:
                 rule_p = rule.get_log_p()
                 # decode one hot vector and get text version of the rule
                 rule_items = self._decode(temp.reshape((1, -1)))[0]
-                rule_text = self._rule_translation(rule_items)
                 if raw_rules:
                     rules_translation.append((temp.reshape((1, -1))[0],
                                               class_label,
-                                              10**rule_p,
-                                              0))
+                                              rule_support, rule_confidence, rule_p))
                 else:
+                    rule_text = self._rule_translation(rule_items)
                     rules_translation.append((rule_text + " -> " + str(class_label), class_label,
                                               rule_support, rule_confidence, rule_p))
         # format [(rule text, support, confidence, rule_p), ...]

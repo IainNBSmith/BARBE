@@ -77,3 +77,4 @@ barbe/dataset/FoS_test_ada_boost.csv
 barbe/experiments/logs.txt
 barbe/experiments/rules_out.txt
 sigdirect/plog_full/
+/barbe/experiments/Results

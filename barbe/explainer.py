@@ -129,7 +129,7 @@ class BARBE:
                  input_bounds=None, input_sets_class=True,
                  mode='tabular',  n_perturbations=5000, n_bins=5, perturbation_type='uniform', dev_scaling_factor=5,
                  higher_frequent_category_odds=True,
-                 balance_classes=False,
+                 balance_classes=True,
                  verbose=False):
 
         # IAIN consider adding more options to bound setting for BARBE side
@@ -305,6 +305,21 @@ class BARBE:
         """
         return self._surrogate_model.get_contrast_sets(data_row)
 
+    def get_counterfactuals(self, data_row, wanted_class, n_counterfactuals=1):
+        scale_list = self._perturber.get_scale()
+        mean_list = self._perturber.get_means()
+        scale_mean_list = [(scale_list[i], mean_list[i]) for i in range(len(scale_list))]
+
+        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)).copy())
+        original_dec = self._surrogate_model._decode(original_enc)
+        print(original_enc)
+        print(original_dec)
+        print(data_row.to_numpy().reshape((1, -1)))
+
+        self._counterfactual.fit(self._surrogate_model,
+                                 feat_scales=scale_mean_list)
+        return self._counterfactual.predict(data_row, new_class=wanted_class, n_counterfactuals=n_counterfactuals)
+
     def get_counterfactual_explanation(self, data_row, wanted_class, n_counterfactuals=1):
         """
         Input: data_row (pandas Series)  -> data row that should be modified to change class.
@@ -324,8 +339,10 @@ class BARBE:
         #aa = self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05,
         #                                             new_class=wanted_class)
         #print("IAIN CONTRAST ", aa)
-        self._counterfactual.fit(self._surrogate_model.get_all_rules(raw_rules=True),
-                                 self._surrogate_model.get_ohe_simple())
+        # self._counterfactual.fit(self._surrogate_model.get_all_rules(raw_rules=True),
+        #                          self._surrogate_model.get_ohe_simple())
+
+
         original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)).copy())
         counter_predict, counter_rules = self._counterfactual.predict(original_enc.copy(), data_cls,
                                                                       new_class=wanted_class,
@@ -339,8 +356,10 @@ class BARBE:
         for i in range(n_counterfactuals):
             counter_p = counter_predict[i]
             counter_r = counter_rules[i]
-            counter_v = self._surrogate_model._decode([counter_p])
-            #print("COUNTER: ", i, counter_v)
+            counter_v = self._surrogate_model._decode([counter_p.copy()])
+            print("IAIN COUNTER: ", i, counter_v)
+            print("IAIN ORIGINAL PREDICTION: ", self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0])
+            print("IAIN COUNTER PREDICTION: ", self._surrogate_model.predict(np.array(counter_v)))
             # TODO: I think that sigdirect needs to segment images before training
 
             for i in range(len(original_enc[0])):
@@ -349,18 +368,22 @@ class BARBE:
                     temp[i] = 1
                     position = self._surrogate_model._decode(temp.reshape((1, -1)))[0]
                     ind_use = np.where(np.array(position) != None)[0][0]
-                    #print(ind_use)
-                    #print(counter_v)
+                    print("IAIN REPLACEMENT: ")
+                    print(ind_use)
+                    print(counter_v[0][ind_use])
+                    print(data_row.to_numpy().reshape(1, -1)[0][ind_use])
                     #print(data_row.to_numpy().reshape(1, -1))
                     counter_v[0][ind_use] = data_row.to_numpy().reshape(1, -1)[0][ind_use]
 
             # fix nans
+            print("IAIN BEFORE FIX: ", counter_v)
             for i in range(len(counter_v[0])):
                 if counter_v[0][i] is None or (not isinstance(counter_v[0][i], str) and math.isnan(counter_v[0][i])):
                     counter_v[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
 
             new_class = self._surrogate_model.predict(np.array(counter_v))[0]
-            #print("IAIN NEW CLASS: ", new_class)
+            print("IAIN NEW VALUE: ", counter_v)
+            print("IAIN NEW CLASS: ", new_class)
             counter_all_predict.append(new_class)
             counter_all_rules.append([(self._surrogate_model.raw_rule_translation(a[0], a[1]),
                                        self._surrogate_model.raw_rule_translation(b, wanted_class)) for a, b in counter_r])
