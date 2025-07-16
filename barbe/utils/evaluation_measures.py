@@ -1,5 +1,33 @@
 import numpy as np
 import pandas as pd
+from barbe.discretizer import CategoricalEncoder
+from scipy.stats import multivariate_normal
+
+
+class FlexibleDifference:
+    def __init__(self, training_data):
+        self._encoder = CategoricalEncoder()
+        training_data = self._encoder.fit_transform(training_data)
+        self._means = np.mean(training_data)
+        self._cov = np.cov(training_data.T)
+        self._std = np.std(training_data)
+
+    def get_scaled_distance(self, start_data, end_data):
+        enc_start = self._encoder.transform(start_data).to_numpy()[0]
+        enc_end = self._encoder.transform(end_data).to_numpy()[0]
+        #print(enc_start)
+        #print(enc_end)
+        #print(np.abs(enc_start - enc_end))
+        #print(self._std)
+        #print(np.sum(np.abs(enc_start - enc_end)/self._std))
+        return np.sum(np.abs(enc_start - enc_end)/self._std)
+
+    def get_density_distance(self, start_data, end_data):
+        enc_start = self._encoder.transform(start_data)
+        enc_end = self._encoder.transform(end_data)
+        cdf_start = multivariate_normal.pdf(enc_start, self._means, self._cov, allow_singular=True)
+        cdf_end = multivariate_normal.pdf(enc_end, self._means, self._cov, allow_singular=True)
+        return cdf_start/cdf_end
 
 
 class EuclideanDistanceInterval:
@@ -74,7 +102,7 @@ def _get_euclidean(reference_data, input_data, scaled=True):
 
 def nearest_neighbor_weights(reference_data, input_data, interval_measures=None, full_detail=False):
     if interval_measures is None:
-        interval_measures = {20: 100,  # % of data: % of value contribution to weight
+        interval_measures = {50: 100,  # % of data: % of value contribution to weight
                              100: 0}  # i.e. the closest 20% of data is 80% of the weight
                              #100: 5}  # with 2000 records the 100 closest each contribute 0.8% if correct
 

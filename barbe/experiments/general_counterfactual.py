@@ -1,5 +1,7 @@
 # IAIN make this file get and store results for each of the fidelity values we will check
 #  against each other for each distribution type + lime1's distribution
+import dill
+from itertools import product
 
 # experiments to see which of Lime, Uniform, Standard-Normal, Multi-Normal, Clustered-Normal, t-Distribution, Chauchy
 #  perform the best in terms of fidelity values
@@ -9,11 +11,15 @@
 # test_fidelity = barbe[i].fidelity(bbmodel_data, bbmodel) -> double blind / testing accuracy
 
 from barbe.utils.lime_interface import LimeNewPert, VAELimeNewPert
+from barbe.utils.lore_interface import LoreExplainer
+from barbe.utils.bbmodel_interface import BlackBoxWrapper
+from barbe.utils.fieap_interface import FIEAPClassifier
 from barbe.discretizer import CategoricalEncoder
 from datetime import datetime
 import os
+import dice_ml
 import pandas as pd
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.preprocessing import StandardScaler
 import barbe.tests.tests_config as tests_config
 import random
@@ -24,6 +30,7 @@ import numpy as np
 import traceback
 import matplotlib.pyplot as plt
 from barbe.utils.simulation_datasets import *
+import time
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
@@ -579,9 +586,186 @@ def lime_distribution_experiment(iris_training, iris_training_label, iris_pertur
                                                                "devscalin" + str(dev_scaling)]) + "_results.csv")
 
 
-def distribution_experiment(iris_training, iris_training_label, iris_perturb, iris_test, pre_trained_model=None,
-                            discrete_features=None,
-                            local_test_end=20, data_name="data", n_perturbations=100, n_bins=5, dev_scaling=10):
+def counterfactual_experiment(iris_training, iris_training_label, iris_perturb, iris_test, pre_trained_model=None,
+                              discrete_features=None, restricted_features=None, use_negation_rules=True,
+                              local_test_end=20, data_name="data", n_perturbations=100, n_bins=5, dev_scaling=10):
+    # TODO: make this set up folds to run the experiments over and then be more generic
+    if restricted_features is None:
+        restricted_features = ['Gender', 'Department', 'EducationField', 'JobRole', 'MaritalStatus']
+
+    if pre_trained_model is None:
+        bbmodel = RandomForestClassifier(n_estimators=5,
+                                         max_depth=4,
+                                         min_samples_split=10,
+                                         min_samples_leaf=3,
+                                         bootstrap=True,
+                                         random_state=301257)
+        bbmodel = MLPClassifier(hidden_layer_sizes=(100, 50,), random_state=301257)
+        bbmodel.fit(iris_training, iris_training_label)
+    else:
+        bbmodel = pre_trained_model
+
+    random.seed(516231)
+    part_training = int(iris_training.shape[0] // 3)  # specifically for the LOAN
+    iris_wb_training = iris_training.iloc[0:part_training]
+
+    barbe_dist = ['standard-normal', 'normal']
+    #barbe_dist = ['normal']
+
+
+    from barbe.utils.evaluation_measures import FlexibleDifference
+
+    results = pd.DataFrame(columns=['distribution', 'counter-method', 'original-class', 'explain-time', 'fidelity',
+                                    'hit', 'counter-time',
+                                    'c-hit-1', 'c-hit-2', 'c-hit-3', 'c-hit-4', 'c-hit-5', 'c-hit',
+                                    'diff-c-1', 'diff-c-2', 'diff-c-3', 'diff-c-4', 'diff-c-5',
+                                    'dens-c-1', 'dens-c-2', 'dens-c-3', 'dens-c-4', 'dens-c-5',
+                                    'n-c-hit',
+                                    'counter-time-r',
+                                    'c-hit-1r', 'c-hit-2r', 'c-hit-3r', 'c-hit-4r', 'c-hit-5r', 'c-hit-r',
+                                    'diff-c-1r', 'diff-c-2r', 'diff-c-3r', 'diff-c-4r', 'diff-c-5r',
+                                    'dens-c-1r', 'dens-c-2r', 'dens-c-3r', 'dens-c-4r', 'dens-c-5r',
+                                    'n-c-hit-r'
+                                    ])
+
+    diff_calc = FlexibleDifference(iris_training)
+
+    unique_options = np.unique(bbmodel.predict(iris_training))
+    for i in range(local_test_end):  # use when removing LIME
+        pert_row = iris_perturb.iloc[i:(i+1)]
+        iris_wb_test = iris_test.drop(i, inplace=False, axis=0)
+        for distribution in barbe_dist:
+            print(distribution, ": ", i)
+            result_row = list()
+            result_row.append(distribution)
+            #print(unique_options)
+            #assert False
+
+            explainer = BARBE(training_data=iris_wb_training,
+                              input_bounds=None,#[(4.4, 7.7), (2.2, 4.4), (1.2, 6.9), (0.1, 2.5)],
+                              perturbation_type=distribution,
+                              n_perturbations=n_perturbations,
+                              dev_scaling_factor=dev_scaling,
+                              learn_negation_rules=use_negation_rules,
+                              n_bins=n_bins,
+                              verbose=False,
+                              input_sets_class=False)
+
+
+            # TODO: rules for multivariate data need unique considerations
+            start = time.time()
+            explanation = explainer.explain(pert_row.copy(), bbmodel, ignore_errors=True)
+            end = time.time()
+
+            input_row = pd.DataFrame(columns=list(iris_training), index=[0])
+            input_row.loc[0, :] = pert_row.to_numpy().reshape((1, -1))
+            initial_row = input_row.copy()
+            result_row.append(bbmodel.predict(input_row)[0])
+            result_row.append(end-start)
+
+            if explanation is not None:
+                # TODO: run the alternative for the importance rules right after this... rather than as another thing...
+
+                temp_double_f = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
+                                                                 comparison_data=iris_wb_test,
+                                                                 weights='euclidean',
+                                                                 original_data=pert_row)
+                result_row.append(temp_double_f)  # fidelity
+
+                result_row.append(1)  # hit
+
+                wanted_class = unique_options[0] if bbmodel.predict(input_row)[0] == unique_options[1] else unique_options[1]
+
+                old_results = result_row.copy()
+                for use_importance in [True, False]:
+                    if use_importance:
+                        current_sort = 'importance-rules'
+                    else:
+                        current_sort = 'high-rules'
+
+                    result_row = old_results.copy()
+                    result_row.insert(1, current_sort)
+
+                    restricted_options = [None] if restricted_features is None else [None, restricted_features]
+                    for restriction in restricted_options:
+                        start_c = time.time()
+                        counterfactual = explainer.get_counterfactuals(pert_row.copy(), bbmodel, wanted_class, 5,
+                                                                       importance_counterfactuals=False,
+                                                                       restricted_features=restriction,
+                                                                       prioritize_importance=use_importance)
+                        end_c = time.time()
+
+                        result_row.append(end_c - start_c)
+
+                        any_success = False
+                        success_count = 0
+                        exp_change_count = 0
+                        total_nums = 0
+
+                        # TODO: make each of these their own count for hits (store the full table not just the averaged results)
+                        density_list = list()
+                        distance_list = list()
+                        for option in counterfactual[0]:
+                            #print(np.array(option[0]))
+                            #print(np.array(input_row.iloc[0]))
+                            #print(np.array(option[0]) != np.array(input_row.iloc[0]))
+                            if len(option) > 0 and np.any(np.array(option[0]) != np.array(initial_row.iloc[0])):
+                                total_nums += 1
+                                input_row.loc[0, :] = option
+                                #print(f"OPTION {total_nums}: {explainer.predict(input_row)[0]} vs {wanted_class}")
+                                if explainer.predict(input_row)[0] == wanted_class:
+                                    exp_change_count += 1
+                                if bbmodel.predict(input_row)[0] == wanted_class:
+                                    success_count += 1
+                                    result_row.append(1)
+                                    any_success = True
+                                else:
+                                    result_row.append(0)
+                                density_list.append(diff_calc.get_density_distance(initial_row, input_row))
+                                distance_list.append(diff_calc.get_scaled_distance(initial_row, input_row))
+
+                            else:
+                                result_row.append(-1)
+                                density_list.append(-1)
+                                distance_list.append(-1)
+
+                        if len(counterfactual[0]) < 5:
+                            for _ in range(5 - len(counterfactual[0])):
+                                result_row.append(-1)
+                                density_list.append(-1)
+                                distance_list.append(-1)
+
+
+                        result_row.append(int(any_success))
+                        result_row += distance_list
+                        result_row += density_list
+                        result_row.append(success_count)
+
+                    #print(result_row)
+                    #print(results)
+                    results.loc[results.shape[0]] = result_row.copy()  # add to all records
+
+                # delete to save space for next run
+                del explainer
+                del explanation
+
+            else:
+                result_row.insert(1, 'importance-rules')
+                result_row += [-1, 0] + [-1 for _ in range(36)]
+                results.loc[results.shape[0]] = result_row
+                result_row[0] = 'high-rules'
+                results.loc[results.shape[0]] = result_row
+
+    results.to_csv("Results/" + "_".join([data_name,
+                                          "nruns" + str(local_test_end),
+                                          "nbins" + str(n_bins),
+                                          "nperturb" + str(n_perturbations),
+                                          "devscalin" + str(dev_scaling)]) + "_counterfactuals_results.csv")
+
+
+def lore_counterfactual_experiment(iris_training, iris_training_label, iris_perturb, iris_test, pre_trained_model=None,
+                                 discrete_features=None, local_test_end=20, data_name="data", n_perturbations=100,
+                                 n_bins=5, dev_scaling=10, restricted_features=None):
     # TODO: make this set up folds to run the experiments over and then be more generic
 
     if pre_trained_model is None:
@@ -600,229 +784,319 @@ def distribution_experiment(iris_training, iris_training_label, iris_perturb, ir
     part_training = int(iris_training.shape[0] // 3)  # specifically for the LOAN
     iris_wb_training = iris_training.iloc[0:part_training]
 
-    #barbe_dist = ['standard-normal', 'normal', 'uniform', 'cauchy', 't-distribution']
-    barbe_dist = ['standard-normal', 'normal']
-    fidelity_pert = [[] for _ in range(local_test_end)]
-    fidelity_single_blind = [[] for _ in range(local_test_end)]
-    fidelity_double_blind = [[] for _ in range(local_test_end)]
-    # _e = euclidean, _n = nearest neighbors
-    fidelity_single_blind_e = [[] for _ in range(local_test_end)]
-    fidelity_double_blind_e = [[] for _ in range(local_test_end)]
-    fidelity_single_blind_n = [[] for _ in range(local_test_end)]
-    fidelity_double_blind_n = [[] for _ in range(local_test_end)]
+    barbe_dist = ['evolutionary-algorithm']
 
-    # NEW
-    fidelity_single_diff_n = [[] for _ in range(local_test_end)]
-    fidelity_single_diff_e = [[] for _ in range(local_test_end)]
-    fidelity_double_diff_n = [[] for _ in range(local_test_end)]
-    fidelity_double_diff_e = [[] for _ in range(local_test_end)]
 
-    hit_rate = [[] for _ in range(local_test_end)]
+    from barbe.utils.evaluation_measures import FlexibleDifference
 
+    results = pd.DataFrame(columns=['distribution', 'counter-method', 'original-class', 'explain-time', 'fidelity',
+                                    'hit', 'counter-time',
+                                    'c-hit-1', 'c-hit-2', 'c-hit-3', 'c-hit-4', 'c-hit-5', 'c-hit',
+                                    'diff-c-1', 'diff-c-2', 'diff-c-3', 'diff-c-4', 'diff-c-5',
+                                    'dens-c-1', 'dens-c-2', 'dens-c-3', 'dens-c-4', 'dens-c-5',
+                                    'n-c-hit',
+                                    'counter-time-r',
+                                    'c-hit-1r', 'c-hit-2r', 'c-hit-3r', 'c-hit-4r', 'c-hit-5r', 'c-hit-r',
+                                    'diff-c-1r', 'diff-c-2r', 'diff-c-3r', 'diff-c-4r', 'diff-c-5r',
+                                    'dens-c-1r', 'dens-c-2r', 'dens-c-3r', 'dens-c-4r', 'dens-c-5r',
+                                    'n-c-hit-r'
+                                    ])
+
+    diff_calc = FlexibleDifference(iris_training)
+    iris_wb_training['target'] = bbmodel.predict(iris_wb_training)
+
+    unique_options = np.unique(bbmodel.predict(iris_training))
     for i in range(local_test_end):  # use when removing LIME
-        pert_row = iris_perturb.iloc[i]
+        pert_row = iris_perturb.iloc[i:(i+1)]
         iris_wb_test = iris_test.drop(i, inplace=False, axis=0)
         for distribution in barbe_dist:
+            result_row = list()
+            result_row.append(distribution)
+            result_row.append('lore')
+            #print(unique_options)
+            #assert False
 
-            explainer = BARBE(training_data=iris_wb_training,
-                              input_bounds=None,#[(4.4, 7.7), (2.2, 4.4), (1.2, 6.9), (0.1, 2.5)],
-                              perturbation_type=distribution,
-                              n_perturbations=n_perturbations,
-                              dev_scaling_factor=dev_scaling,
-                              n_bins=n_bins,
-                              verbose=False,
-                              input_sets_class=False)
+            explainer = LoreExplainer(iris_wb_training)
 
-            explanation = explainer.explain(pert_row, bbmodel, ignore_errors=True)
-            if explanation is not None:
-                #print(explanation)
-                #print("IAIN DATA: ", explainer._perturbed_data)
-                #assert False
-                weight = None  # or nearest or euclidean
-                input_row = pd.DataFrame(columns=list(iris_training), index=[0])
-                input_row.iloc[0] = pert_row.to_numpy().reshape((1, -1))
-                print("OLD: ", input_row.iloc[0])
-                print("OLD: ", bbmodel.predict(input_row))
-                wanted_class = 'N' if bbmodel.predict(input_row)[0] == 'Y' else 'Y'
-                counterfactual = explainer.get_counterfactuals(pert_row, wanted_class, 5)
-                print(counterfactual)
+            # TODO: rules for multivariate data need unique considerations
+            start = time.time()
+            explanation = explainer.explain(input_data=iris_perturb,
+                                  input_index=i,
+                                  df=iris_wb_training,
+                                  df_labels=list(bbmodel.predict(iris_training)),
+                                  blackbox=bbmodel,
+                                  discrete_use_probabilities=True)  # IAIN see if this works
+            end = time.time()
 
-                temp_pert = explainer.get_surrogate_fidelity()
-                temp_single_f = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                               comparison_data=iris_training,
-                                                               weights=None,
-                                                               original_data=pert_row)
-                temp_double_f = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                               comparison_data=iris_wb_test,
-                                                               weights=None,
-                                                               original_data=pert_row)
-                fidelity_pert[i].append(temp_pert)
-                fidelity_single_blind[i].append(temp_single_f)
-                fidelity_double_blind[i].append(temp_double_f)
-                temp_single = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                               comparison_data=iris_training,
-                                                               weights='euclidean',
-                                                               original_data=pert_row)
-                temp_double = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                               comparison_data=iris_wb_test,
-                                                               weights='euclidean',
-                                                               original_data=pert_row)
-                fidelity_single_blind_e[i].append(temp_single)
-                fidelity_double_blind_e[i].append(temp_double)
-                # NEW
-                fidelity_single_diff_e[i].append(temp_single - temp_single_f)
-                fidelity_double_diff_e[i].append(temp_double - temp_double_f)
-                temp_single = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                               comparison_data=iris_training,
-                                                               weights='nearest',
-                                                               original_data=pert_row)
-                temp_double = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
-                                                               comparison_data=iris_wb_test,
-                                                               weights='nearest',
-                                                               original_data=pert_row)
-                #fidelity_single_blind_n[i].append(np.sum(counterfactual[0][0][0]))
-                #fidelity_double_blind_n[i].append(np.sum(pert_row.to_numpy().reshape((1, -1))))
-                fidelity_single_blind_n[i].append(0)
-                fidelity_double_blind_n[i].append(0)
-                # NEW
-                #fidelity_single_diff_n[i].append(np.sum(pert_row.to_numpy().reshape((1, -1))) -
-                #                                 np.sum(counterfactual[0][0][0]))
-                any_success = False
-                success_count = 0
-                exp_change_count = 0
-                total_nums = 0
+            input_row = pd.DataFrame(columns=list(iris_test), index=[0])
+            input_row.loc[0, :] = pert_row.to_numpy().reshape((1, -1))
+            initial_row = input_row.copy()
+            result_row.append(bbmodel.predict(input_row)[0])
+            result_row.append(end-start)
 
-                for option in counterfactual[0]:
-                    if len(option) > 0 and np.array(option) != np.array(input_row.iloc[0]):
-                        total_nums += 1
-                        input_row.iloc[0] = option
-                        if explainer.predict(input_row)[0] == wanted_class:
-                            exp_change_count += 1
-                        if bbmodel.predict(input_row)[0] == wanted_class:
-                            success_count += 1
-                            any_success = True
+            #print(explainer.predict([input_row.to_dict('records')[0]])[i], bbmodel.predict(input_row)[0])
+            #assert False
+            if explainer.predict([input_row.to_dict('records')[0]])[0] == bbmodel.predict(input_row)[0]:
+                try:
+                    temp_double_f = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
+                                                                     comparison_data=iris_wb_test,
+                                                                     weights='euclidean',
+                                                                     original_data=pert_row)
+                except:
+                    temp_double_f = -1
+                result_row.append(temp_double_f)  # fidelity
 
-                if total_nums == 0:
-                    total_nums = 1
+                result_row.append(1)  # hit
 
-                if any_success:
-                    fidelity_single_diff_n[i].append(success_count/total_nums)
-                    fidelity_double_diff_n[i].append(exp_change_count/total_nums)
-                else:
-                    fidelity_single_diff_n[i].append(None)
-                    fidelity_double_diff_n[i].append(None)
+                wanted_class = unique_options[0] if bbmodel.predict(input_row)[0] == unique_options[1] else unique_options[1]
 
-                hit_rate[i].append(int(any_success))
+                restricted_options = [[]] if restricted_features is None else [[], restricted_features]
+                for restriction in restricted_options:
+                    start_c = time.time()
+                    counterfactual = explainer.get_counterfactual(pert_row.copy(), restricted_features=restriction)
+                    end_c = time.time()
 
+                    result_row.append(end_c - start_c)
+
+                    any_success = False
+                    success_count = 0
+                    exp_change_count = 0
+                    total_nums = 0
+
+                    # TODO: make each of these their own count for hits (store the full table not just the averaged results)
+                    density_list = list()
+                    distance_list = list()
+                    for option in counterfactual:
+                        #print(np.array(option[0]))
+                        #print(np.array(input_row.iloc[0]))
+                        #print(np.array(option[0]) != np.array(input_row.iloc[0]))
+                        if len(option) > 0 and np.any(np.array(option) != np.array(initial_row.iloc[0])):
+                            total_nums += 1
+                            #input_row = option
+                            #print(f"OPTION {total_nums}: {explainer.predict(input_row)[0]} vs {wanted_class}")
+                            #if explainer.predict(input_row.to_numpy().reshape((1,-1)))[0] == wanted_class:
+                            #    exp_change_count += 1
+                            if bbmodel.predict(option)[0] == wanted_class:
+                                success_count += 1
+                                result_row.append(1)
+                                any_success = True
+                            else:
+                                result_row.append(0)
+                            density_list.append(diff_calc.get_density_distance(initial_row, option))
+                            distance_list.append(diff_calc.get_scaled_distance(initial_row, option))
+
+                        else:
+                            result_row.append(-1)
+                            density_list.append(-1)
+                            distance_list.append(-1)
+
+                    if len(counterfactual) < 5:
+                        for _ in range(5-len(counterfactual)):
+                            result_row.append(-1)
+                            density_list.append(-1)
+                            distance_list.append(-1)
+
+                    if len(counterfactual) > 5:
+                        result_row = result_row[:(5-len(counterfactual))]
+                        density_list = density_list[:5]
+                        distance_list = distance_list[:5]
+
+                    result_row.append(int(any_success))
+                    result_row += distance_list
+                    result_row += density_list
+                    result_row.append(success_count)
+
+                results.loc[results.shape[0]] = result_row  # add to all records
+
+                # delete to save space for next run
                 del explainer
                 del explanation
 
             else:
-                #print(traceback.format_exc())
-                temp_pert = None
-                temp_single = None
-                temp_double = None
-                fidelity_pert[i].append(temp_pert)
-                fidelity_single_blind[i].append(temp_single)
-                fidelity_double_blind[i].append(temp_double)
-                fidelity_single_blind_e[i].append(temp_single)
-                fidelity_double_blind_e[i].append(temp_double)
-                fidelity_single_blind_n[i].append(temp_single)
-                fidelity_double_blind_n[i].append(temp_double)
-                # NEW
-                fidelity_single_diff_n[i].append(None)
-                fidelity_single_diff_e[i].append(None)
-                fidelity_double_diff_n[i].append(None)
-                fidelity_double_diff_e[i].append(None)
-                hit_rate[i].append(0)
+                result_row += [-1, 0] + [-1 for _ in range(36)]
+                results.loc[results.shape[0]] = result_row
 
-            #print(i, " - ", distribution)
-            #print(temp_pert)
-            #print(temp_single)
-            #print(temp_double)
+    results.to_csv("Results/" + "_".join([data_name,
+                                          "nruns" + str(local_test_end),
+                                          "nbins" + str(n_bins),
+                                          "nperturb" + str(n_perturbations),
+                                          "devscalin" + str(dev_scaling)]) + "_counterfactuals_results.csv")
+
+def dice_counterfactual_experiment(iris_training, iris_training_label, iris_perturb, iris_test, pre_trained_model=None,
+                                 discrete_features=None, local_test_end=20, data_name="data", n_perturbations=100,
+                                 n_bins=5, dev_scaling=10, restricted_features=None):
+    # TODO: make this set up folds to run the experiments over and then be more generic
+
+    if pre_trained_model is None:
+        bbmodel = RandomForestClassifier(n_estimators=5,
+                                         max_depth=4,
+                                         min_samples_split=10,
+                                         min_samples_leaf=3,
+                                         bootstrap=True,
+                                         random_state=301257)
+        bbmodel = MLPClassifier(hidden_layer_sizes=(100, 50,), random_state=301257)
+        bbmodel.fit(iris_training, iris_training_label)
+    else:
+        bbmodel = pre_trained_model
+
+    random.seed(516231)
+    part_training = int(iris_training.shape[0] // 3)  # specifically for the LOAN
+    iris_wb_training = iris_training.iloc[0:part_training]
+
+    barbe_dist = ['random', 'genetic']
 
 
-    # NEW
-    averages_print = [["Method", "Evaluation",
-                       "Fidelity (Original)", "Fid. Var.",
-                       "Euclidean Fidelity", "Euc. Var.",
-                       "Nearest Neighbor Fidelity", "NN. Var.",
-                       "Euc. - Fidelity", "Euc. Diff. Var.",
-                       "NN. - Fidelity", "NN. Diff. Var.", "Hit Rate"]]
-    #print(fidelity_pert)
-    #print(fidelity_single_blind)
-    #print(fidelity_double_blind)
-    for fidelity_pert, fidelity_single_blind, fidelity_double_blind, run in \
-        [(fidelity_pert, fidelity_single_blind, fidelity_double_blind, 'regular'),
-         (fidelity_pert, fidelity_single_blind_e, fidelity_double_blind_e, 'euclidean'),
-         (fidelity_pert, fidelity_single_blind_n, fidelity_double_blind_n, 'nearest neighbors'),
-         # NEW
-         (fidelity_pert, fidelity_single_diff_e, fidelity_double_diff_e, 'euc. diff.'),
-         (fidelity_pert, fidelity_single_diff_n, fidelity_double_diff_n, 'nn. diff.')]:
-        for j in range(len(barbe_dist)):
-            temp_pert_acc = 0
-            temp_single_acc = 0
-            temp_double_acc = 0
-            mean_count = 0
-            for i in range(local_test_end):
-                if fidelity_double_blind[i][j] is not None:
-                    mean_count += 1
-                    temp_pert_acc += fidelity_pert[i][j]
-                    temp_single_acc += fidelity_single_blind[i][j]
-                    temp_double_acc += fidelity_double_blind[i][j]
-            temp_pert_std = 0
-            temp_single_std = 0
-            temp_double_std = 0
-            for i in range(local_test_end):
-                if fidelity_double_blind[i][j] is not None:
-                    temp_pert_std += (fidelity_pert[i][j] - temp_pert_acc/mean_count)**2
-                    temp_single_std += (fidelity_single_blind[i][j] - temp_single_acc/mean_count)**2
-                    temp_double_std += (fidelity_double_blind[i][j] - temp_double_acc/mean_count)**2
-            temp_pert_std = (temp_pert_std/(mean_count-1))
-            temp_single_std = (temp_single_std / (mean_count - 1))
-            temp_double_std = (temp_double_std / (mean_count - 1))
-            #print(barbe_dist[j])
-            if mean_count != 0:
-                # add standard deviations as info
-                if (len(averages_print)-1)/3 <= j:
-                    averages_print.append([barbe_dist[j], "Perturbed"])
-                    averages_print.append([barbe_dist[j], "Single Blind"])
-                    averages_print.append([barbe_dist[j], "Double Blind"])
-                averages_print[(j*3)+1].append(temp_pert_acc/mean_count)
-                averages_print[(j * 3) + 1].append(temp_pert_std)
-                averages_print[(j*3)+2].append(temp_single_acc/mean_count)
-                averages_print[(j * 3) + 2].append(temp_single_std)
-                averages_print[(j*3)+3].append(temp_double_acc/mean_count)
-                averages_print[(j * 3) + 3].append(temp_double_std)
-    for j in range(len(barbe_dist)):
-        average_hits = 0
-        for i in range(local_test_end):
-            average_hits += hit_rate[i][j]
-        average_hits /= local_test_end
-        averages_print[(j * 3) + 1].append(average_hits)
-        averages_print[(j * 3) + 2].append(0)
-        averages_print[(j * 3) + 3].append(0)
-                #print("Comparison Measure: ", run)
-                #print("Fidelity: ", temp_pert_acc/mean_count)
-                #print("LIME: ", np.mean(lime_fidelity_pert))
-                #print("Single Blind: ", temp_single_acc/mean_count)
-                #print("LIME: ", np.mean(lime_fidelity_single_blind))
-                #print("Double Blind: ", temp_double_acc/mean_count)
-                #print("LIME: ", np.mean(lime_fidelity_double_blind))
+    from barbe.utils.evaluation_measures import FlexibleDifference
 
-    #print(averages_print)
-    #for s in averages_print:
-    #    print(*s)
+    results = pd.DataFrame(columns=['distribution', 'counter-method', 'original-class', 'explain-time', 'fidelity',
+                                    'hit', 'counter-time',
+                                    'c-hit-1', 'c-hit-2', 'c-hit-3', 'c-hit-4', 'c-hit-5', 'c-hit',
+                                    'diff-c-1', 'diff-c-2', 'diff-c-3', 'diff-c-4', 'diff-c-5',
+                                    'dens-c-1', 'dens-c-2', 'dens-c-3', 'dens-c-4', 'dens-c-5',
+                                    'n-c-hit',
+                                    'counter-time-r',
+                                    'c-hit-1r', 'c-hit-2r', 'c-hit-3r', 'c-hit-4r', 'c-hit-5r', 'c-hit-r',
+                                    'diff-c-1r', 'diff-c-2r', 'diff-c-3r', 'diff-c-4r', 'diff-c-5r',
+                                    'dens-c-1r', 'dens-c-2r', 'dens-c-3r', 'dens-c-4r', 'dens-c-5r',
+                                    'n-c-hit-r'
+                                    ])
 
-    pd.DataFrame(averages_print).to_csv("Results/"+"_".join([data_name,
-                                                             "nruns"+str(local_test_end),
-                                                             "nbins"+str(n_bins),
-                                                             "nperturb"+str(n_perturbations),
-                                                             "devscalin"+str(dev_scaling)])+"_counterfactuals_results.csv")
-    #print([(np.nanmin(iris_numpy[:,0]), np.nanmax(iris_numpy[:,0])),
-    #                                            (np.nanmin(iris_numpy[:,1]), np.nanmax(iris_numpy[:,1])),
-    #                                            (np.nanmin(iris_numpy[:,2]), np.nanmax(iris_numpy[:,2])),
-    #                                            (np.nanmin(iris_numpy[:,3]), np.nanmax(iris_numpy[:,3])),])
+    diff_calc = FlexibleDifference(iris_training)
+    iris_wb_training['target'] = bbmodel.predict(iris_wb_training)
+
+
+    unique_options = np.unique(bbmodel.predict(iris_training))
+    bbmodel = BlackBoxWrapper(bbmodel=bbmodel, class_labels=unique_options)
+
+    for i in range(local_test_end):  # use when removing LIME
+        pert_row = iris_perturb.iloc[i:(i+1)]
+        iris_wb_test = iris_test.drop(i, inplace=False, axis=0)
+        for distribution in barbe_dist:
+            result_row = list()
+            result_row.append(distribution)
+            result_row.append('lore')
+            #print(unique_options)
+            #assert False
+
+            #explainer = LoreExplainer(iris_wb_training)
+
+            start = time.time()
+            #print(set(iris_training.columns).difference(set(discrete_features)))
+            #print(iris_wb_training.columns)
+            d = dice_ml.Data(dataframe=iris_wb_training,
+                             continuous_features=list(set(iris_training.columns).difference(set(discrete_features))),
+                             outcome_name='target')
+            m = dice_ml.Model(model=bbmodel, backend='sklearn')
+            explanation = dice_ml.Dice(d, m, method=distribution)
+            #explanation = explainer.explain(input_data=iris_perturb,
+            #                      input_index=i,
+            #                      df=iris_wb_training,
+            #                      df_labels=list(bbmodel.predict(iris_training)),
+            #                      blackbox=bbmodel,
+            #                      discrete_use_probabilities=True)  # IAIN see if this works
+            end = time.time()
+
+            input_row = pd.DataFrame(columns=list(iris_test), index=[0])
+            input_row.loc[0, :] = pert_row.to_numpy().reshape((1, -1))
+            initial_row = input_row.copy()
+            result_row.append(bbmodel.predict(input_row)[0])
+            result_row.append(end-start)
+
+            #print(explainer.predict([input_row.to_dict('records')[0]])[i], bbmodel.predict(input_row)[0])
+            #assert False
+            if True:
+                try:
+                    temp_double_f = explainer.get_surrogate_fidelity(comparison_model=bbmodel,
+                                                                     comparison_data=iris_wb_test,
+                                                                     weights='euclidean',
+                                                                     original_data=pert_row)
+                except:
+                    temp_double_f = -1
+                result_row.append(temp_double_f)  # fidelity
+
+                result_row.append(1)  # hit
+
+                wanted_class = unique_options[0] if bbmodel.predict(input_row)[0] == unique_options[1] else unique_options[1]
+
+                restricted_options = [[]] if restricted_features is None else [[], restricted_features]
+                for restriction in restricted_options:
+                    start_c = time.time()
+                    counterfactual = explanation.generate_counterfactuals(pert_row.copy(),
+                                                                          total_CFs=5,
+                                                                          features_to_vary=list(set(iris_training.columns).difference(set(restriction))))
+                    end_c = time.time()
+
+                    result_row.append(end_c - start_c)
+
+                    counterfactuals = counterfactual.cf_examples_list[0].final_cfs_df
+                    cf_list = list()
+                    for i in range(counterfactuals.shape[0]):
+                        cf_list.append(counterfactuals.iloc[i:(i+1)])
+
+                    counterfactual = cf_list
+                    any_success = False
+                    success_count = 0
+                    exp_change_count = 0
+                    total_nums = 0
+
+                    # TODO: make each of these their own count for hits (store the full table not just the averaged results)
+                    density_list = list()
+                    distance_list = list()
+                    for option in counterfactual:
+                        #print(np.array(option[0]))
+                        #print(np.array(input_row.iloc[0]))
+                        #print(np.array(option[0]) != np.array(input_row.iloc[0]))
+                        if len(option) > 0 and np.any(np.array(option) != np.array(initial_row.iloc[0])):
+                            total_nums += 1
+                            #input_row = option
+                            #print(f"OPTION {total_nums}: {explainer.predict(input_row)[0]} vs {wanted_class}")
+                            #if explainer.predict(input_row.to_numpy().reshape((1,-1)))[0] == wanted_class:
+                            #    exp_change_count += 1
+                            if bbmodel.predict(option.drop('target', axis=1, inplace=False))[0] == wanted_class:
+                                success_count += 1
+                                result_row.append(1)
+                                any_success = True
+                            else:
+                                result_row.append(0)
+                            distance_list.append(diff_calc.get_scaled_distance(pert_row.copy(), option))
+                            density_list.append(diff_calc.get_density_distance(pert_row.copy(), option))
+
+                        else:
+                            result_row.append(-1)
+                            density_list.append(-1)
+                            distance_list.append(-1)
+
+                    if len(counterfactual) < 5:
+                        for _ in range(5-len(counterfactual)):
+                            result_row.append(-1)
+                            density_list.append(-1)
+                            distance_list.append(-1)
+
+                    if len(counterfactual) > 5:
+                        result_row = result_row[:5]
+                        density_list = density_list[:5]
+                        distance_list = distance_list[:5]
+
+                    result_row.append(int(any_success))
+                    result_row += distance_list
+                    result_row += density_list
+                    result_row.append(success_count)
+
+                results.loc[results.shape[0]] = result_row  # add to all records
+
+                # delete to save space for next run
+                #del explainer
+                #del explanation
+
+            #else:
+            #    result_row += [-1, 0] + [-1 for _ in range(36)]
+            #    results.loc[results.shape[0]] = result_row
+
+    results.to_csv("Results/" + "_".join([data_name,
+                                          "nruns" + str(local_test_end),
+                                          "nbins" + str(n_bins),
+                                          "nperturb" + str(n_perturbations),
+                                          "devscalin" + str(dev_scaling)]) + "_counterfactuals_results.csv")
 
 
 # TODO: NOTE: IRIS tests for LIME were BAD. It had 30% accuracy on the single/double blind
@@ -858,15 +1132,15 @@ def distribution_experiment_iris():
     '''
 
     for pert_c in [1000]:#[100, 1000, 5000]:
-        lore_distribution_experiment(iris_training,
-                                     iris_training_label,
-                                     iris_perturb,
-                                     iris_test,
-                                     local_test_end=split_point_test,
-                                     data_name="neural_iris",
-                                     n_perturbations=pert_c,
-                                     use_barbe_perturbations=False,
-                                     dev_scaling=1)
+        #lore_distribution_experiment(iris_training,
+        #                             iris_training_label,
+        #                             iris_perturb,
+        #                             iris_test,
+        #                             local_test_end=split_point_test,
+        #                             data_name="neural_iris",
+        #                             n_perturbations=pert_c,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
         #lime_distribution_experiment(iris_training,
         #                             iris_training_label,
          #                            iris_perturb,
@@ -1001,473 +1275,237 @@ def distribution_experiment_breast_cancer():
                                              dev_scaling=dev_n)
 
 
-def simple_distribution_experiment_simulated():
-    X, y, z = simulate_linear_classified(seed_num=52146, size=1000, clusters_keep=3)
-    X2, y2, _ = simulate_linear_classified(seed_num=89213, size=1000, clusters_keep=1)
-    X3, y3, _ = simulate_linear_classified(seed_num=78761, size=1000, clusters_keep=2)
-    X4, _, z4 = simulate_linear_classified(seed_num=11487, size=250, clusters_keep=3)
-    y2_sort = y2.argsort()
-    y3_sort = y3.argsort()
-    print(X)
-    print(y)
-    print(sum(y))
-    X = pd.DataFrame(X, columns=[str(i) for i in range(1, 4+1)])
-    X2 = pd.DataFrame(X2, columns=[str(i) for i in range(1, 4+1)])
-    X3 = pd.DataFrame(X3, columns=[str(i) for i in range(1, 4+1)])
-    X4 = pd.DataFrame(X4, columns=[str(i) for i in range(1, 4+1)])
-    # rounded linear regression performs poorly
-    # a decision tree is surprisingly well suited to this problem (almost perfect)
-    # SVC with rbf kernel performs ok
-    # MLP performs very well when alpha is high (1e-3)
-    clf = MLPClassifier(solver='lbfgs',
-                        alpha=1e-3,
-                        hidden_layer_sizes=(8, 3, 3),
-                        random_state=678993)
-    # TODO: train a post-hoc explainer and compare where misclassifications occur
-    #  plot the point that is being classified and circle the regions of percentages in each dimension
-    #  plot the perturbed data and compare
-    # clf = DecisionTreeClassifier()
-    exp = BARBE(training_data=X,
-                input_bounds=None,#[(4.4, 7.7), (2.2, 4.4), (1.2, 6.9), (0.1, 2.5)],
-                perturbation_type='t-distribution',
-                n_perturbations=5000,
-                dev_scaling_factor=3,
-                n_bins=10,
-                verbose=False,
-                input_sets_class=False)
-    clf.fit(X, y)
-    class_point = 999
-    exp.explain(X2.iloc[class_point], clf)
-    Xp = exp.get_perturbed_data()
-    #print(Xp)
-    #print(exp.get_surrogate_fidelity())
+from sklearn.model_selection import train_test_split
+
+
+def counterfactual_experiment_breast_cancer(use_pretrained=False):
+    # example of where lime1 fails
+    # lime1 can only explain pre-processed data (pipeline must be separate and interpretable from model)
+    breast_cancer = datasets.load_breast_cancer()
+    breast_cancer_df = pd.DataFrame(data=breast_cancer.data, columns=breast_cancer.feature_names)
+    #print(breast_cancer_df.columns)
+    #assert False
+    def class_fun(y):
+        if 1 > y >= 0:
+            return "a"
+        if y >= 1:
+            return "b"
+        return "c"
+
+    #bctarget = [class_fun(y) for y in breast_cancer.target]
+    #breast_cancer_df['target'] = breast_cancer.target
+    # randomize the order of the data
+    #breast_cancer_df = breast_cancer_df.sample(frac=1, random_state=117).reset_index(drop=True)
+    breast_cancer_df, _, bc_target, _ = train_test_split(breast_cancer_df, breast_cancer.target, train_size=0.9999,
+                                                   random_state=98147, shuffle=True) #117233
+
+
+    y = [class_fun(y) for y in bc_target]
+    data = breast_cancer_df
+    split_point_test = int((data.shape[0] * 0.2) // 1)  # 80-20 split
+    loan_perturb = data.iloc[0:50].reset_index()
+    loan_test = data.iloc[0:split_point_test].reset_index()
+    loan_training = data.iloc[split_point_test:].reset_index()
+    loan_training_label = y[split_point_test:]
+
+    loan_part_train, loan_validate, loan_part_train_y, loan_validate_y = train_test_split(loan_training, loan_training_label, train_size=0.6, random_state=991246)
+    n_estimators_options = [2, 5, 10, 20, 50]
+    max_depth_options = [4, 10, 20, None]
+    min_samples_options = [2, 10, 20, 40]
+    options_list = [n_estimators_options, max_depth_options, min_samples_options]
+    best_setting = (0, None)
+    # TODO: add random forest too
+    # for hidden_layer_setting in possible_hidden_layers:
+    for n_estimators, max_depth, min_samples in product(*options_list):
+        #encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+        #preprocess = ColumnTransformer([('enc', encoder, categorical_features)],
+        #                               remainder='passthrough')
+        model = Pipeline([#('pre', preprocess),
+                          # ('clf', MLPClassifier(hidden_layer_sizes=hidden_layer_setting,
+                          #                      solver='adam',
+                          #                      activation='relu',
+                          #                      alpha=1e-8,
+                          #                      tol=1e-16,
+                          #                      max_iter=1000,
+                          #                      random_state=301257))])
+                          ('clf', RandomForestClassifier(n_estimators=n_estimators,
+                                                         max_depth=max_depth,
+                                                         min_samples_split=min_samples,
+                                                         min_samples_leaf=1,
+                                                         bootstrap=True,
+                                                         random_state=301257))])
+        model.fit(loan_part_train, loan_part_train_y)
+        curr_score = balanced_accuracy_score(loan_validate_y, model.predict(loan_validate))
+        # print(hidden_layer_setting, ": ", curr_score)
+        # print(hidden_layer_setting, ": ", confusion_matrix(attrition_part_train_y, model.predict(attrition_part_train)))
+        if curr_score > best_setting[0]:
+            best_setting = (curr_score, (n_estimators, max_depth, min_samples))
+
+    n_estimators, max_depth, min_samples = best_setting[1]
+    encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+    #preprocess = ColumnTransformer([('enc', encoder, categorical_features)], remainder='passthrough')
+    model = Pipeline([#('pre', preprocess),
+                      # ('clf', MLPClassifier(hidden_layer_sizes=best_setting[1],
+                      #                      solver='adam',
+                      #                          activation='relu',
+                      #                          alpha=1e-8,
+                      #                          tol=1e-16,
+                      #                          max_iter=1000, random_state=301257)),
+                      ('clf', RandomForestClassifier(n_estimators=n_estimators,
+                                                     max_depth=max_depth,
+                                                     min_samples_split=min_samples,
+                                                     min_samples_leaf=1,
+                                                     bootstrap=True,
+                                                     random_state=301257))
+                      ])
+    # ('clf', RandomForestClassifier(n_estimators=5,
+    #                               max_depth=4,
+    #                               min_samples_split=10,
+    #                               min_samples_leaf=3,
+    #                               bootstrap=True,
+    #                               random_state=301257))])
+
+    #model = FIEAPClassifier(protected_feature='Gender=Male', privileged_group=1, unprivileged_group=0, num_clusters=3)
+
+    loan_training_stop = int(loan_training.shape[0] // 3)
+
+    loan_perturb = loan_perturb.drop(['index'], axis=1)
+    loan_test = loan_test.drop(['index'], axis=1)
+    loan_training = loan_training.drop(['index'], axis=1)
+    #print(loan_test)
+    #assert False
+    if not use_pretrained:
+        model.fit(loan_training, loan_training_label)
+        with open('../pretrained/bc_rf.pkl', 'wb') as f:
+            dill.dump(model, f)
+    else:
+        with open('../pretrained/bc_rf.pkl', 'rb') as f:
+            model = dill.load(f)
+
+    print(confusion_matrix(loan_training_label, model.predict(loan_training)))
     #assert False
 
-    y_pred = np.round(clf.predict(X))
-    y2_pred = np.round(clf.predict(X2))
-    y3_pred = np.round(clf.predict(X3))
-    yp_pred = np.round(clf.predict(Xp))
-    y4_pred = np.round(clf.predict(X4))
-    y4_exp = exp.predict(X4)
-    # show the quality of fit and difficulty on this data
-    print("Evaluation for X")
-    print(accuracy_score(y, y_pred))
-    print(confusion_matrix(y, y_pred))
-    print("Evaluation for Group 1")
-    print(accuracy_score(y2, y2_pred))
-    print(confusion_matrix(y2, y2_pred))
-    print("Evaluation for Group 2")
-    print(accuracy_score(y3, y3_pred))
-    print(confusion_matrix(y3, y3_pred))
-    print("Evaluation Compared to Perturber")
-    print(accuracy_score(exp._blackbox_classification['perturbed'], exp._surrogate_classification['perturbed']))
-    print(confusion_matrix(exp._blackbox_classification['perturbed'], exp._surrogate_classification['perturbed']))
-    print("Evaluation Compared to Perturber on Holdout")
-    print(accuracy_score(y4_pred, y4_exp.astype(int)))
-    print(confusion_matrix(y4_pred, y4_exp.astype(int)))
-    X = X.to_numpy()
-    X2 = X2.to_numpy()
-    X3 = X3.to_numpy()
-    Xp = Xp.to_numpy()
-    X4 = X4.to_numpy()
+    for pert_c in [1000]:  # [100, 500, 1000]:
+        #lore_distribution_experiment(loan_training,
+        #                             loan_training_label,
+        #                             loan_perturb,
+        #                             loan_test,
+        #                             pre_trained_model=model,
+        #                             local_test_end=50,
+        #                             data_name="lore_neural_loan",
+        #                             n_perturbations=1000,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
+        #lime_distribution_experiment(loan_training,
+        #                             loan_training_label,
+        #                             loan_perturb,
+        #                             loan_test,
+        #                             pre_trained_model=model,
+        #                             lime_version=LimeNewPert,
+        #                             local_test_end=50,
+        #                             data_name="original_neural_loan_acceptance",
+        #                             n_perturbations=pert_c,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
+        ##lime_distribution_experiment(loan_training,
+        #                             loan_training_label,
+        #                             loan_perturb,
+        ##                             loan_test,
+        #                             pre_trained_model=model,
+        #                             lime_version=VAELimeNewPert,
+        #                             local_test_end=50,
+        #                             data_name="vaelime_loan",
+        #                             n_perturbations=pert_c,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
+        if True:
+            for dev_n in [1]:#[1, 2, 3, 10, 50, 100]:
 
-    # plot the results by class and cluster
-    color_list = np.empty(shape=y.shape, dtype=np.str_)
-    color_list[(y == 1) & (z == 1)] = 'red'
-    color_list[(y == 0) & (z == 1)] = 'blue'
-    color_list[(y == 1) & (z == 2)] = 'magenta'
-    color_list[(y == 0) & (z == 2)] = 'cyan'
-    fig = plt.figure(1)
-    for i in range(4):
-        for j in range(4):
-            fig.add_subplot(4, 4, 4 * i + j + 1)
-            if i >= j:
-                plt.scatter(X[:, i], X[:, j], c=color_list)
-            else:
-                plt.scatter(X[-1:0:-1, i], X[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=yp_pred.shape, dtype=np.str_)
-    print(exp._surrogate_classification['perturbed'])
-    color_list[(yp_pred == 1) & (exp._surrogate_classification['perturbed'] == '1')] = 'r'
-    color_list[(yp_pred == 0) & (exp._surrogate_classification['perturbed'] == '0')] = 'b'
-    color_list[(yp_pred == 1) & (exp._surrogate_classification['perturbed'] == '0')] = 'y'
-    color_list[(yp_pred == 0) & (exp._surrogate_classification['perturbed'] == '1')] = 'k'
-    color_list[0] = 'g'
-    #color_list[(y == 1) & (z == 2)] = 'magenta'
-    #color_list[(y == 0) & (z == 2)] = 'cyan'
-
-    #pca = PCA(n_components=4)
-    #X_pca = pca.fit_transform(X)
-    fig = plt.figure(2)
-    for i in range(4):
-        for j in range(4):
-            fig.add_subplot(4, 4, 4 * i + j + 1)
-            if i >= j:
-                plt.scatter(Xp[color_list == 'r', i], Xp[color_list == 'r', j], c='r')
-                plt.scatter(Xp[color_list == 'b', i], Xp[color_list == 'b', j], c='b')
-                plt.scatter(Xp[color_list == 'y', i], Xp[color_list == 'y', j], c='yellow')
-                plt.scatter(Xp[color_list == 'k', i], Xp[color_list == 'k', j], c='k')
-            else:
-                #plt.scatter(Xp[-1:0:-1, i], Xp[-1:0:-1, j], c=color_list[-1:0:-1])
-                plt.scatter(Xp[color_list == 'k', i], Xp[color_list == 'k', j], c='k')
-                plt.scatter(Xp[color_list == 'y', i], Xp[color_list == 'y', j], c='y')
-                plt.scatter(Xp[color_list == 'b', i], Xp[color_list == 'b', j], c='b')
-                plt.scatter(Xp[color_list == 'r', i], Xp[color_list == 'r', j], c='r')
-
-            plt.scatter(Xp[class_point, i], Xp[class_point, j], c='g')
-            plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y.shape, dtype=np.str_)
-    color_list[(y_pred == 1) & (z == 1)] = 'red'
-    color_list[(y_pred == 0) & (z == 1)] = 'blue'
-    color_list[(y_pred == 1) & (z == 2)] = 'magenta'
-    color_list[(y_pred == 0) & (z == 2)] = 'cyan'
-    fig = plt.figure(3)
-    for i in range(4):
-        for j in range(4):
-            fig.add_subplot(4, 4, 4 * i + j + 1)
-            if i >= j:
-                plt.scatter(X[:, i], X[:, j], c=color_list)
-
-            else:
-                plt.scatter(X[-1:0:-1, i], X[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y2.shape, dtype=np.str_)
-    color_list[(y2_pred == 1) & (y2 == 1)] = 'red'
-    color_list[(y2_pred == 0) & (y2 == 0)] = 'blue'
-    color_list[(y2_pred == 1) & (y2 == 0)] = 'yellow'
-    color_list[(y2_pred == 0) & (y2 == 1)] = 'green'
-    fig = plt.figure(4)
-    for i in range(4):
-        for j in range(4):
-            fig.add_subplot(4, 4, 4 * i + j + 1)
-            if i >= j:
-                plt.scatter(X2[:, i], X2[:, j], c=color_list)
-            else:
-                plt.scatter(X2[-1:0:-1, i], X2[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y3.shape, dtype=np.str_)
-    color_list[(y3_pred == 1) & (y3 == 1)] = 'magenta'
-    color_list[(y3_pred == 0) & (y3 == 0)] = 'cyan'
-    color_list[(y3_pred == 1) & (y3 == 0)] = 'yellow'
-    color_list[(y3_pred == 0) & (y3 == 1)] = 'green'
-    fig = plt.figure(5)
-    for i in range(4):
-        for j in range(4):
-            fig.add_subplot(4, 4, 4 * i + j + 1)
-            if i >= j:
-                plt.scatter(X3[:, i], X3[:, j], c=color_list)
-            else:
-                plt.scatter(X3[-1:0:-1, i], X3[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y4_pred.shape, dtype=np.str_)
-    color_list[(y4_pred == 1) & (y4_exp == '1')] = 'r'
-    color_list[(y4_pred == 0) & (y4_exp == '0')] = 'b'
-    color_list[(y4_pred == 1) & (y4_exp == '0')] = 'y'
-    color_list[(y4_pred == 0) & (y4_exp == '1')] = 'k'
-    # color_list[(y == 1) & (z == 2)] = 'magenta'
-    # color_list[(y == 0) & (z == 2)] = 'cyan'
-
-    # pca = PCA(n_components=4)
-    # X_pca = pca.fit_transform(X)
-    fig = plt.figure(6)
-    for i in range(4):
-        for j in range(4):
-            fig.add_subplot(4, 4, 4 * i + j + 1)
-            if i >= j:
-                plt.scatter(X4[color_list == 'r', i], X4[color_list == 'r', j], c='r')
-                plt.scatter(X4[color_list == 'b', i], X4[color_list == 'b', j], c='b')
-                plt.scatter(X4[color_list == 'y', i], X4[color_list == 'y', j], c='yellow')
-                plt.scatter(X4[color_list == 'k', i], X4[color_list == 'k', j], c='k')
-                plt.scatter(Xp[class_point, i], Xp[class_point, j], c='g')
-                plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-                plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            else:
-                # plt.scatter(Xp[-1:0:-1, i], Xp[-1:0:-1, j], c=color_list[-1:0:-1])
-                plt.scatter(X4[color_list == 'k', j], X4[color_list == 'k', i], c='k')
-                plt.scatter(X4[color_list == 'y', j], X4[color_list == 'y', i], c='y')
-                plt.scatter(X4[color_list == 'b', j], X4[color_list == 'b', i], c='b')
-                plt.scatter(X4[color_list == 'r', j], X4[color_list == 'r', i], c='r')
-                plt.scatter(Xp[class_point, j], Xp[class_point, i], c='g')
-                plt.xlim(np.min(X[:, j]), np.max(X[:, j]))
-                plt.ylim(np.min(X[:, i]), np.max(X[:, i]))
-
-            #plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            #plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
+                if True:
+                    counterfactual_experiment(loan_training,
+                                            loan_training_label,
+                                            loan_perturb,
+                                            loan_test,
+                                            pre_trained_model=model,
+                                            # lime_version=LimeNewPert,
+                                            local_test_end=50,
+                                            restricted_features=['mean radius', 'mean perimeter', 'mean area', 'mean compactness',
+                                                                    'radius error', 'perimeter error', 'area error', 'compactness error'],
+                                            data_name="barbe_cv_rf_breast_cancer",
+                                            use_negation_rules=True,
+                                            n_perturbations=pert_c,
+                                           # use_barbe_perturbations=False,
+                                            n_bins=5,
+                                            dev_scaling=dev_n)
+                    counterfactual_experiment(loan_training,
+                                            loan_training_label,
+                                            loan_perturb,
+                                            loan_test,
+                                            pre_trained_model=model,
+                                            # lime_version=LimeNewPert,
+                                            local_test_end=50,
+                                            restricted_features=['mean radius', 'mean perimeter', 'mean area', 'mean compactness',
+                                                                    'radius error', 'perimeter error', 'area error', 'compactness error'],
+                                            data_name="barbe_no_negation_cv_rf_breast_cancer",
+                                            use_negation_rules=False,
+                                            n_perturbations=pert_c,
+                                           # use_barbe_perturbations=False,
+                                            n_bins=5,
+                                            dev_scaling=dev_n)
+                    lore_counterfactual_experiment(loan_training.copy(),
+                                                   loan_training_label.copy(),
+                                                   loan_perturb.copy(),
+                                                   loan_test.copy(),
+                                                   pre_trained_model=model,
+                                                   # lime_version=LimeNewPert,
+                                                   local_test_end=50,
+                                                   data_name="lore_cv_rf_breast_cancer",
+                                                   restricted_features=['mean radius', 'mean perimeter', 'mean area', 'mean compactness',
+                                                                    'radius error', 'perimeter error', 'area error', 'compactness error'],
+                                                   n_perturbations=pert_c,
+                                                   # use_barbe_perturbations=False,
+                                                   n_bins=5,
+                                                   dev_scaling=dev_n)
+                dice_counterfactual_experiment(loan_training.copy(),
+                                               loan_training_label.copy(),
+                                               loan_perturb.copy(),
+                                               loan_test.copy(),
+                                               pre_trained_model=model,
+                                               discrete_features=[],
+                                               # lime_version=LimeNewPert,
+                                               local_test_end=50,
+                                               data_name="dice_cv_rf_breast_cancer",
+                                               restricted_features=['mean radius', 'mean perimeter', 'mean area', 'mean compactness',
+                                                                    'radius error', 'perimeter error', 'area error', 'compactness error'],
+                                               n_perturbations=pert_c,
+                                               # use_barbe_perturbations=False,
+                                               n_bins=5,
+                                               dev_scaling=dev_n)
+                #lime_distribution_experiment(loan_training,
+                ##                             loan_training_label,
+                 #                            loan_perturb,
+                 #                            loan_test,
+                 #                            pre_trained_model=model,
+                 #                            lime_version=LimeNewPert,
+                 #                            local_test_end=50,
+                 #                            data_name="bpert_cats_neural_loan_acceptance",
+                 #                            n_perturbations=pert_c,
+                 #                            use_barbe_perturbations=True,
+                 #                            dev_scaling=dev_n)
+                ##lime_distribution_experiment(loan_training,
+                 #                            loan_training_label,
+                 ##                            loan_perturb,
+                  #                           loan_test,
+                  #                           pre_trained_model=model,
+                  #                           lime_version=VAELimeNewPert,
+                  #                           local_test_end=50,
+                   #                          data_name="vaelime_cats_neural_loan_acceptance",
+                   #                          n_perturbations=pert_c,
+                   #                          use_barbe_perturbations=False,
+                   #                          dev_scaling=dev_n)
 
 
-def even_simpler_distribution_experiment_simulated():
-    X, y, z = simulate_simple_classified(seed_num=52146, size=10000, clusters_keep=3)
-    X2, y2, _ = simulate_simple_classified(seed_num=89213, size=1000, clusters_keep=1)
-    X3, y3, _ = simulate_simple_classified(seed_num=78761, size=1000, clusters_keep=2)
-    X4, y4, z4 = simulate_simple_classified(seed_num=11487, size=750, clusters_keep=3)
-    print(X)
-    print(y)
-    print(sum(y))
-    X = pd.DataFrame(X, columns=[str(i) for i in range(1, 2+1)])
-    X2 = pd.DataFrame(X2, columns=[str(i) for i in range(1, 2+1)])
-    X3 = pd.DataFrame(X3, columns=[str(i) for i in range(1, 2+1)])
-    X4 = pd.DataFrame(X4, columns=[str(i) for i in range(1, 2+1)])
-    # rounded linear regression performs poorly
-    # a decision tree is surprisingly well suited to this problem (almost perfect)
-    # SVC with rbf kernel performs ok
-    # MLP performs very well when alpha is high (1e-3)
-    clf = MLPClassifier(solver='lbfgs',
-                        alpha=1e-3,
-                        hidden_layer_sizes=(10, 8, 2),
-                        random_state=678993)
-    # TODO: train a post-hoc explainer and compare where misclassifications occur
-    #  plot the point that is being classified and circle the regions of percentages in each dimension
-    #  plot the perturbed data and compare
-    # clf = DecisionTreeClassifier()
-    exp = BARBE(training_data=X,
-                input_bounds=None,#[(4.4, 7.7), (2.2, 4.4), (1.2, 6.9), (0.1, 2.5)],
-                perturbation_type='t-distribution',  # difference between uniform and normal is important here
-                n_perturbations=5000,
-                dev_scaling_factor=3/2,
-                n_bins=10,
-                verbose=False,
-                input_sets_class=False)
-    clf.fit(X, y)
-    class_point = np.argwhere((z4 == 1) & (y4 == 1))[0][0]
-    exp.explain(X4.iloc[class_point], clf)
-    Xp = exp.get_perturbed_data()
-    #print(Xp)
-    #print(exp.get_surrogate_fidelity())
-    #assert False
-
-    y_pred = np.round(clf.predict(X))
-    y2_pred = np.round(clf.predict(X2))
-    y3_pred = np.round(clf.predict(X3))
-    yp_pred = np.round(clf.predict(Xp))
-    y4_pred = np.round(clf.predict(X4))
-    y4_exp = exp.predict(X4)
-    # show the quality of fit and difficulty on this data
-    print("Evaluation for X")
-    print(accuracy_score(y, y_pred))
-    print(confusion_matrix(y, y_pred))
-    print("Evaluation for Group 1")
-    print(accuracy_score(y2, y2_pred))
-    print(confusion_matrix(y2, y2_pred))
-    print("Evaluation for Group 2")
-    print(accuracy_score(y3, y3_pred))
-    print(confusion_matrix(y3, y3_pred))
-    print("Evaluation Compared to Perturber")
-    print(accuracy_score(exp._blackbox_classification['perturbed'], exp._surrogate_classification['perturbed']))
-    print(confusion_matrix(exp._blackbox_classification['perturbed'], exp._surrogate_classification['perturbed']))
-    print("Evaluation Compared to Perturber on Holdout")
-    print(accuracy_score(y4_pred, y4_exp.astype(int)))
-    print(confusion_matrix(y4_pred, y4_exp.astype(int)))
-    X = X.to_numpy()
-    X2 = X2.to_numpy()
-    X3 = X3.to_numpy()
-    Xp = Xp.to_numpy()
-    X4 = X4.to_numpy()
-
-    # plot the results by class and cluster
-    color_list = np.empty(shape=y.shape, dtype=np.str_)
-    color_list[(y == 1) & (z == 1)] = 'red'
-    color_list[(y == 0) & (z == 1)] = 'blue'
-    color_list[(y == 1) & (z == 2)] = 'magenta'
-    color_list[(y == 0) & (z == 2)] = 'cyan'
-    fig = plt.figure(1)
-    fig.suptitle("Actual Classes and Groups from Data")
-    for i in range(2):
-        for j in range(2):
-            fig.add_subplot(2, 2, 2 * i + j + 1)
-            if i >= j:
-                plt.scatter(X[:, i], X[:, j], c=color_list)
-            else:
-                plt.scatter(X[-1:0:-1, i], X[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=yp_pred.shape, dtype=np.str_)
-    print(exp._surrogate_classification['perturbed'])
-    color_list[(yp_pred == 1) & (exp._surrogate_classification['perturbed'] == '1')] = 'r'
-    color_list[(yp_pred == 0) & (exp._surrogate_classification['perturbed'] == '0')] = 'b'
-    color_list[(yp_pred == 1) & (exp._surrogate_classification['perturbed'] == '0')] = 'y'
-    color_list[(yp_pred == 0) & (exp._surrogate_classification['perturbed'] == '1')] = 'k'
-    color_list[0] = 'g'
-    #color_list[(y == 1) & (z == 2)] = 'magenta'
-    #color_list[(y == 0) & (z == 2)] = 'cyan'
-
-    #pca = PCA(n_components=4)
-    #X_pca = pca.fit_transform(X)
-    fig = plt.figure(2)
-    fig.suptitle("Perturbed Data and Explanation Classes against Black Box")
-    for i in range(2):
-        for j in range(2):
-            fig.add_subplot(2, 2, 2 * i + j + 1)
-            if i >= j:
-                plt.scatter(Xp[color_list == 'r', i], Xp[color_list == 'r', j], c='r')
-                plt.scatter(Xp[color_list == 'b', i], Xp[color_list == 'b', j], c='b')
-                plt.scatter(Xp[color_list == 'y', i], Xp[color_list == 'y', j], c='yellow')
-                plt.scatter(Xp[color_list == 'k', i], Xp[color_list == 'k', j], c='k')
-                plt.scatter(Xp[0, i], Xp[0, j], c='g')
-                plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-                plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            else:
-                #plt.scatter(Xp[-1:0:-1, i], Xp[-1:0:-1, j], c=color_list[-1:0:-1])
-                plt.scatter(Xp[color_list == 'k', j], Xp[color_list == 'k', i], c='k')
-                plt.scatter(Xp[color_list == 'y', j], Xp[color_list == 'y', i], c='y')
-                plt.scatter(Xp[color_list == 'b', j], Xp[color_list == 'b', i], c='b')
-                plt.scatter(Xp[color_list == 'r', j], Xp[color_list == 'r', i], c='r')
-                plt.scatter(Xp[0, j], Xp[0, i], c='g')
-                plt.xlim(np.min(X[:, j]), np.max(X[:, j]))
-                plt.ylim(np.min(X[:, i]), np.max(X[:, i]))
-
-
-
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y.shape, dtype=np.str_)
-    color_list[(y_pred == 1) & (z == 1)] = 'red'
-    color_list[(y_pred == 0) & (z == 1)] = 'blue'
-    color_list[(y_pred == 1) & (z == 2)] = 'magenta'
-    color_list[(y_pred == 0) & (z == 2)] = 'cyan'
-    fig = plt.figure(3)
-    fig.suptitle("Black Box Predictions of Actual Classes and Groups")
-    for i in range(2):
-        for j in range(2):
-            fig.add_subplot(2, 2, 2 * i + j + 1)
-            if i >= j:
-                plt.scatter(X[:, i], X[:, j], c=color_list)
-
-            else:
-                plt.scatter(X[-1:0:-1, i], X[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y2.shape, dtype=np.str_)
-    color_list[(y2_pred == 1) & (y2 == 1)] = 'red'
-    color_list[(y2_pred == 0) & (y2 == 0)] = 'blue'
-    color_list[(y2_pred == 1) & (y2 == 0)] = 'yellow'
-    color_list[(y2_pred == 0) & (y2 == 1)] = 'green'
-    fig = plt.figure(4)
-    fig.suptitle("Correctness of Black Box Predictions on New Group 1 Data")
-    for i in range(2):
-        for j in range(2):
-            fig.add_subplot(2, 2, 2 * i + j + 1)
-            if i >= j:
-                plt.scatter(X2[:, i], X2[:, j], c=color_list)
-            else:
-                plt.scatter(X2[-1:0:-1, i], X2[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y3.shape, dtype=np.str_)
-    color_list[(y3_pred == 1) & (y3 == 1)] = 'magenta'
-    color_list[(y3_pred == 0) & (y3 == 0)] = 'cyan'
-    color_list[(y3_pred == 1) & (y3 == 0)] = 'yellow'
-    color_list[(y3_pred == 0) & (y3 == 1)] = 'green'
-    fig = plt.figure(5)
-    fig.suptitle("Correctness of Black Box Predictions on New Group 2 Data")
-    for i in range(2):
-        for j in range(2):
-            fig.add_subplot(2, 2, 2 * i + j + 1)
-            if i >= j:
-                plt.scatter(X3[:, i], X3[:, j], c=color_list)
-            else:
-                plt.scatter(X3[-1:0:-1, i], X3[-1:0:-1, j], c=color_list[-1:0:-1])
-            plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    color_list = np.empty(shape=y4_pred.shape, dtype=np.str_)
-    color_list[(y4_pred == 1) & (y4_exp == '1')] = 'r'
-    color_list[(y4_pred == 0) & (y4_exp == '0')] = 'b'
-    color_list[(y4_pred == 1) & (y4_exp == '0')] = 'y'
-    color_list[(y4_pred == 0) & (y4_exp == '1')] = 'k'
-    # color_list[(y == 1) & (z == 2)] = 'magenta'
-    # color_list[(y == 0) & (z == 2)] = 'cyan'
-
-    # pca = PCA(n_components=4)
-    # X_pca = pca.fit_transform(X)
-    fig = plt.figure(6)
-    fig.suptitle("Comparison of Predictions on New Data Between Black Box and Explainer")
-    for i in range(2):
-        for j in range(2):
-            fig.add_subplot(2, 2, 2 * i + j + 1)
-            if i >= j:
-                plt.scatter(X4[color_list == 'r', i], X4[color_list == 'r', j], c='r')
-                plt.scatter(X4[color_list == 'b', i], X4[color_list == 'b', j], c='b')
-                plt.scatter(X4[color_list == 'y', i], X4[color_list == 'y', j], c='yellow')
-                plt.scatter(X4[color_list == 'k', i], X4[color_list == 'k', j], c='k')
-                plt.scatter(Xp[0, i], Xp[0, j], c='g')
-                plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-                plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            else:
-                # plt.scatter(Xp[-1:0:-1, i], Xp[-1:0:-1, j], c=color_list[-1:0:-1])
-                plt.scatter(X4[color_list == 'k', j], X4[color_list == 'k', i], c='k')
-                plt.scatter(X4[color_list == 'y', j], X4[color_list == 'y', i], c='y')
-                plt.scatter(X4[color_list == 'b', j], X4[color_list == 'b', i], c='b')
-                plt.scatter(X4[color_list == 'r', j], X4[color_list == 'r', i], c='r')
-                plt.scatter(Xp[0, j], Xp[0, i], c='g')
-                plt.xlim(np.min(X[:, j]), np.max(X[:, j]))
-                plt.ylim(np.min(X[:, i]), np.max(X[:, i]))
-
-            #plt.xlim(np.min(X[:, i]), np.max(X[:, i]))
-            #plt.ylim(np.min(X[:, j]), np.max(X[:, j]))
-            plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-
-def distribution_simulation():
-    X, y, z = simulate_linear_classified(seed_num=52146, size=1000, clusters_keep=3)
-    Xs, ys, _ = simulate_linear_classified(seed_num=11267, size=100, clusters_keep=3)
-    X2, y2, _ = simulate_linear_classified(seed_num=89213, size=250, clusters_keep=3)
-    X = pd.DataFrame(X, columns=[str(i) for i in range(1, 4 + 1)])
-    X2 = pd.DataFrame(X2, columns=[str(i) for i in range(1, 4 + 1)])
-    Xs = pd.DataFrame(Xs, columns=[str(i) for i in range(1, 4 + 1)])
-
-    clf = MLPClassifier(solver='lbfgs',
-                        alpha=1e-3,
-                        hidden_layer_sizes=(8, 3, 3),
-                        random_state=678993)
-    clf.fit(X, y)
-
-    X2 = X2.sample(frac=1)
-    distribution_experiment(Xs, ys, X2.iloc[0:20], X2.iloc[20:],
-                            n_perturbations=1000,
-                            pre_trained_model=clf, local_test_end=20,
-                            data_name="simulation")
-
-
-def distribution_experiment_loan():
+def counterfactual_experiment_loan(use_pretrained=False):
     # example of where lime1 fails
     # lime1 can only explain pre-processed data (pipeline must be separate and interpretable from model)
     data = pd.read_csv("../dataset/train_loan_raw.csv")
@@ -1478,7 +1516,7 @@ def distribution_experiment_loan():
     categorical_features = ['Gender', 'Married', 'Dependents', 'Education', 'Self_Employed', 'Property_Area']
 
     data = data.dropna()
-    data = data.sample(frac=1, random_state=117283)
+    data = data.sample(frac=1, random_state=78121)
     for cat in categorical_features:
         data[cat] = data[cat].astype(str)
 
@@ -1488,29 +1526,76 @@ def distribution_experiment_loan():
 
     y = data['Loan_Status']
     data = data.drop(['Loan_Status'], axis=1)
-
-    preprocess = ColumnTransformer([('enc', encoder, categorical_features)], remainder='passthrough')
-    model = Pipeline([('pre', preprocess),
-                      ('clf', MLPClassifier(hidden_layer_sizes=(100, 50,), random_state=301257))])
-                      #('clf', RandomForestClassifier(n_estimators=5,
-                      #                               max_depth=4,
-                      #                               min_samples_split=10,
-                      #                               min_samples_leaf=3,
-                      #                               bootstrap=True,
-                      #                               random_state=301257))])
-
     split_point_test = int((data.shape[0] * 0.2) // 1)  # 80-20 split
     loan_perturb = data.iloc[0:50].reset_index()
     loan_test = data.iloc[0:split_point_test].reset_index()
     loan_training = data.iloc[split_point_test:].reset_index()
     loan_training_label = y[split_point_test:]
 
+    loan_part_train, loan_validate, loan_part_train_y, loan_validate_y = train_test_split(loan_training,
+                                                                                          loan_training_label,
+                                                                                          train_size=0.6,
+                                                                                          random_state=991246)
+    n_estimators_options = [2, 5, 10, 20, 50]
+    max_depth_options = [4, 10, 20, None]
+    min_samples_options = [2, 10, 20, 40]
+    options_list = [n_estimators_options, max_depth_options, min_samples_options]
+    best_setting = (0, None)
+    # TODO: add random forest too
+    # for hidden_layer_setting in possible_hidden_layers:
+    for n_estimators, max_depth, min_samples in product(*options_list):
+        encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+        preprocess = ColumnTransformer([('enc', encoder, categorical_features)],
+                                       remainder='passthrough')
+        model = Pipeline([  ('pre', preprocess),
+            # ('clf', MLPClassifier(hidden_layer_sizes=hidden_layer_setting,
+            #                      solver='adam',
+            #                      activation='relu',
+            #                      alpha=1e-8,
+            #                      tol=1e-16,
+            #                      max_iter=1000,
+            #                      random_state=301257))])
+            ('clf', RandomForestClassifier(n_estimators=n_estimators,
+                                           max_depth=max_depth,
+                                           min_samples_split=min_samples,
+                                           min_samples_leaf=1,
+                                           bootstrap=True,
+                                           random_state=301257))])
+        model.fit(loan_part_train, loan_part_train_y)
+        curr_score = balanced_accuracy_score(loan_validate_y, model.predict(loan_validate))
+        # print(hidden_layer_setting, ": ", curr_score)
+        # print(hidden_layer_setting, ": ", confusion_matrix(attrition_part_train_y, model.predict(attrition_part_train)))
+        if curr_score > best_setting[0]:
+            best_setting = (curr_score, (n_estimators, max_depth, min_samples))
+
+    n_estimators, max_depth, min_samples = best_setting[1]
+    encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+    preprocess = ColumnTransformer([('enc', encoder, categorical_features)], remainder='passthrough')
+    model = Pipeline([  ('pre', preprocess),
+        # ('clf', MLPClassifier(hidden_layer_sizes=best_setting[1],
+        #                      solver='adam',
+        #                          activation='relu',
+        #                          alpha=1e-8,
+        #                          tol=1e-16,
+        #                          max_iter=1000, random_state=301257)),
+        ('clf', RandomForestClassifier(n_estimators=n_estimators,
+                                       max_depth=max_depth,
+                                       min_samples_split=min_samples,
+                                       min_samples_leaf=1,
+                                       bootstrap=True,
+                                       random_state=301257))
+    ])
+
+    #model = FIEAPClassifier(protected_feature='Gender=Male', privileged_group=1, unprivileged_group=0, num_clusters=3)
+
     loan_training_stop = int(loan_training.shape[0] // 3)
 
+    discrete_features = list()
     for feature in list(loan_training):
         unique_values = np.unique(loan_training.iloc[0:loan_training_stop][feature])
         print(feature, type(unique_values[0]))
         if isinstance(unique_values[0], str):
+            discrete_features.append(feature)
             loan_perturb[feature] = [(value if value in unique_values else "unknown") for value in loan_perturb[feature]]
             loan_test[feature] = [(value if value in unique_values else "unknown") for value in loan_test[feature]]
             loan_training[feature] = [(value if value in unique_values else "unknown") for value in loan_training[feature]]
@@ -1522,7 +1607,14 @@ def distribution_experiment_loan():
     loan_training = loan_training.drop(['index'], axis=1)
     #print(loan_test)
     #assert False
-    model.fit(loan_training, loan_training_label)
+    if not use_pretrained:
+        model.fit(loan_training, loan_training_label)
+        with open('../pretrained/loan_rf.pkl', 'wb') as f:
+            dill.dump(model, f)
+    else:
+        with open('../pretrained/loan_rf.pkl', 'rb') as f:
+            model = dill.load(f)
+
     #print(confusion_matrix(loan_training_label, model.predict(loan_training)))
     #assert False
 
@@ -1561,15 +1653,296 @@ def distribution_experiment_loan():
         #                             dev_scaling=1)
         if True:
             for dev_n in [1]:#[1, 2, 3, 10, 50, 100]:
-                distribution_experiment(loan_training,
-                                        loan_training_label,
-                                        loan_perturb,
-                                        loan_test,
+
+                if True:
+                    counterfactual_experiment(loan_training,
+                                            loan_training_label,
+                                            loan_perturb,
+                                            loan_test,
+                                            pre_trained_model=model,
+                                            # lime_version=LimeNewPert,
+                                            local_test_end=50,
+                                            restricted_features=['Gender', 'Married', 'Dependents'],
+                                            data_name="barbe_cv_rf_loan_acceptance",
+                                            use_negation_rules=True,
+                                            n_perturbations=pert_c,
+                                           # use_barbe_perturbations=False,
+                                            n_bins=10,
+                                            dev_scaling=dev_n)
+                    counterfactual_experiment(loan_training,
+                                            loan_training_label,
+                                            loan_perturb,
+                                            loan_test,
+                                            pre_trained_model=model,
+                                            # lime_version=LimeNewPert,
+                                            local_test_end=50,
+                                            restricted_features=['Gender', 'Married', 'Dependents'],
+                                            data_name="barbe_no_negation_cv_rf_loan_acceptance",
+                                            use_negation_rules=False,
+                                            n_perturbations=pert_c,
+                                           # use_barbe_perturbations=False,
+                                            n_bins=10,
+                                            dev_scaling=dev_n)
+                    lore_counterfactual_experiment(loan_training.copy(),
+                                                   loan_training_label.copy(),
+                                                   loan_perturb.copy(),
+                                                   loan_test.copy(),
+                                                   pre_trained_model=model,
+                                                   # lime_version=LimeNewPert,
+                                                   local_test_end=50,
+                                                   data_name="lore_cv_rf_loan_acceptance",
+                                                   restricted_features=['Gender', 'Married', 'Dependents'],
+                                                   n_perturbations=pert_c,
+                                                   # use_barbe_perturbations=False,
+                                                   n_bins=10,
+                                                   dev_scaling=dev_n)
+                dice_counterfactual_experiment(loan_training.copy(),
+                                               loan_training_label.copy(),
+                                               loan_perturb.copy(),
+                                               loan_test.copy(),
+                                               pre_trained_model=model,
+                                               discrete_features=categorical_features + ['Loan_Amount_Term'],
+                                               # lime_version=LimeNewPert,
+                                               local_test_end=50,
+                                               data_name="dice_cv_rf_loan_acceptance",
+                                               restricted_features=['Gender', 'Married', 'Dependents'],
+                                               n_perturbations=pert_c,
+                                               # use_barbe_perturbations=False,
+                                               n_bins=10,
+                                               dev_scaling=dev_n)
+                #lime_distribution_experiment(loan_training,
+                ##                             loan_training_label,
+                 #                            loan_perturb,
+                 #                            loan_test,
+                 #                            pre_trained_model=model,
+                 #                            lime_version=LimeNewPert,
+                 #                            local_test_end=50,
+                 #                            data_name="bpert_cats_neural_loan_acceptance",
+                 #                            n_perturbations=pert_c,
+                 #                            use_barbe_perturbations=True,
+                 #                            dev_scaling=dev_n)
+                ##lime_distribution_experiment(loan_training,
+                 #                            loan_training_label,
+                 ##                            loan_perturb,
+                  #                           loan_test,
+                  #                           pre_trained_model=model,
+                  #                           lime_version=VAELimeNewPert,
+                  #                           local_test_end=50,
+                   #                          data_name="vaelime_cats_neural_loan_acceptance",
+                   #                          n_perturbations=pert_c,
+                   #                          use_barbe_perturbations=False,
+                   #                          dev_scaling=dev_n)
+
+
+def counterfactual_experiment_attrition(use_pretrained=False):
+    # example of where lime1 fails
+    # lime1 can only explain pre-processed data (pipeline must be separate and interpretable from model)
+    data = pd.read_csv("../dataset/ibm_hr_attrition.csv")
+    data = data.drop(['StandardHours', 'EmployeeCount', 'Over18'], axis=1)
+    print(list(data))
+    data = data.dropna()
+    categorical_features = ['BusinessTravel', 'Department', 'EducationField', 'Gender', 'JobRole', 'MaritalStatus', 'OverTime']
+
+    data = data.dropna()
+    data = data.sample(frac=1, random_state=5771)
+    for cat in categorical_features:
+        data[cat] = data[cat].astype(str)
+
+    for cat in list(data):
+        if cat not in categorical_features + ['Attrition']:
+            data[cat] = data[cat].astype(float)
+
+    y = data['Attrition']
+    data = data.drop(['Attrition'], axis=1)
+
+    #preprocess = ColumnTransformer([('enc', encoder, categorical_features)], remainder='passthrough')
+    #model = Pipeline([('pre', CategoricalEncoder()),
+    #                  ('clf', FIEAPClassifier(protected_feature='Gender=Male', privileged_group=1, unprivileged_group=0, num_clusters=2))])
+    #('clf', MLPClassifier(hidden_layer_sizes=(100, 50,), random_state=301257))])
+                      #('clf', RandomForestClassifier(n_estimators=5,
+                      #                               max_depth=4,
+                      #                               min_samples_split=10,
+                      #                               min_samples_leaf=3,
+                      #                               bootstrap=True,
+                      #                               random_state=301257))])
+
+    #model = FIEAPClassifier(protected_feature='Gender=Male', privileged_group=1, unprivileged_group=0, num_clusters=4)
+    split_point_test = int((data.shape[0] * 0.2) // 1)  # 80-20 split
+    attrition_perturb = data.iloc[7:57].reset_index()
+    attrition_test = data.iloc[0:split_point_test].reset_index()
+    attrition_training = data.iloc[split_point_test:].reset_index()
+    attrition_training_label = y[split_point_test:]
+
+    attrition_part_train, attrition_validate, attrition_part_train_y, attrition_validate_y = train_test_split(attrition_training, attrition_training_label, train_size=0.7, random_state=991246)
+    #possible_hidden_layers = [(50, 50, 20, 5,), (50, 50, 10), (50, 50, 5), (50, 20, 2), (50, 10, 5), (20, 10, 5), (10, 10, 5),
+    #                          (10, 5), (5, 5), (200,), (100,), (50,), (20,), (10,), (5,), (2,)]
+    n_estimators_options = [2, 5, 10, 20, 50]
+    max_depth_options = [4, 10, 20, None]
+    min_samples_options = [2, 10, 20, 40]
+    options_list = [n_estimators_options, max_depth_options, min_samples_options]
+    best_setting = (0, None)
+    # TODO: add random forest too
+    #for hidden_layer_setting in possible_hidden_layers:
+    for n_estimators, max_depth, min_samples in product(*options_list):
+        encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+        preprocess = ColumnTransformer([('enc', encoder, categorical_features)],
+                                       remainder='passthrough')
+        model = Pipeline([('pre', preprocess),
+                          #('clf', MLPClassifier(hidden_layer_sizes=hidden_layer_setting,
+                          #                      solver='adam',
+                          #                      activation='relu',
+                          #                      alpha=1e-8,
+                          #                      tol=1e-16,
+                          #                      max_iter=1000,
+                          #                      random_state=301257))])
+                          ('clf', RandomForestClassifier(n_estimators=n_estimators,
+                                                         max_depth=max_depth,
+                                                         min_samples_split=min_samples,
+                                                         min_samples_leaf=1,
+                                                         bootstrap=True,
+                                                         random_state=301257))])
+        model.fit(attrition_part_train, attrition_part_train_y)
+        curr_score = balanced_accuracy_score(attrition_validate_y, model.predict(attrition_validate))
+        #print(hidden_layer_setting, ": ", curr_score)
+        #print(hidden_layer_setting, ": ", confusion_matrix(attrition_part_train_y, model.predict(attrition_part_train)))
+        if curr_score > best_setting[0]:
+            best_setting = (curr_score, (n_estimators, max_depth, min_samples))
+
+    n_estimators, max_depth, min_samples = best_setting[1]
+    encoder = Pipeline([('encoder', OneHotEncoder(handle_unknown='ignore'))])
+    preprocess = ColumnTransformer([('enc', encoder, categorical_features)], remainder='passthrough')
+    model = Pipeline([('pre', preprocess),
+                      #('clf', MLPClassifier(hidden_layer_sizes=best_setting[1],
+                      #                      solver='adam',
+                      #                          activation='relu',
+                      #                          alpha=1e-8,
+                      #                          tol=1e-16,
+                      #                          max_iter=1000, random_state=301257)),
+                      ('clf', RandomForestClassifier(n_estimators=n_estimators,
+                                                     max_depth=max_depth,
+                                                     min_samples_split=min_samples,
+                                                     min_samples_leaf=1,
+                                                     bootstrap=True,
+                                                     random_state=301257))
+                       ])
+
+    attrition_training_stop = int(attrition_training.shape[0] // 3)
+
+    for feature in list(attrition_training):
+        unique_values = np.unique(attrition_training.iloc[0:attrition_training_stop][feature])
+        print(feature, type(unique_values[0]))
+        if isinstance(unique_values[0], str):
+            print(unique_values)
+            attrition_perturb[feature] = [(value if value in unique_values else "unknown") for value in attrition_perturb[feature]]
+            attrition_test[feature] = [(value if value in unique_values else "unknown") for value in attrition_test[feature]]
+            attrition_training[feature] = [(value if value in unique_values else "unknown") for value in attrition_training[feature]]
+            #print(np.unique(loan_training[feature]))
+            #print(np.unique(loan_test[feature]))
+
+    attrition_perturb = attrition_perturb.drop(['index'], axis=1)
+    attrition_test = attrition_test.drop(['index'], axis=1)
+    attrition_training = attrition_training.drop(['index'], axis=1)
+    #print(loan_test)
+    #assert False
+    if not use_pretrained:
+        model.fit(attrition_training, attrition_training_label)
+        with open('../pretrained/attrition_rf.pkl', 'wb') as f:
+            dill.dump(model, f)
+    else:
+        with open('../pretrained/attrition_rf.pkl', 'rb') as f:
+            model = dill.load(f)
+    print(confusion_matrix(attrition_training_label, model.predict(attrition_training)))
+    #assert False
+    print(model.predict(attrition_perturb))
+    #assert False
+
+    for pert_c in [1000]:  # [100, 500, 1000]:
+        #lore_distribution_experiment(loan_training,
+        #                             loan_training_label,
+        #                             loan_perturb,
+        #                             loan_test,
+        #                             pre_trained_model=model,
+        #                             local_test_end=50,
+        #                             data_name="lore_neural_loan",
+        #                             n_perturbations=1000,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
+        #lime_distribution_experiment(loan_training,
+        #                             loan_training_label,
+        #                             loan_perturb,
+        #                             loan_test,
+        #                             pre_trained_model=model,
+        #                             lime_version=LimeNewPert,
+        #                             local_test_end=50,
+        #                             data_name="original_neural_loan_acceptance",
+        #                             n_perturbations=pert_c,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
+        ##lime_distribution_experiment(loan_training,
+        #                             loan_training_label,
+        #                             loan_perturb,
+        ##                             loan_test,
+        #                             pre_trained_model=model,
+        #                             lime_version=VAELimeNewPert,
+        #                             local_test_end=50,
+        #                             data_name="vaelime_loan",
+        #                             n_perturbations=pert_c,
+        #                             use_barbe_perturbations=False,
+        #                             dev_scaling=1)
+        if True:
+            for dev_n in [1]:#[1, 2, 3, 10, 50, 100]:
+                counterfactual_experiment(attrition_training,
+                                        attrition_training_label,
+                                        attrition_perturb,
+                                        attrition_test,
                                         pre_trained_model=model,
                                         # lime_version=LimeNewPert,
                                         local_test_end=50,
-                                        data_name="barbe_neural_loan_acceptance",
+                                        data_name="barbe_cv_rf_attrition",
                                         n_perturbations=pert_c,
+                                       # use_barbe_perturbations=False,
+                                          use_negation_rules=True,
+                                        restricted_features=['Gender', 'Department', 'EducationField', 'JobRole', 'MaritalStatus'],
+                                        n_bins=5,
+                                        dev_scaling=dev_n)
+                counterfactual_experiment(attrition_training,
+                                        attrition_training_label,
+                                        attrition_perturb,
+                                        attrition_test,
+                                        pre_trained_model=model,
+                                        # lime_version=LimeNewPert,
+                                        local_test_end=50,
+                                        data_name="barbe_no_negation_cv_rf_attrition",
+                                        n_perturbations=pert_c,
+                                       # use_barbe_perturbations=False,
+                                          use_negation_rules=False,
+                                        restricted_features=['Gender', 'Department', 'EducationField', 'JobRole', 'MaritalStatus'],
+                                        n_bins=5,
+                                        dev_scaling=dev_n)
+                dice_counterfactual_experiment(attrition_training,
+                                        attrition_training_label,
+                                        attrition_perturb,
+                                        attrition_test,
+                                        pre_trained_model=model,
+                                        # lime_version=LimeNewPert,
+                                        discrete_features=categorical_features,
+                                        local_test_end=50,
+                                        data_name="dice_cv_rf_attrition",
+                                        n_perturbations=pert_c,
+                                        restricted_features=['Gender', 'Department', 'EducationField', 'JobRole', 'MaritalStatus'],
+                                       # use_barbe_perturbations=False,
+                                        n_bins=5,
+                                        dev_scaling=dev_n)
+                lore_counterfactual_experiment(attrition_training,
+                                        attrition_training_label,
+                                        attrition_perturb,
+                                        attrition_test,
+                                        pre_trained_model=model,
+                                        # lime_version=LimeNewPert,
+                                        local_test_end=50,
+                                        data_name="lore_cv_rf_attrition",
+                                        n_perturbations=pert_c,
+                                        restricted_features=['Gender', 'Department', 'EducationField', 'JobRole', 'MaritalStatus'],
                                        # use_barbe_perturbations=False,
                                         n_bins=5,
                                         dev_scaling=dev_n)
@@ -1692,11 +2065,13 @@ def distribution_experiment_libras():
 #test_distribution_experiment_iris()
 if __name__ == '__main__':
     #simple_distribution_experiment_simulated()
-    distribution_experiment_loan()
+    counterfactual_experiment_loan(use_pretrained=False)
+    #counterfactual_experiment_loan(use_pretrained=True)
+    #counterfactual_experiment_attrition(use_pretrained=False)
 
 
 # TODO: add a timeseries dataset
-# TODO: test on more datasets with >2 labels
+# TODO: test on more datasets with >2 labelss
 # TODO: add tests with neural networks (should pretrain for all of them)
 # TODO: add perturbation timing tests
 # TODO: add tests with LORE

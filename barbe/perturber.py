@@ -115,7 +115,7 @@ class BarbePerturber:
             ([0 for _ in range(len(input_scale))] if input_means is None else input_means)  # required to recenter input
 
         # original value is considered the mean if not declared
-        self._original_value = self._means
+        self._original_value = self._means.copy()
 
         # do not reduce the deviation if input_scale is given
         self._standardized_categorical_variance = standardized_categorical_variance
@@ -338,7 +338,7 @@ class BarbePerturber:
 
     def _rescale_data(self, unscaled_data, scaling_mean=None):
         if scaling_mean is None:
-            scaling_mean = self._means
+            scaling_mean = self._means.copy()
         #print((unscaled_data * self._scale.T).shape)
         scaled_data = np.array(unscaled_data * self._scale) + np.array(scaling_mean)
         return scaled_data
@@ -463,13 +463,13 @@ class BarbePerturber:
 
     def produce_perturbation(self, num_perturbations, data_row=None):
         if data_row is None:
-            data_row = self._means
+            data_row = self._means.copy()
         else:
             data_row = self._conversion_input(data_row)
         self._check_bounds(self._bounds, check_mean=data_row)
         # returns perturbed data
         perturbed_data = self._fetch_perturbation_rows(data_row, num_perturbations)
-        perturbed_data.iloc[0] = self._original_value  # make sure to include the row in training
+        perturbed_data.iloc[0:1] = self._original_value  # make sure to include the row in training
         #perturbed_data = self._encoder.inverse_transform(perturbed_data)
         #print(perturbed_data.iloc[0:10])
         #print(self._means)
@@ -480,7 +480,7 @@ class BarbePerturber:
 
 class ClassBalancedPerturber(BarbePerturber):
     def __init__(self, balanced_threshold=0.01,
-                 max_iterations=10,
+                 max_iterations=20,
                  balance_mode='curr-other',
                  **kwargs):
         BarbePerturber.__init__(self, **kwargs)
@@ -505,14 +505,14 @@ class ClassBalancedPerturber(BarbePerturber):
 
     def _check_threshold_balance(self, class_counts):
         # check if the value is within tolerance of the even threshold for the smallest amount of data
-        print("Checking: ", class_counts)
+        #print("Checking: ", class_counts)
         if self._balance_mode != 'curr-other':
             n_total_classes = len(self._classes)
             for c, proportion in class_counts.items():
                 proportion_comparison = ((1 / n_total_classes) - self._balance_tolerance) \
                     if ((1 / n_total_classes) > self._balance_tolerance) \
                     else (1 / n_total_classes)
-                print("My check: ", proportion_comparison, proportion)
+                #print("My check: ", proportion_comparison, proportion)
                 if proportion < proportion_comparison:
                     return False
             return True
@@ -582,7 +582,8 @@ class ClassBalancedPerturber(BarbePerturber):
             self._iterations += 1
         # error message if max iterations hit?
         perturbed_data = self._undersample_classes(perturbed_data, pert_classes)
-        perturbed_data.iloc[0] = self._original_value
+        perturbed_data.iloc[0:1] = self._original_value
+
         return perturbed_data
 
 

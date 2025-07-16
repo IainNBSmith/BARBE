@@ -62,7 +62,7 @@ class CategoricalEncoder:
                         all([check_numeric(value) for value in unique_values])):
                     self._finite_numeric_features.append(feature)
                 self._categorical_features.append(feature)
-                print("Training Array: ", training_array[feature])
+                #print("Training Array: ", training_array[feature])
                 self._feature_original_types[feature] = type(training_array[feature].values[0])
                 self._encoder_key[feature] = list(np.array(unique_values).astype(self._feature_original_types[feature]))
 
@@ -85,7 +85,7 @@ class CategoricalEncoder:
                     self._finite_numeric_features.append(key)
 
     def _make_feature_order(self, data_features):
-        new_feature_order = data_features.copy()
+        new_feature_order = list(data_features.copy())
         if not self._ordinal:
             for feature in self._encoder_key.keys():
                 if feature not in self._finite_numeric_features:
@@ -113,8 +113,11 @@ class CategoricalEncoder:
         self._make_bounds(training_data=training_data)
 
     def transform(self, data):
-        self._original_feature_order = list(data) if len(data.shape) > 1 else list(data.index)
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data, columns=self._original_feature_order)
+        self._original_feature_order = list(data) if len(data.shape) > 1 else list(data.columns)
         enc_data = data.copy()
+
         for feature in self._encoder_key.keys():
             if feature not in self._finite_numeric_features:
                 feature_flag = False
@@ -144,6 +147,7 @@ class CategoricalEncoder:
                     else:
                         enc_data.drop([feature], axis=0, inplace=True)
 
+        enc_data = enc_data.astype('float')
         return enc_data[self._encoder_feature_values]
 
     def fit_transform(self, training_data=None, initial_key=None, data_features=None):
@@ -161,15 +165,15 @@ class CategoricalEncoder:
                 data[feature] = self._encoder_key[feature][0] if not self._ordinal else 0
                 for i in range(enc_data.shape[0]):
                     if not self._ordinal:
-                        data[feature][i] = self._encoder_key[feature][np.argmax(np.array(data.iloc[i][feature_columns]))]
+                        data.loc[data.index[i], feature] = self._encoder_key[feature][np.argmax(np.array(data.iloc[i][feature_columns]))]
                     else:
-                        data[feature][i] = self._encoder_key[feature][np.argmin(
+                        data.loc[data.index[i], feature] = self._encoder_key[feature][np.argmin(
                             np.abs(np.array([i for i in range(len(self._encoder_key[feature]))]) - int(enc_data[feature][i])))]
 
                 data[feature] = data[feature].astype(self._feature_original_types[feature])
             else:
                 for i in range(enc_data.shape[0]):
-                    data[feature][i] = self._encoder_key[feature][np.argmin(
+                    data.loc[data.index[i], feature] = self._encoder_key[feature][np.argmin(
                         np.abs(np.array(self._encoder_key[feature]) - data[feature][i]))]
         return data[self._original_feature_order]
 
@@ -187,7 +191,9 @@ class CategoricalEncoder:
                     else:
                         feature_position = np.argwhere(np.array(self._encoder_feature_values) ==
                                                        (feature + "=" + str(value)))[0][0]
-                        if current_category_bias == "avg_means" and rescaled_data[feature + "=" + str(value)] == 1:
+
+                        #print(rescaled_data[feature + "=" + str(value)])
+                        if current_category_bias == "avg_means" and rescaled_data[feature + "=" + str(value)].values[0] == 1:
                             cat_avg = 0
                             cat_count = 1
                             for value2 in self._encoder_key[feature]:
@@ -200,7 +206,7 @@ class CategoricalEncoder:
                             rescaled_data[feature + "=" + str(value)] = means[feature_position] + cat_avg
                         else:
                             rescaled_data[feature + "=" + str(value)] = means[feature_position] + current_category_bias \
-                                if rescaled_data[feature + "=" + str(value)] == 1 else means[feature_position]
+                                if rescaled_data[feature + "=" + str(value)].values[0] == 1 else means[feature_position]
 
         return rescaled_data
 

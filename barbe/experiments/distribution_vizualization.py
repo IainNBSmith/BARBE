@@ -76,8 +76,8 @@ def distribution_visualization_loan():
     explainer = BARBE(training_data=train_exp,
                       input_bounds=None,  # [(4.4, 7.7), (2.2, 4.4), (1.2, 6.9), (0.1, 2.5)],
                       perturbation_type='normal',
-                      n_perturbations=2000,
-                      dev_scaling_factor=4,
+                      n_perturbations=1000,
+                      dev_scaling_factor=1,
                       n_bins=5,
                       verbose=False,
                       input_sets_class=False, balance_classes=False)
@@ -88,8 +88,8 @@ def distribution_visualization_loan():
     explainer = BARBE(training_data=train_exp,
                       input_bounds=None,  # [(4.4, 7.7), (2.2, 4.4), (1.2, 6.9), (0.1, 2.5)],
                       perturbation_type='standard-normal',
-                      n_perturbations=2000,
-                      dev_scaling_factor=2,
+                      n_perturbations=1000,
+                      dev_scaling_factor=1,
                       higher_frequent_category_odds=False,
                       n_bins=5,
                       verbose=False,
@@ -114,6 +114,31 @@ def distribution_visualization_loan():
     #plt.xlim((-100, 600))
     #plt.ylim((-10000, 21000))
     #plt.show()
+
+    min_amt = np.min(train_exp['LoanAmount'])
+    max_amt = np.max(train_exp['LoanAmount'])
+    min_inc = np.min(train_exp['ApplicantIncome'])
+    max_inc = np.max(train_exp['ApplicantIncome'])
+
+    sns.displot(loan_perts, x='LoanAmount', y='ApplicantIncome', kind='kde', hue=model.predict(loan_perts),
+                hue_order=['N', 'Y'], fill=True, palette={'Y':(0,158/255,115/255, 1), 'N':(213/255,94/255,0,1)}, alpha=0.75, levels=5, hatch={'Y': '///', 'N': '*'})#, hue=loan_training_label)
+    plt.scatter(loan_perturb.iloc[2]['LoanAmount'], loan_perturb.iloc[2]['ApplicantIncome'], color=(230/255,159/255,0,1))  # , hue=loan_training_label)
+    plt.xlim((-100, 600))
+    plt.ylim((-10000, 21000))
+    plt.show()
+
+    def bound_on_interval(x, bound_values):
+        pass_val = x
+        #while not (bound_values[1] > pass_val > bound_values[0]):
+        if pass_val < bound_values[0]:
+            pass_val = bound_values[0] + abs(bound_values[0] - pass_val)
+        elif pass_val > bound_values[1]:
+            pass_val = bound_values[1] - abs(pass_val - bound_values[1])
+        return pass_val
+
+    loan_perts['LoanAmount'] = loan_perts['LoanAmount'].apply(func=lambda x: bound_on_interval(x, (min_amt, max_amt)))
+    loan_perts['ApplicantIncome'] = loan_perts['ApplicantIncome'].apply(func=lambda x: bound_on_interval(x, (min_inc, max_inc)))
+
 
     sns.displot(loan_perts, x='LoanAmount', y='ApplicantIncome', kind='kde', hue=model.predict(loan_perts),
                 hue_order=['N', 'Y'], fill=True, palette={'Y':(0,158/255,115/255, 1), 'N':(213/255,94/255,0,1)}, alpha=0.75, levels=5, hatch={'Y': '///', 'N': '*'})#, hue=loan_training_label)

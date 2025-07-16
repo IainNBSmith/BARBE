@@ -4,6 +4,7 @@ This interface ensures that no matter the type of model put into BARBE it will h
  one works, then coerce all of them into the same prediction method.
 """
 import numpy as np
+import pandas as pd
 import torch
 
 
@@ -17,9 +18,10 @@ class BlackBoxWrapper:
             | Default: None
     '''
 
-    def __init__(self, bbmodel, class_input=None):
+    def __init__(self, bbmodel, class_input=None, class_labels=None):
         self._bbmodel = bbmodel
         self._class_binary = class_input
+        self._class_labels = class_labels
         self._model_type = None
         self._assign_type()
 
@@ -57,13 +59,33 @@ class BlackBoxWrapper:
             return np.array([str(self._class_binary[0]) if yi == self._class_binary
                              else '~' + str(self._class_binary[0]) for yi in y])
 
+    def _split_binary_assignment(self, y):
+        """
+        Input: y (1d numpy array) -> classifications to check
+        Purpose: Convert predictions that may have multiple labels into a binary True or False.
+        Output: Either y or an array of True and False values according to the binary class.
+        """
+        distinct = self._class_labels
+        out_y = np.ndarray(shape=(len(y), len(distinct)))
+        for i in range(len(distinct)):
+            label = distinct[i]
+            out_y[y == label, i] = 1
+            out_y[y != label, i] = 0
+
+        return out_y
+
     def _predict_scikit(self, X):
+        #if X.shape[0] == 1:
+        #    X = pd.concat([X, X], ignore_index=True)
+        #    return [self._bbmodel.predict(X)[0]]
         return self._bbmodel.predict(X)
 
     def _predict_torch(self, X):
         # IAIN must also detach I think
         return self._bbmodel(torch.from_numpy(X.values))[:, 0]
 
+    def predict_proba(self, X):
+        return self._split_binary_assignment(self._predict_scikit(X))
     def predict(self, X):
         if self._model_type == 'sklearn-like':
             return self._binary_assignment(self._predict_scikit(X))

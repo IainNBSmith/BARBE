@@ -610,49 +610,88 @@ def test_glass_counterfactual():
     print(explainer.get_surrogate_fidelity())
     # explainer.get_rules()
 
-
+import dill
+from barbe.utils.lore_interface import LoreExplainer
+import dice_ml
 def test_loan_counterfactual():
     # From this test we learned that a sample must be discretized into bins
     #  then it has scale assigned by the training sample and only then can it
     #  be perturbed
 
-    training_data = pd.read_csv("../dataset/loan_test.csv", index_col=0)
-    data_row = training_data.iloc[0]
+    data = pd.read_csv("../dataset/ibm_hr_attrition.csv")
+    #data_row = training_data.iloc[0:1]
     # For overfit
     # data_row = training_data.iloc[5]
     # training_labels = training_data['class']
 
     print("Running test: BARBE Glass Counterfactual")
     start_time = datetime.now()
-    with open('../pretrained/loan_test_decision_tree.pickle', 'rb') as file:
-        bbmodel = pickle.load(file)
+    with open('../pretrained/attrition_rf.pkl', 'rb') as file:
+        bbmodel = dill.load(file)
+
+    data = data.drop(['StandardHours', 'EmployeeCount', 'Over18'], axis=1)
+    print(list(data))
+    data = data.dropna()
+    categorical_features = ['BusinessTravel', 'Department', 'EducationField', 'Gender', 'JobRole', 'MaritalStatus',
+                            'OverTime']
+
+    data = data.dropna()
+    data.drop('Attrition', axis=1, inplace=True)
+    data = data.sample(frac=1, random_state=5771)
+
+    data_row = data.iloc[48:49]
+    #print(bbmodel.predict(data.iloc[48:49]))
+    #assert False
+    training_data = data.iloc[50:]
 
     # IAIN do we need the class to be passed into the explainer? Probably not...
-    explainer = BARBE(training_data=training_data, verbose=False, input_sets_class=False,
-                      perturbation_type='normal', dev_scaling_factor=1)
-    input_categories = explainer.get_perturber(feature='categories')
-    print(input_categories)
+    #explainer = BARBE(training_data=training_data, verbose=False,
+    #                  input_sets_class=False,
+    #                  perturbation_type='normal', dev_scaling_factor=1,
+    #                  n_bins=5)
+    explainer = LoreExplainer(training_data=training_data)
+    #input_categories = explainer.get_perturber(feature='categories')
+    #print(input_categories)
     print(data_row)
-    input_categories[0] = {'Male': 1}
-    input_categories[1] = {'Yes': 1}
-    input_categories[2] = {'1': 1}
-    input_categories[9] = {'1.0': 1}
+    #input_categories[0] = {'Male': 1}
+    #input_categories[1] = {'Yes': 1}
+    #input_categories[2] = {'1': 1}
+    #input_categories[9] = {'1.0': 1}
 
-    input_scale = explainer.get_perturber(feature='scale') / 2
+    #input_scale = explainer.get_perturber(feature='scale') / 2
     #input_bounds = explainer.get_
     # TODO: find out why there is not any agreement make sure that we trust it being wrong
-    explainer = BARBE(input_scale=input_scale, input_bounds=[None, None, None, None, None, [4000, 10000], [0, 2000],
-                                                             None, None, None, None],
-                      input_categories=input_categories, feature_names=list(training_data),
-                      verbose=False, input_sets_class=False,
-                      perturbation_type='normal', n_bins=5, n_perturbations=5000)
-    explanation = explainer.explain(data_row, bbmodel)
-    counterfactual = explainer.get_counterfactual_explanation(data_row, wanted_class='Y', n_counterfactuals=3)
+    #explainer = BARBE(input_scale=input_scale, input_bounds=[None, None, None, None, None, [4000, 10000], [0, 2000],
+    #                                                         None, None, None, None],
+    #                  input_categories=input_categories, feature_names=list(training_data),
+    #                  verbose=False, input_sets_class=False,
+    #                  perturbation_type='normal', n_bins=5, n_perturbations=5000)
+    td_class = training_data.copy()
+    data['target'] = bbmodel.predict(data)
+    data_row['target'] = bbmodel.predict(data_row)
+    td_class['target'] = bbmodel.predict(training_data)
+    explanation = explainer.explain(input_data=data.drop('target', axis=1, inplace=False),
+                                      input_index=48,
+                                      df=data,
+                                      df_labels=list(bbmodel.predict(data.drop('target', axis=1, inplace=False))),
+                                      blackbox=bbmodel,
+                                      discrete_use_probabilities=True)
+    #print(explainer.get_rules(applicable=data_row))
+    counterfactual = explainer.get_counterfactual(data_row, [])#bbmodel)#, wanted_class='No', n_counterfactuals=3)
     print("Test Time: ", datetime.now() - start_time)
-    print(data_row)
-    print(counterfactual[0])
-    print(counterfactual[1])
-    print(counterfactual[2])
+    print("AHHHHHH")
+    #print(bbmodel.predict(data.drop('target', axis=1).loc[data.index[48]:(data.index[48]+1)]))
+    #print(data.drop('target', axis=1).loc[data.index[48]:(data.index[48]+1)])
+    print(explanation)
+    print(list(data_row))
+    print(data_row.to_numpy())
+    print(counterfactual[0][0])
+    print(counterfactual[0][1])
+    for rule in counterfactual[1][1]:
+        print(explainer.get_surrogate_model().raw_rule_translation(rule[0][0], rule[0][1]))
+        print(rule)
+    #print(counterfactual[1][1])
+    print(counterfactual[0][2])
     pd_og = pd.DataFrame(columns=list(training_data))
     pd_og.loc[0] = data_row
     print(bbmodel.predict(pd_og))

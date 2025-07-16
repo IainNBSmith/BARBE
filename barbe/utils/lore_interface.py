@@ -29,6 +29,7 @@ class LoreExplainer:
         self.perturbed_lore = None
         self.encoder = CategoricalEncoder(ordinal_encoding=False)
         self.encoder.fit(training_data.drop('target', inplace=False, axis=1, errors='ignore').copy())
+        self._counterfactuals = None
 
     def _dist_perturbations(self,
                             data_row,
@@ -194,6 +195,7 @@ class LoreExplainer:
         self.perturbed_data = infos['Z']
         self.perturbed_lore = infos['dfZ']
         self._predictor = infos['predict']
+        self._counterfactuals = exp[1]
         return exp, infos
 
     def predict(self, X):
@@ -202,6 +204,36 @@ class LoreExplainer:
             assert ValueError("This is the ln: " + str(ln) + " and this is y: " + str(y))
             return y
         return [None]
+
+    def get_counterfactual(self, input_data,  restricted_features=None):
+        if restricted_features is None:
+            restricted_features = []
+        # TODO: use cntr rule
+        print(self._counterfactuals)
+        return_counterfactuals = list()
+        for counterfactual in self._counterfactuals:
+            contains_restriction = False
+            new_data = input_data.copy()
+            for col, crule in counterfactual.items():
+                if col in restricted_features:
+                    contains_restriction = True
+                if '>' in crule:
+                    new_data[col] = float(crule[1:]) + 1
+                elif '<=' in crule and '< ' not in crule:
+                    new_data[col] = float(crule[2:]) - 1
+                elif '<' in crule and '<=' in crule:
+                    stop_at_index = crule.index('<')
+                    start_from_index = crule.index('=')
+                    new_value = float(crule[(start_from_index+1):]) - float(crule[:stop_at_index])
+                    new_data[col] = new_value
+                elif '=' in crule:
+                    if '!=' in crule:
+                        print(crule)
+                        assert False
+                    new_data[col] = crule[1:]
+            if not contains_restriction:
+                return_counterfactuals.append(new_data)
+        return return_counterfactuals
 
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
                                comparison_method=accuracy_score, weights=None, original_data=None):
@@ -242,6 +274,8 @@ class LoreExplainer:
                                      sample_weight=weights)
         elif (comparison_model is not None) and (comparison_data is not None):
             #print("DATA: ", comparison_data.to_dict('records'))
+            print(wrapped_comparison.predict(comparison_data.copy()), '\n',
+                                     self.predict(comparison_data.copy().to_dict('records')))
             return comparison_method(wrapped_comparison.predict(comparison_data.copy()),
                                      self.predict(comparison_data.copy().to_dict('records')),
                                      sample_weight=weights)

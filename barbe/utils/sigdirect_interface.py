@@ -27,16 +27,16 @@ class SigDirectWrapper:
                verbose (boolean)           -> Whether to provide verbose output.
         '''
 
-    def __init__(self, column_names, n_bins=5, verbose=False):
+    def __init__(self, column_names, n_bins=5, use_negative_rules=True, verbose=False):
         # IAIN this should have settings for sigdirect and more accurate utilities
         # IAIN intention is for the user to get the same flexibility as scikit
         # IAIN adjusting settings worked!!
         # IAIN confidence=0.5 and alpha=0.001 and early_stopping=True gets 0.2222
         self._sigdirect_model = SigDirect(
                 clf_version=2,  # 1 is without better trimming version 2 is SigD2
-                alpha=0.001,  #0.01 may be ok
+                alpha=0.001,  #0.01 may be ok TODO: try alpha values for inverse...
                 early_stopping=False,
-                confidence_threshold=0.5,  # IAIN very dependent on grid and npert
+                confidence_threshold=0.5,  # was 0.5 TODO: try changing for the inverse rules
                 is_binary=True,
                 get_logs=False,
                 other_info=None)
@@ -48,14 +48,17 @@ class SigDirectWrapper:
         #    is_binary=True,
         #    get_logs=False,
         #    other_info=None)
+        self._use_negative_rules = use_negative_rules
         self._n_bins = n_bins
         self._oh_enc = None
         self._kb_discrete = None
         self._rules = None
-        self._feature_names = column_names
+        self._feature_names = column_names.copy()
         self._categorical_features = None
         self._verbose = verbose
         self._verbose_header = "SigDirect:"
+        self._n_encoded_features = None
+
 
     def _create_encoder(self, X):
         if self._verbose:
@@ -83,7 +86,7 @@ class SigDirectWrapper:
         #print(self._not_categorical)
         #print(X)
         #assert False
-        print(self._categorical_features)
+        #print(self._categorical_features)
         self._kb_discrete.fit(X[:, self._not_categorical])
         # two encoding modes, one with mixture of bins and discrete the other only has bins
         if list(self._categorical_features.keys()):
@@ -113,27 +116,56 @@ class SigDirectWrapper:
         else:
             ret_X = np.asarray(self._oh_enc.transform(self._kb_discrete.transform(X)).todense()).astype(int)
 
+        # IAIN NEW
+        if self._n_encoded_features is None:
+            self._n_encoded_features = ret_X.shape[1]
+
+        if self._use_negative_rules:
+            #print(ret_X.shape)
+            ret_neg_X = np.abs(ret_X - 1)
+            ret_X = np.concatenate([ret_X, ret_neg_X], axis=1)
+            #print("ENCODED: ", ret_X[0, :])
+
         return ret_X
 
-    def _decode(self, enc_X):
-        part_X = self._oh_enc.inverse_transform(enc_X)
+    def _decode(self, enc_X, as_pd=False):
+        # NEW IAIN
+        if self._use_negative_rules:
+            enc_X = enc_X[:, 0:self._n_encoded_features]
+
+        if self._verbose:
+            print(self._verbose_header, "encoded after fixing", enc_X.shape, enc_X)
+
+
+
+        part_X = self._oh_enc.inverse_transform(enc_X.copy())
+        if self._verbose:
+            print(self._verbose_header, "partially decoded part", part_X)
+
         if list(self._categorical_features.keys()):
             #ret_X = np.asarray(self._oh_enc.transform(
             #    np.append((X[:, self._not_categorical]),
             #              X[:, list(self._categorical_features.keys())], axis=1)).todense()).astype(int)
             categorical_feature_len = len(list(self._categorical_features.keys()))
             numeric_part = np.array(part_X[:, :(part_X.shape[1] - categorical_feature_len)], dtype=float)
-            dec_numeric = self._kb_discrete.inverse_transform(X=np.nan_to_num(numeric_part))
+            dec_numeric = self._kb_discrete.inverse_transform(np.nan_to_num(numeric_part))
             dec_numeric[np.isnan(numeric_part)] = None
             dec_X = np.append(dec_numeric,
                               part_X[:, (part_X.shape[1] - categorical_feature_len):], axis=1)
 
         else:
-            dec_X = self._kb_discrete.inverse_transform(part_X)
+            part_X = np.array(part_X, dtype=float)
+            dec_X = self._kb_discrete.inverse_transform(np.nan_to_num(part_X))
+            dec_X[pd.isna(part_X)] = None
 
         # return them to their original order
         order = np.argsort(self._new_feature_order)
-        return dec_X[:, order]
+        #print(self._verbose_header, 'final ordered', order, dec_X, dec_X[:, order])
+        if as_pd:
+            dec_X = pd.DataFrame(dec_X[:, order], columns=self._feature_names)
+            return dec_X
+        else:
+            return dec_X[:, order]
 
 
     def _old_decode(self, enc_X):
@@ -200,7 +232,7 @@ class SigDirectWrapper:
         # print("IAIN NEW: ", X)
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
-        return self._y_reconversion(self._sigdirect_model.predict(self._encode(X)))
+        return self._y_reconversion(self._sigdirect_model.predict(self._encode(X), hrs=3))  # set heuristic to 1
 
     def _generate_rules(self, data_row, true_label):
         all_rules = defaultdict(list)
@@ -227,10 +259,14 @@ class SigDirectWrapper:
         # bin index is acquired elsewhere
         bin_size = len(self._kb_discrete.bin_edges_[bin_index])
         # find the first bound where the
-        item_index = np.min(np.where(self._kb_discrete.bin_edges_[bin_index] >= current_item))
-        print("GOD WHY OH GOD: ", item_index)
-        if item_index == 0:
-            return None, current_item
+        #print(self._kb_discrete.bin_edges_)
+        #print(self._kb_discrete.bin_edges_[bin_index])
+        #print(bin_index)
+        #print(current_item)
+        item_index = np.min(np.argwhere(self._kb_discrete.bin_edges_[bin_index] >= current_item))
+        #print("GOD WHY OH GOD: ", item_index)
+        if item_index == 1:
+            return None, self._kb_discrete.bin_edges_[bin_index][item_index-1]
         if item_index == bin_size - 1:
             return current_item, None
         # TODO: may need to swap back
@@ -243,7 +279,7 @@ class SigDirectWrapper:
         if raw_enc is None:
             return None
         # print('IAIN sig_side: ', self._decode(raw_enc.reshape((1,-1))))
-        return self._rule_translation(self._decode(raw_enc.reshape((1,-1)))[0]) + " -> " + impl_str
+        return self._rule_translation(raw_enc) + " -> " + impl_str
 
     def get_bounded_translation(self, enc_value):
         translated_value = dict()
@@ -259,30 +295,43 @@ class SigDirectWrapper:
 
         return translated_value
 
-
-    def _rule_translation(self, rule_items):
+    def _rule_translation(self, rule_vector):
         rule_text = ""
-        for i in range(len(rule_items)):
-            item = rule_items[i]
-            moved_index = i
-            if item is not None:
-                if rule_text != "":
-                    rule_text += ", "
-                if moved_index in self._not_categorical:
-                    converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
-                    rule_low, rule_high = self._get_bin_bounds(converted_index, item)
-                    if rule_low is None:
-                        rule_text += ("'" + str(self._feature_names[i]) + "'" +
-                                      " < " + str(np.round(rule_high, 4)))
-                    elif rule_high is None:
-                        rule_text += ("'" + str(self._feature_names[i]) + "'" +
-                                      " > " + str(np.round(rule_low, 4)))
+        for i in range(len(rule_vector)):
+            if rule_vector[i] == 1:
+                is_negation = self._use_negative_rules and i >= self._n_encoded_features
+                ii = i if i < self._n_encoded_features else i - self._n_encoded_features
+                temp = np.zeros(rule_vector.shape)
+                temp[ii] = 1
+                #print(self._verbose_header, 'zeroes to decode', temp.reshape((1, -1)))
+                rule_items = self._decode(temp.reshape((1, -1)))[0]
+                #print(self._verbose_header, 'decoded items for rules', rule_items)
+                ii = np.argwhere(~pd.isna(rule_items))[0][0]
+                item = rule_items[ii]
+                moved_index = ii
+                if item is not None:
+                    if rule_text != "":
+                        rule_text += ", "
+                    if is_negation:
+                        rule_text += '~('
+                    if moved_index in self._not_categorical:
+                        converted_index = np.where(moved_index == np.array(self._not_categorical))[0][0]
+                        rule_low, rule_high = self._get_bin_bounds(converted_index, item)
+                        if rule_low is None:
+                            rule_text += ("'" + str(self._feature_names[ii]) + "'" +
+                                          " < " + str(np.round(rule_high, 4)))
+                        elif rule_high is None:
+                            rule_text += ("'" + str(self._feature_names[ii]) + "'" +
+                                          " > " + str(np.round(rule_low, 4)))
+                        else:
+                            rule_text += (str(np.round(rule_low, 4)) + " <= " +
+                                          "'" + str(self._feature_names[ii]) + "'" +
+                                          " <= " + str(np.round(rule_high, 4)))
                     else:
-                        rule_text += (str(np.round(rule_low, 4)) + " <= " +
-                                      "'" + str(self._feature_names[i]) + "'" +
-                                      " <= " + str(np.round(rule_high, 4)))
-                else:
-                    rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
+                        rule_text += ("'" + str(self._feature_names[moved_index]) + "'" + " = " + "'" + str(item) + "'")
+
+                    if is_negation:
+                        rule_text += ')'
         return rule_text
 
     def get_ohe_simple(self):
@@ -344,12 +393,14 @@ class SigDirectWrapper:
                     rule_p = rule.get_log_p()
                     # decode one hot vector and get text version of the rule
                     rule_items = self._decode(temp.reshape((1, -1)))[0]
-                    rule_text = self._rule_translation(rule_items)
+                    rule_text = self._rule_translation(temp)
                     rules_translation.append((rule_text + " -> " + str(class_label), class_label,
                                               rule_support, rule_confidence, rule_p))
         # format [(rule text, support, confidence, rule_p), ...]
         return rules_translation
 
+    def get_negation_index(self):
+        return self._n_encoded_features
 
     def get_all_rules(self, rules_subset=None, raw_rules=False):
         if rules_subset is None:
@@ -360,6 +411,7 @@ class SigDirectWrapper:
             for rule, _, original_point_sd in rules_subset[class_label]:
                 # with one hot encoded vector only non zero values from the rule need to be set to 1
                 temp = np.zeros(original_point_sd.shape[1]).astype(int)
+                #print(self._verbose_header, 'rule items', rule.get_items())
                 temp[rule.get_items()] = 1
                 # get features from the rule to store
                 rule_support = rule.get_support()
@@ -372,7 +424,7 @@ class SigDirectWrapper:
                                               class_label,
                                               rule_support, rule_confidence, rule_p))
                 else:
-                    rule_text = self._rule_translation(rule_items)
+                    rule_text = self._rule_translation(temp)
                     rules_translation.append((rule_text + " -> " + str(class_label), class_label,
                                               rule_support, rule_confidence, rule_p))
         # format [(rule text, support, confidence, rule_p), ...]
@@ -435,10 +487,10 @@ class SigDirectWrapper:
                     # IAIN remove line for just rules that apply to current if all([(rule[i] == data_antecedent[i]) or
                     #  (rule[i] is None) for i in range(len(data_antecedent))]):
                     # IAIN we could even append a set of rules that are together considered (applied + counter)
-                    if raw_rules:
-                        final_rules.append((raw[0], c_label, conf, p_val))
-                    else:
-                        final_rules.append((rule, c_label, p_val, min_dif))
+                    #if raw_rules:
+                    final_rules.append((raw[0], c_label, conf, p_val))
+                    #else:
+                    #    final_rules.append((rule, c_label, p_val, min_dif))
 
         if raw_rules:
             #print("IAIN FINAL RULES ", final_rules)
@@ -523,8 +575,8 @@ class SigDirectWrapper:
                 citem, cval = rule_applicable[i]
                 if val is not None:
                     equiv_check = cval is not None
-                    print("IAIN HERE: ")
-                    print(item, citem, val, cval)
+                    #print("IAIN HERE: ")
+                    #print(item, citem, val, cval)
                     influence_sign = 1 if item == citem and val != cval else 1
                     # to change back remove the temp + 2 to only temp
                     influence_modifier = influence_sign*((1+2*useful_applicability) / (2*sum(temp)+2))
