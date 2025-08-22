@@ -14,7 +14,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, KBinsDiscretizer
 
 # IAIN requires main folder to contain rule.py
-from sigdirect.sigd2 import SigDirect
+from sigdirect import SigDirect
 #from sklearn.decomposition import PCA
 import numpy as np
 

@@ -1,2 +1,10 @@
-include lime/*.js
+include sigdirect/*
+include sigdirect/src/*
+include sigdirect/plog/*
+include sigdirect/include/*
+include sigdirect/plog/Initializers/*
+include sigdirect/plog/Appenders/*
+include sigdirect/plog/Converters/*
+include sigdirect/plog/Formatters/*
+include sigdirect/plog/Helpers/*
 include LICENSE

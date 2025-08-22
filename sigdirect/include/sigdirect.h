@@ -17,8 +17,8 @@
 #ifndef _SIGDIRECT
 #define _SIGDIRECT
 
-#include <plog/Initializers/RollingFileInitializer.h>
-#include <plog/Log.h>
+#include "RollingFileInitializer.h"
+#include "Log.h"
 
 #include <algorithm>
 #include <cmath>
@@ -33,10 +33,10 @@
 
 
 // changed to src/
-#include "src/config.h"
-#include "src/node.h"
-#include "src/rule.h"
-#include "src/rule_node.h"
+#include "config.h"
+#include "node.h"
+#include "rule.h"
+#include "rule_node.h"
 using namespace std;
 
 enum Heuristic { hrs1 = 1, hrs2, hrs3 };

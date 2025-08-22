@@ -127,7 +127,7 @@ class BARBE:
     def __init__(self, training_data=None,
                  feature_names=None, input_scale=None, input_categories=None, input_covariance=None, input_means=None,
                  input_bounds=None, input_sets_class=True,
-                 mode='tabular',  n_perturbations=5000, n_bins=5, perturbation_type='normal', dev_scaling_factor=1,
+                 mode='tabular',  n_perturbations=5000, n_bins=5, perturbation_type='uniform', dev_scaling_factor=5,
                  higher_frequent_category_odds=True,
                  balance_classes=True,
                  learn_negation_rules=True,

@@ -29,10 +29,10 @@ import numpy as np
 from collections import Counter, defaultdict
 
 # Python class Rule
-import rule #IAIN
+import sigdirect.rule as rule #IAIN
 
 # enum heuristics
-cdef extern from "include/sigdirect.h":
+cdef extern from "sigdirect.h":
     cdef enum Heuristic:
         hrs1,
         hrs2,
@@ -57,7 +57,7 @@ cdef extern from "src/rule.h":
         int get_importance() const;
 
 # CPP Sigdirect
-cdef extern from "include/sigdirect.h":
+cdef extern from "sigdirect.h":
     cppclass CPPSigDirect:
         CPPSigDirect();
         CPPSigDirect(int, double, bool, double);

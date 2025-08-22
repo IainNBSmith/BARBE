@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 from barbe.discretizer import CategoricalEncoder
 import warnings
 from sklearn.utils import check_random_state
-import pandas as pd
+
 
 class BarbePerturber:
     __doc__ = '''
@@ -137,7 +137,6 @@ class BarbePerturber:
         self._fix_categorical_variance()
         self._scale = self._scale / dev_scaling_factor
         self._covariance = self._covariance / dev_scaling_factor
-        print("COV AFTER DIV:", self._covariance)
         #if input_covariance is None and input_scale is None:
         #    self._covariance[np.diag_indices_from(self._covariance)] = \
         #        self._covariance[np.diag_indices_from(self._covariance)] * dev_scaling_factor  # ** (1 / 2))
@@ -242,7 +241,7 @@ class BarbePerturber:
                     self._scale[i] = self._means[i]
                 else:
                     self._scale[i] = self._standardized_categorical_variance
-            self._covariance = np.nan_to_num(self._covariance)
+
         return None
 
     def _get_dev_from_mode(self, i):
@@ -400,15 +399,9 @@ class BarbePerturber:
     def _calculate_covariance(self, training_array):
         #print(training_array)
         #np.nanstd(training_array.to_numpy().astype(np.float64), axis=0)
-        full_cov = np.ma.cov(training_array.to_numpy().T.astype(np.float64))
-        full_cov = full_cov.filled(np.nan)
-        #full_cov = np.ma.filled(full_cov, fill_value=0)
-        print("BEFORE:", full_cov)
-        full_cov = np.nan_to_num(full_cov, nan=1e-4)
-        print("AFTER:", full_cov)
+        full_cov = np.cov(training_array.to_numpy().T.astype(np.float64))
         #print("IAIN USED FOR COV", training_array)
         if self._covariance_mode in 'full':
-            print("exit full")
             return full_cov
         elif self._covariance_mode in 'diagonal':
             return np.diag(np.diag(full_cov))
@@ -434,7 +427,7 @@ class BarbePerturber:
             # location scale size
             #print(self._covariance)
             #print("ROW TO PERTURB: ", row_array.to_numpy().reshape(1, -1))
-            print("COV: \n", self._covariance)
+            #print("COV: \n", self._covariance)
             return_data = self._encoder.inverse_transform(self._random_state.multivariate_normal(row_array.to_numpy().reshape(1, -1).astype(np.float64)[0],
                                                                                                  self._covariance,
                                                                                                  size=num_perturbations)
@@ -582,7 +575,7 @@ class ClassBalancedPerturber(BarbePerturber):
         self._iterations = 0
         while self._iterations < self._max_iterations and not self._check_threshold_balance(class_counts):
             new_perturbed = self.produce_perturbation(num_perturbations, data_row=data_row)
-            perturbed_data = pd.concat([perturbed_data, new_perturbed], ignore_index=True)
+            perturbed_data = perturbed_data.append(new_perturbed, ignore_index=True)
             new_classes = bbmodel.predict(new_perturbed)
             pert_classes = np.append(pert_classes, new_classes)
             class_counts = self._get_class_counts(pert_classes)

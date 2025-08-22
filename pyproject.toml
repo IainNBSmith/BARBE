@@ -1,0 +1,55 @@
+[build-system]
+requires = [
+    "setuptools >= 77.03",
+    "cython",
+    "plog"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "barbe"
+version = "0.1.3"
+dependencies = [
+    "requests",
+    "numpy >= 1.24.2",
+    "pandas >= 1.5.3",
+    "scikit-learn >= 1.2.2",
+    "shiny >= 1.0.0",
+    "dill >= 0.3.8",
+    "torch >= 2.3.0",
+    'importlib-metadata; python_version<"3.11"'
+]
+authors = [
+    {name="Iain Smith", email="ins@ualberta.ca"}
+]
+maintainers = [
+    {name="Amii XAI Lab", email="amiixai@ualberta.ca"}
+]
+description = "Black-Box Association Rule Based Explanations (BARBE)"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/amiixai/BARBE"
+Issues = "https://github.com/amiixai/BARBE/issues"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["sigdirect", "barbe", "barbe.utils"]
+ext-modules = [
+    {name = "sigdirect.sigd2", sources=["sigdirect/src/sigdirect.cpp", "sigdirect/src/rule.cpp", "sigdirect/src/node.cpp", "sigdirect/src/rule_node.cpp", "sigdirect/mysigdirect.pyx"], language="c++", include-dirs=["sigdirect", "sigdirect/include", "sigdirect/src", "sigdirect/lib", "sigdirect/tests", "sigdirect/plog", "sigdirect/plog/Initializers", "sigdirect/plog/Appenders"], extra-compile-args=['/std:c++17', '/DEBUG']}
+]
+
+
+#[tool.setuptools.package-dir]
+#barbe = "barbe"
+#sigdirect = "sigdirect"
+
+#[tool.setuptools.packages.find]
+#include = ["barbe*", "sigdirect*"]
+#exclude = ["barbe.tests*", "sigdirect.test*"]

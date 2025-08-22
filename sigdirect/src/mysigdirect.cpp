@@ -27,8 +27,13 @@
             "-std=c++17"
         ],
         "include_dirs": [
-	    "./include",
-	    "."
+            "sigdirect",
+            "sigdirect/include",
+            "sigdirect/src",
+            "sigdirect/lib",
+            "sigdirect/tests",
+            "sigdirect/lib/plog/include",
+            "sigdirect/lib/plog/include/Initializers"
         ],
         "language": "c++",
         "name": "sigdirect",
@@ -706,7 +711,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 
 #include "ios"
 #include "new"
-#include "include/sigdirect.h"
+#include "sigdirect.h"
 #include "stdexcept"
 #include "typeinfo"
 #ifdef _OPENMP
