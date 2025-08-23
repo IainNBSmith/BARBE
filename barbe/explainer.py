@@ -58,10 +58,10 @@ class BARBE:
                 |                                     input data during BARBE.explain().
                 | Default: 5000
                input_sets_class (boolean)         -> Whether the input data of BARBE.explain() sets the class label to
-                |                                     True and False for training the SigDirect surrogate model.
+                | [NOT IN CALL]                       True and False for training the SigDirect surrogate model.
                 | Default: True
                perturbation_type (string)         -> The type of distribution to use when generating perturbed data.
-                |                                     As referred to in BarbePurturber.
+                | [NOT IN CALL]                       As referred to in BarbePurturber.
                 |                                     'uniform' -> uniform distribution over a range (-2, 2) is equally 
                 |                                                   as likely to generate 0 as 0.1 as 1.2
                 |                                     'normal' -> normal distribution, data will be more similar to the
@@ -77,7 +77,7 @@ class BARBE:
                 |                                                          Set to 20 df if training not given.
                 | Default: 'uniform' Options: {'uniform', 'normal', 'cauchy', 't-distribution'}
                dev_scaling_factor (None or int>0) -> Whether to reduce the deviation for perturbed data. Tends to 
-                |                                     improve the surrogate performance as less is changed about the
+                | [NOT IN CALL]                       improve the surrogate performance as less is changed about the
                 |                                     input data. IGNORED if scales are given.
                 | Default: 5
                n_bins (int>0)                     -> Number of bins to use on continuous numerical data.
@@ -125,13 +125,15 @@ class BARBE:
     DEFAULT_CATEGORY_FREQUENCY_ODDS = True  # reason: requires testing, need to remove the option if this is better
 
     def __init__(self, training_data=None,
-                 feature_names=None, input_scale=None, input_categories=None, input_covariance=None, input_means=None,
-                 input_bounds=None, input_sets_class=True,
-                 mode='tabular',  n_perturbations=5000, n_bins=5, perturbation_type='normal', dev_scaling_factor=1,
-                 higher_frequent_category_odds=True,
-                 balance_classes=True,
-                 learn_negation_rules=True,
+                 feature_names=None, input_scale=None, input_categories=None,
+                 input_covariance=None, input_means=None, input_bounds=None,
+                 mode='tabular',  n_perturbations=5000, n_bins=5,
+                 balance_classes=True, learn_negation_rules=True,
                  verbose=False):
+        input_sets_class = False
+        dev_scaling_factor = 1
+        higher_frequent_category_odds = True
+        perturbation_type = 'normal'
 
         # IAIN consider adding more options to bound setting for BARBE side
         # TODO: add more requirement checks

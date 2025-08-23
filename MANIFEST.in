@@ -8,3 +8,4 @@ include sigdirect/plog/Converters/*
 include sigdirect/plog/Formatters/*
 include sigdirect/plog/Helpers/*
 include LICENSE
+global-exclude *visualizer*
