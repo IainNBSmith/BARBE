@@ -4,7 +4,7 @@ This repository contains the code for "Explaining Decisions of Black-box Models 
 
 We rely on the rules provided by SigDirect [1'] (the associative classifier we leveraged in BARBE) to explain each decision of a black-box model. 
 
-The repository stores local versions of existing packages [LIME](https://github.com/marcotcr/lime), [VAE-LIME](https://github.com/domenVres/Robust-LIME-SHAP-and-IME), [S-LIME](https://github.com/ZhengzeZhou/slime), [LORE](https://github.com/riccotti/LORE), and [Anchor](https://github.com/marcotcr/anchor) for the purposes of conducting experiments. The directory barbe contains all code for BARBE including experiments used in faithful evaluations [2] and counterfactual generation [3]. Alongside a still in-development front-end (BARBiE).
+The repository stores local versions of existing packages [LIME](https://github.com/marcotcr/lime), [VAE-LIME](https://github.com/domenVres/Robust-LIME-SHAP-and-IME), [S-LIME](https://github.com/ZhengzeZhou/slime), [LORE](https://github.com/riccotti/LORE), and [Anchor](https://github.com/marcotcr/anchor) for the purposes of conducting experiments. The directory barbe contains all code for BARBE including experiments used in faithful evaluations [2]. Alongside a still in-development front-end (BARBiE).
 
 # The organization of the barbe directory
 * dataset - directory containing each dataset (cleaned and unclean) used in different experiments
@@ -33,8 +33,6 @@ The repository stores local versions of existing packages [LIME](https://github.
 [[1 - Link to BARBE Paper]](https://link.springer.com/chapter/10.1007/978-3-031-39821-6_6) 
 
 [[2 - Link to Faithful Evaluations]](https://caiac.pubpub.org/pub/gs2ywmlt/release/1?readingCollection=e093cfd6) Designed to provide true performance comparisons by weighing fidelity of a surrogate against the black-box based on the distance (k-Nearest Neighbors and Euclidean distance) of samples from the explained sample. Also included improvements to BARBE to produce perturbations more faithful to the original data to improve training.
-
-[3 - Link to Counterfactual Generation (currently in review)] Using BARBE as a source of counterfactual rules we produce and enhance generated counterfactuals by adding negative features (producing mixed postive and negative rules) and sorting the order of rules to apply based on general importance or specific importance linked to the sample. We compare to LORE as another surrogate based explainer and [DiCE](https://github.com/interpretml/DiCE) as an explainer specifically designed to make counterfactuals.
 
 [[1' - Link to SigDirect paper]](https://content.iospress.com/articles/intelligent-data-analysis/ida163141)
 
