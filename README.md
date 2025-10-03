@@ -22,7 +22,6 @@ The repository stores local versions of existing packages [LIME](https://github.
   * simulation_dataset.py - utility for producing simulated data for diverse experiments on BARBE and other explainers
   * visualizer_javascript.js - javascript code used by visualizer to handle unique reactive elements
   * visualizer_utility.py - utilities to get required details from data, black-boxes, and the explainer not handled directly by the visualizer
-* counterfactual.py - defines the object BarbeCounterfactual that handles generating counterfactuals from data as requested by BARBE
 * discretizer.py - defines the object CategoricalEncoder used in many instances to handle encoding categorical values into one-hot or ordinal values for BARBE and wrapped explainers
 * explainer.py - defines the object BARBE that takes data and learns local explanations orchistrating each other utility
 * perturber.py - defines the objects BarbePerturber and ClassBalancedPerturbed which produce perturbations of an input piece of data output in the pandas DataFrame format
