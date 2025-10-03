@@ -23,7 +23,6 @@ from barbe.utils.sigdirect_interface import SigDirectWrapper
 # from barbe.utils.lime_interface import LimeWrapper
 from barbe.utils.bbmodel_interface import BlackBoxWrapper
 from barbe.perturber import BarbePerturber, ClassBalancedPerturber
-from barbe.counterfactual import BarbeCounterfactual
 
 
 DIST_INFO = {'Generic Distributions': {'uniform': 'Uniform', 'normal': 'Normal'},
@@ -182,7 +181,6 @@ class BARBE:
         self._blackbox_classification = {'input': None, 'perturbed': None}
         self._surrogate_classification = {'input': None, 'perturbed': None}
         self._surrogate_model = None  # SigDirect model trained on the new points
-        self._counterfactual = BarbeCounterfactual()
         self._n_bins = n_bins
         self._explanation = "No explanations done yet."
 
@@ -315,99 +313,6 @@ class BARBE:
         Output: list<(string, int, float, float, float)> -> list of contrast rules, their class, p-value, and importance
         """
         return self._surrogate_model.get_contrast_sets(data_row)
-
-    def get_counterfactuals(self, data_row, bbmodel, wanted_class, n_counterfactuals=1, importance_counterfactuals=False,
-                            restricted_features=None, prioritize_importance=False):
-        scale_list = self._perturber.get_scale()
-        mean_list = self._perturber.get_means()
-        scale_mean_list = [(scale_list[i], mean_list[i]) for i in range(len(scale_list))]
-        #print(scale_mean_list)
-        #assert False
-
-        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)).copy())
-        original_dec = self._surrogate_model._decode(original_enc)
-        #print(original_enc)
-        #print(original_dec)
-        #print(data_row.to_numpy().reshape((1, -1)))
-
-        self._counterfactual.fit(self,
-                                 feat_scales=scale_mean_list,
-                                 importance_counterfactuals=importance_counterfactuals,
-                                 prioritize_importance=prioritize_importance)
-        return self._counterfactual.predict(data_row, bbmodel, new_class=wanted_class, n_counterfactuals=n_counterfactuals,
-                                            restricted_features=restricted_features)
-
-    def get_counterfactual_explanation(self, data_row, wanted_class, n_counterfactuals=1):
-        """
-        Input: data_row (pandas Series)  -> data row that should be modified to change class.
-               wanted_class (string)     -> string value of desired class from black box, found via
-                                             get_available_classes()
-               n_counterfactuals (int>0) -> number of counterfactual examples with slight differences to produce.
-                | Default: 1
-        Purpose: Produce a counterfactual explanation, a modification to existing data to produce a new class, based on
-                  the rules learned by SigDirect.
-        Output: counter_value (list)                          -> new values assigned to the original data.
-                counter_rules (list<original_rule, new_rule>) -> rule that were changed to flip class.
-                new_class (string)                            -> new class as predicted by the SigDirect surrogate.
-        """
-
-        data_cls = self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0]
-        #print("IAIN DATA CLASS SURROGATE: ", data_cls)
-        #aa = self._surrogate_model.get_contrast_sets(data_row.copy(), raw_rules=True, max_dev=0.05,
-        #                                             new_class=wanted_class)
-        #print("IAIN CONTRAST ", aa)
-        # self._counterfactual.fit(self._surrogate_model.get_all_rules(raw_rules=True),
-        #                          self._surrogate_model.get_ohe_simple())
-
-
-        original_enc = self._surrogate_model._encode(data_row.to_numpy().reshape((1, -1)).copy())
-        counter_predict, counter_rules = self._counterfactual.predict(original_enc.copy(), data_cls,
-                                                                      new_class=wanted_class,
-                                                                      n_counterfactuals=n_counterfactuals)
-        #print("IAIN getting prediction")
-        #print(counter_predict)
-        counter_all_rules = []
-        counter_all_values = []
-        counter_all_predict = []
-        # counter_predict = self._surrogate_model._decode([counter_predict])
-        for i in range(n_counterfactuals):
-            counter_p = counter_predict[i]
-            counter_r = counter_rules[i]
-            counter_v = self._surrogate_model._decode([counter_p.copy()])
-            #print("IAIN COUNTER: ", i, counter_v)
-            #print("IAIN ORIGINAL PREDICTION: ", self._surrogate_model.predict(data_row.to_numpy().reshape((1, -1)).copy())[0])
-            #print("IAIN COUNTER PREDICTION: ", self._surrogate_model.predict(np.array(counter_v)))
-            # TODO: I think that sigdirect needs to segment images before training
-
-            for i in range(len(original_enc[0])):
-                if original_enc[0][i] == counter_p[i] and counter_p[i] == 1:
-                    temp = np.zeros(len(original_enc[0])).astype(int)
-                    temp[i] = 1
-                    position = self._surrogate_model._decode(temp.reshape((1, -1)))[0]
-                    ind_use = np.where(np.array(position) != None)[0][0]
-                    #print("IAIN REPLACEMENT: ")
-                    #print(ind_use)
-                    #print(counter_v[0][ind_use])
-                    #print(data_row.to_numpy().reshape(1, -1)[0][ind_use])
-                    #print(data_row.to_numpy().reshape(1, -1))
-                    counter_v[0][ind_use] = data_row.to_numpy().reshape(1, -1)[0][ind_use]
-
-            # fix nans
-            #print("IAIN BEFORE FIX: ", counter_v)
-            for i in range(len(counter_v[0])):
-                if counter_v[0][i] is None or (not isinstance(counter_v[0][i], str) and math.isnan(counter_v[0][i])):
-                    counter_v[0][i] = data_row.to_numpy().reshape(1, -1)[0][i]
-
-            new_class = self._surrogate_model.predict(np.array(counter_v))[0]
-            #print("IAIN NEW VALUE: ", counter_v)
-            #print("IAIN NEW CLASS: ", new_class)
-            counter_all_predict.append(new_class)
-            counter_all_rules.append([(self._surrogate_model.raw_rule_translation(a[0], a[1]),
-                                       self._surrogate_model.raw_rule_translation(b, wanted_class)) for a, b in counter_r])
-            counter_all_values.append(counter_v)
-        #for a, b in counter_rules:
-        #    print("IAIN RULES: ", a, b)
-        return counter_all_values, counter_all_rules, counter_all_predict
 
     def get_surrogate_fidelity(self, comparison_model=None, comparison_data=None,
                                comparison_method=accuracy_score, weights=None, original_data=None):
