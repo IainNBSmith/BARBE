@@ -64,6 +64,12 @@ class CategoricalEncoder:
                 self._categorical_features.append(feature)
                 #print("Training Array: ", training_array[feature])
                 self._feature_original_types[feature] = type(training_array[feature].values[0])
+
+                try:  # make sure that the type is actually valid
+                    training_array[feature].astype(self._feature_original_types[feature])
+                except:
+                    self._feature_original_types[feature] = 'string'
+
                 self._encoder_key[feature] = list(np.array(unique_values).astype(self._feature_original_types[feature]))
 
     def _make_encoder_key(self, training_data=None, initial_key=None):
@@ -131,16 +137,15 @@ class CategoricalEncoder:
                         else:
                             enc_data[feature + "=" + str_value] = 0 if enc_data[feature] != str_value else 1
                     else:
+                        enc_search = np.where(data[feature].astype(str) == str_value)[0]
+                        enc_replace = np.argwhere(np.array(self._encoder_key[feature]).astype(str) == str_value)[0][0]
                         if len(enc_data.shape) > 1:
-                            enc_search = np.where(data[feature].astype(str) == str_value)[0]
-                            enc_replace = np.argwhere(np.array(self._encoder_key[feature]).astype(str) == str_value)[0][0]
-                            if not feature_flag:
-                                enc_data[feature] = 0
-                                feature_flag = True
+                            #if not feature_flag:
+                            enc_data.loc[enc_search, feature] = enc_replace
+                            #feature_flag = True
                         else:
                             if enc_data[feature] == str_value:
-                                enc_data[feature] = (
-                                    np.argwhere(np.array(self._encoder_key[feature]) == value)[0][0])
+                                enc_data[feature] = enc_replace
                 if not self._ordinal:
                     if len(enc_data.shape) > 1:
                         enc_data.drop([feature], axis=1, inplace=True)

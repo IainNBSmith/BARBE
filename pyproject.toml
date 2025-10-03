@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "barbe"
-version = "0.1.4"
+version = "0.1.6"
 dependencies = [
     "requests",
     "numpy >= 1.24.2",
@@ -42,7 +42,7 @@ Issues = "https://github.com/amiixai/BARBE/issues"
 include-package-data = true
 packages = ["sigdirect", "barbe", "barbe.utils"]
 ext-modules = [
-    {name = "sigdirect.sigd2", sources=["sigdirect/src/sigdirect.cpp", "sigdirect/src/rule.cpp", "sigdirect/src/node.cpp", "sigdirect/src/rule_node.cpp", "sigdirect/mysigdirect.pyx"], language="c++", include-dirs=["sigdirect", "sigdirect/include", "sigdirect/src", "sigdirect/lib", "sigdirect/tests", "sigdirect/plog", "sigdirect/plog/Initializers", "sigdirect/plog/Appenders"], extra-compile-args=['/std:c++17', '/DEBUG']}
+    {name = "sigdirect.sigd2", sources=["sigdirect/src/sigdirect.cpp", "sigdirect/src/rule.cpp", "sigdirect/src/node.cpp", "sigdirect/src/rule_node.cpp", "sigdirect/mysigdirect.pyx"], language="c++", include-dirs=["sigdirect", "sigdirect/include", "sigdirect/src", "sigdirect/lib", "sigdirect/tests", "sigdirect/plog", "sigdirect/plog/Initializers", "sigdirect/plog/Appenders"]}
 ]
 
 

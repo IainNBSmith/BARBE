@@ -128,8 +128,10 @@ class BARBE:
                  feature_names=None, input_scale=None, input_categories=None,
                  input_covariance=None, input_means=None, input_bounds=None,
                  mode='tabular',  n_perturbations=5000, n_bins=5,
+                 perturber_method=None,
                  balance_classes=True, learn_negation_rules=True,
-                 verbose=False):
+                 verbose=False, **other_perturber_options):
+
         input_sets_class = False
         dev_scaling_factor = 1
         higher_frequent_category_odds = True
@@ -157,6 +159,8 @@ class BARBE:
         # OLD CODE WHEN LIME PERTURBER WAS USED
         # self._perturber = LimeWrapper(training_data, training_labels)
         PertClass = BarbePerturber if not self._balanced_classes else ClassBalancedPerturber
+        if perturber_method is not None:
+            PertClass = perturber_method
         self._perturber = PertClass(training_data=training_data,
                                     input_scale=input_scale,
                                     input_categories=input_categories,
@@ -169,7 +173,8 @@ class BARBE:
                                     use_mean_categorical_odds=higher_frequent_category_odds,
                                     dev_scaling_factor=self._dev_scaling_factor,
                                     uniform_training_range=False,
-                                    df=(None if training_data is not None else BARBE.DEFAULT_T_DIST_FREEDOM))
+                                    df=(None if training_data is not None else BARBE.DEFAULT_T_DIST_FREEDOM),
+                                    **other_perturber_options)
         self._perturbed_data = None
         self._input_sets_class = input_sets_class
         self._set_class = None
@@ -506,6 +511,8 @@ class BARBE:
                   rule is present but not used when predicting the input data.
         Output: list<(feature, sum of support)>, all features used when predicting the input data and the total support.
         """
+        #print("Next Best: ", self.get_next_best_class())
+        #assert False
         return self._surrogate_model.get_features(input_data, true_label, self.get_next_best_class())
 
     def get_categories(self):

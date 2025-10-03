@@ -19,6 +19,13 @@ from sigdirect.sigd2 import SigDirect
 import numpy as np
 
 
+def is_scalar(x):
+    try:
+        float(x)
+        return True
+    except:
+        return False
+
 class SigDirectWrapper:
     __doc__ = '''
         Purpose: Utility for BARBE, handles some operations that are not in SigDirect by default.
@@ -70,7 +77,7 @@ class SigDirectWrapper:
             # check that there are little enough unique values to be considered discrete
             #print(unique_features)
             #print(len(unique_features))
-            if len(unique_features) <= 20:
+            if len(unique_features) <= 10 or any([not is_scalar(val) for val in unique_features]):
                 self._categorical_features[i] = unique_features
             elif not np.isscalar(unique_features):
                 assert ValueError(self._verbose_header + " ERROR: features with more than 10 distinct values must be "
@@ -136,8 +143,6 @@ class SigDirectWrapper:
         if self._verbose:
             print(self._verbose_header, "encoded after fixing", enc_X.shape, enc_X)
 
-
-
         part_X = self._oh_enc.inverse_transform(enc_X.copy())
         if self._verbose:
             print(self._verbose_header, "partially decoded part", part_X)
@@ -148,14 +153,14 @@ class SigDirectWrapper:
             #              X[:, list(self._categorical_features.keys())], axis=1)).todense()).astype(int)
             categorical_feature_len = len(list(self._categorical_features.keys()))
             numeric_part = np.array(part_X[:, :(part_X.shape[1] - categorical_feature_len)], dtype=float)
-            dec_numeric = self._kb_discrete.inverse_transform(np.nan_to_num(numeric_part))
+            dec_numeric = self._kb_discrete.inverse_transform(np.nan_to_num(numeric_part, nan=1))
             dec_numeric[np.isnan(numeric_part)] = None
             dec_X = np.append(dec_numeric,
                               part_X[:, (part_X.shape[1] - categorical_feature_len):], axis=1)
 
         else:
             part_X = np.array(part_X, dtype=float)
-            dec_X = self._kb_discrete.inverse_transform(np.nan_to_num(part_X))
+            dec_X = self._kb_discrete.inverse_transform(np.nan_to_num(part_X, nan=1))
             dec_X[pd.isna(part_X)] = None
 
         # return them to their original order
@@ -208,6 +213,9 @@ class SigDirectWrapper:
     def _y_conversion(self, y):
         y = y.tolist()
         self._pred_map = np.unique(y)
+        #print("PRED MAP: ", self._pred_map)
+        #print("ORIGINAL Y: ", y)
+        #print("EXAMPLE MAPPING: ", np.where(self._pred_map == y[0]))
         return [np.where(self._pred_map == yi)[0][0] for yi in y]
 
     def fit(self, X, y):
@@ -215,6 +223,7 @@ class SigDirectWrapper:
         X = pd.DataFrame(X)
         X = X.fillna(0)
         X = X.to_numpy()
+        #print(y)
         y = self._y_conversion(y)
         #print(X[0,:])
         self._create_encoder(X)
@@ -222,7 +231,10 @@ class SigDirectWrapper:
             print(self._verbose_header, self._encode(X))
             print(self._verbose_header, "training y:", y)
         # train sigdirect on one hot encoding of input data [0, 1, 0, 1, 1, ...]
-        #print(self._encode(X))
+        #print("Trained Encoded Data: ", self._encode(X))
+        #print("Training Labels: ", y)
+        #assert False
+
         self._sigdirect_model.fit(self._encode(X), y)
 
     def _y_reconversion(self, y):
@@ -245,7 +257,12 @@ class SigDirectWrapper:
             if self._verbose:
                 print(self._verbose_header, "rules matched", predicted_label, true_label)
             for x, y in all_raw_rules.items():
+                #print("Pre Convert: ", x)
+                #print("Post Convert: ", self._y_reconversion(x))
+                #print("Y variable in rule: ", y)
+                # x is the class and y is the series of rules. We use the reconversion since sig uses a number label
                 all_rules[self._y_reconversion(x)] = [(t, self._oh_enc, self._encode(data_row.to_numpy().reshape(1, -1))) for t in y]
+            #assert False
 
         else:
             if self._verbose:
@@ -517,15 +534,24 @@ class SigDirectWrapper:
                                       reverse=False)
 
         # applicable rules, except the ones in applied rules.
-        applicable_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x == next_best_class]),
+        #applicable_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x == next_best_class]),
+        #                                 key=lambda x: (
+        #                                     len(x[0].get_items()),
+        #                                     - x[0].get_confidence() * x[0].get_support(),
+        #                                     x[0].get_log_p(),
+        #                                     - x[0].get_support(),
+        #                                     -x[0].get_confidence(),
+        #                                 ),
+        #                                 reverse=False)
+        applicable_sorted_rules = sorted(all_rules[next_best_class],
                                          key=lambda x: (
-                                             len(x[0].get_items()),
-                                             - x[0].get_confidence() * x[0].get_support(),
-                                             x[0].get_log_p(),
-                                             - x[0].get_support(),
-                                             -x[0].get_confidence(),
-                                         ),
-                                         reverse=False)
+                                          len(x[0].get_items()),
+                                          - x[0].get_confidence() * x[0].get_support(),
+                                          x[0].get_log_p(),
+                                          - x[0].get_support(),
+                                          -x[0].get_confidence(),
+                                      ),
+                                      reverse=False)
 
         # all rules, except the ones in applied rules.
         other_sorted_rules = sorted(itertools.chain(*[all_rules[x] for x in all_rules if x != true_label]),
@@ -544,42 +570,40 @@ class SigDirectWrapper:
         # First add applied rules
         applied_rules = []
         for rule, ohe, original_point_sd in applied_sorted_rules:
+            # format the rule into bins shape
             temp = np.zeros(original_point_sd.shape[1]).astype(int)
             temp[rule.get_items()] = 1
+
             if self._verbose:
                 print(self._verbose_header, "item of note in applied", rule.get_items())
                 print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
 
-            # IAIN that one is my fault had not all(...)
-            #if all([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))]):
             applicability = sum([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))])
             useful_applicability = sum([(temp[i] == original_point_sd[0][i]) and (original_point_sd[0][i] != 0) for i in range(len(temp))])
-            #print(temp)
-            #print(original_point_sd)
-            #print([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))])
-            #print(applicability)
-            #print(len(temp))
-            #assert False
+
             applied_rules.append(rule)
             influence = applicability / len(temp)
             #if applicability != len(temp):
             #    influence = 0
             # rule_items = ohe.inverse_transform(temp.reshape((1, -1)))[0]  ## TEXT (comment for TEXT)
             rule_items = self._decode(temp.reshape((1, -1)))[0]
-            rule_applicable = self._decode(np.array([(temp[i] == original_point_sd[0][i]) and (temp[i] != 0) for i in range(len(temp))]).reshape((1, -1)))[0]
+            rule_applicable = self._decode(np.array([int((temp[i] == original_point_sd[0][i]) and (temp[i] != 0)) for i in range(len(temp))]).reshape((1, -1)))[0]
             #         rule_items = temp ## TEXT (uncomment for TEXT)
             rule_items = [item for item in enumerate(rule_items)]
             rule_applicable = [item for item in enumerate(rule_applicable)]
             for i in range(len(rule_items)):
                 item, val = rule_items[i]
                 citem, cval = rule_applicable[i]
-                if val is not None:
-                    equiv_check = cval is not None
-                    #print("IAIN HERE: ")
-                    #print(item, citem, val, cval)
+                #print(f"ITEM: {item} | VAL: {val}\n"
+                #      f"CITEM: {citem} | CVAL: {cval}")
+                #print(val is not None)
+                #print(pd.isna(val))
+                #print(np.isnan(val))
+                if val is not None and not pd.isna(val):
+                    equiv_check = cval is not None and not pd.isna(val)
                     influence_sign = 1 if item == citem and val != cval else 1
                     # to change back remove the temp + 2 to only temp
-                    influence_modifier = influence_sign*((1+2*useful_applicability) / (2*sum(temp)+2))
+                    #influence_modifier = influence_sign*((1+2*useful_applicability) / (2*sum(temp)+2))
                     # FOR OLD
                     #bb_features[item].append((rule.get_support(), rule.get_confidence(), rule.get_log_p(),
                     #                          sum(temp), useful_applicability))
@@ -596,9 +620,13 @@ class SigDirectWrapper:
             for rule, ohe, original_point_sd in applicable_sorted_rules:
                 temp = np.zeros(original_point_sd.shape[1]).astype(int)
                 temp[rule.get_items()] = 1
+                #print("WHAT IS HERE!!??")
+                #print(list(temp))
+                #print(list(original_point_sd[0]))
                 if self._verbose:
                     print(self._verbose_header, "item of note in applicable rules", rule.get_items())
                     print(self._verbose_header, "encoding meaning", self._decode(temp.reshape((1, -1))))
+
 
                 #if all([(temp[i] == original_point_sd[0][i]) or (temp[i] == 0) for i in range(len(temp))]):
                 applicability = sum(
@@ -675,7 +703,9 @@ class SigDirectWrapper:
         #          applied_rules,
         #          other_rules)
 
+        #print(bb_features)
         bb_features = old_evaluation_function(bb_features)
+        #print(bb_features)
         feature_value_pairs = sorted(bb_features.items(), key=lambda x: abs(x[1]), reverse=True)
 
         return [(self._feature_names[k], v) for k, v in feature_value_pairs]
@@ -685,26 +715,22 @@ def old_evaluation_function(bb_features):
     # expect dict<feature, list<(support, confidence, log_p, counter)>]>
     # return dict<feature, float>
     eval_bb_features = defaultdict(int)
+    total_abs_weight = 0
     for feature, tlist in bb_features.items():
         temp_eval = 0
-        n_appearances = 0
-        pos_rules = 0
         for support, confidence, pvalue, n_rules, counter, class_val, fulfill in tlist:
             if n_rules == 1 or n_rules/2 <= counter:
-                pos_rules += 1 if (class_val and fulfill) or (not class_val and not fulfill) else 0
-                # pos_rules += 1 if n_rules == counter and class_val else 0
-                #sign = 1 if class_val else -1
-                #sign = -sign if n_rules != counter and not class_val else sign
-                sign = 1
-                adj_p = -pvalue if -pvalue <= 100 else 100
-                temp_eval += sign*support#*confidence*adj_p
-                n_appearances += 1
-        if n_appearances != 0:
-            eval_bb_features[feature] = temp_eval #/ n_appearances
-        else:
-            eval_bb_features[feature] = temp_eval
-        #if pos_rules < n_appearances - pos_rules:
-        #    eval_bb_features[feature] = -eval_bb_features[feature]
+                pos_rule = 1 if fulfill else -1
+                sign = 1 if class_val else -1
+                temp_eval += pos_rule*sign*support*confidence
+
+        eval_bb_features[feature] = temp_eval
+        total_abs_weight += abs(temp_eval)
+
+    if total_abs_weight != 0:
+        for feature in eval_bb_features.keys():
+            eval_bb_features[feature] /= total_abs_weight
+
     return eval_bb_features
 
 
@@ -787,17 +813,17 @@ def ot_new_evaluation_function(bb_features):
 
                 temp_positive_rules += dynamic_weight * support * confidence  # removed count_hurts from div term
                 #  if adj_counter != 0:ope
-                if dynamic_weight != 0 and n_satisfied != rule_len:
-                    temp_points_to += 1
+                #if dynamic_weight != 0 and n_satisfied != rule_len:
+                #    temp_points_to += 1
 
         if temp_positive_rules != 0:
             # if swapping back then remove the absolute and absolute sorting
             temp_eval /= abs(temp_positive_rules)
-        eval_bb_features[feature] = temp_eval*temp_points_to
-        highest_positive_rules = temp_points_to if temp_points_to > highest_positive_rules else highest_positive_rules
+        #eval_bb_features[feature] = temp_eval*temp_points_to
+        #highest_positive_rules = temp_points_to if temp_points_to > highest_positive_rules else highest_positive_rules
         #if temp_eval > high_importance:
         #    high_importance = temp_eval
-    if highest_positive_rules > 0:
-        for feature in eval_bb_features.keys():
-            eval_bb_features[feature] /= highest_positive_rules
+    #if highest_positive_rules > 0:
+    #    for feature in eval_bb_features.keys():
+    #        eval_bb_features[feature] /= highest_positive_rules
     return eval_bb_features

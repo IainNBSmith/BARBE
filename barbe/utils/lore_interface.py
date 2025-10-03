@@ -24,12 +24,19 @@ from LORE import pyyadt
 class LoreExplainer:
     # TODO: get this finished and running LORE trials
     def __init__(self, training_data):
+        self._dt = None
+        self._class_name = None
+        self._features_type = None
+        self._discrete = None
+        self._continuous = None
         self._predictor = None
         self.perturbed_data = None
         self.perturbed_lore = None
         self.encoder = CategoricalEncoder(ordinal_encoding=False)
         self.encoder.fit(training_data.drop('target', inplace=False, axis=1, errors='ignore').copy())
         self._counterfactuals = None
+        self._output_encoder = None
+        self._output_type = str
 
     def _dist_perturbations(self,
                             data_row,
@@ -50,12 +57,8 @@ class LoreExplainer:
         # Features Categorization
         columns = df.columns.tolist()
         possible_outcomes = list(np.unique(df_labels))
-
         class_name = 'target'
-        #discretizer = CategoricalEncoder()
-        #discretizer.fit(training_data=df.drop(class_name, axis=1))
 
-        # TODO: continue from here using our discretizer to get details
         type_features, features_type = recognize_features_type(df, class_name)
         discrete, continuous = set_discrete_continuous(columns, type_features, class_name,
                                                        discrete=None,
@@ -99,7 +102,7 @@ class LoreExplainer:
         if ng_function is None:
             ng_function = genetic_neighborhood
 
-        random.seed(0)
+        #random.seed(0)
         class_name = dataset['class_name']
         columns = dataset['columns']
         discrete = dataset['discrete']
@@ -131,11 +134,11 @@ class LoreExplainer:
                                 filename=dataset['name'], path=path, sep=sep, log=log)
 
         # Apply Black Box and Decision Tree on instance to explain
-        print("COL:", columns)
-        print("x:", x)
+        #print("COL:", columns)
+        #print("x:", x)
         input_row0 = pd.DataFrame(columns=columns, index=[0])
         input_row0 = input_row0.drop('target', axis=1)
-        print("input_row0:",input_row0)
+        #print("input_row0:",input_row0)
         input_row0.iloc[0] = x.to_numpy().reshape((1, -1))
         bb_outcome = blackbox.predict(input_row0)[0]
 
@@ -145,12 +148,15 @@ class LoreExplainer:
         # Apply Black Box and Decision Tree on neighborhood
         dfZ = dfZ.drop('target', axis=1, errors='ignore')
         y_pred_bb = blackbox.predict(dfZ)
+        self._dt = copy.deepcopy(dt)
         y_pred_cc, leaf_nodes = pyyadt.predict(dt, dfZ.to_dict('records'), class_name, features_type,
                                                discrete, continuous)
 
-        def predict(X):
-            y, ln, = pyyadt.predict(dt, X, class_name, features_type, discrete, continuous)
-            return y, ln
+        self._class_name = class_name
+        self._features_type = features_type
+        self._discrete = discrete
+        self._continuous = continuous
+        self._output_encoder = label_encoder
 
         # Update labels if necessary
         if class_name in label_encoder:
@@ -177,7 +183,7 @@ class LoreExplainer:
             'tree_path': tree_path,
             'leaf_nodes': leaf_nodes,
             'diff_outcome': diff_outcome,
-            'predict': predict,
+            'predict': self.predict,
         }
         #print(dt.graph)
 
@@ -187,6 +193,7 @@ class LoreExplainer:
         return explanation
 
     def explain(self, input_data, input_index, df, df_labels, blackbox, **kwargs):
+        self._output_type = type(df_labels[0])
         dataset = self._prepare_dataset(df, df_labels)
         exp, infos = self._explain(input_index, input_data, dataset, blackbox,
                                    returns_infos=True,
@@ -199,11 +206,56 @@ class LoreExplainer:
         return exp, infos
 
     def predict(self, X):
-        if self._predictor is not None:
-            y, ln = self._predictor(X)
-            assert ValueError("This is the ln: " + str(ln) + " and this is y: " + str(y))
-            return y
-        return [None]
+        if self._dt is not None:
+            results = list()
+            add_next_first = 0
+            if not isinstance(X, dict):
+                # print("Input: ", X)
+                for case in X:
+                    # print("Individual: ", case)
+                    result, ln = pyyadt.predict(copy.deepcopy(self._dt), [case], self._class_name,
+                                           self._features_type,
+                                           self._discrete,
+                                           self._continuous)
+                    print("Individual Prediction: ", result)
+                    if result is not None and len(result) > 0:
+                        if add_next_first > 0:
+                            for i in range(add_next_first):
+                                if 'unknown' not in str(result[0]):
+                                    results.append(self._output_type(result[0]))
+                                else:
+                                    results.append(result[0])
+                            add_next_first = 0
+                        if 'unknown' not in str(result[0]):
+                            results.append(self._output_type(result[0]))
+                        else:
+                            results.append(result[0])
+                    else:
+                        if len(results) > 0:
+                            results.append(results[-1])
+                        else:
+                            add_next_first += 1
+                if len(results) < len(X):
+                    start_len = len(results)
+                    for _ in range(len(X) - start_len):
+                        if len(results) > 0:
+                            results.append(results[-1])
+                        else:
+                            results.append("unknown-wrapper")
+            else:
+                result, ln = pyyadt.predict(copy.deepcopy(self._dt), [X], self._class_name,
+                                            self._features_type,
+                                            self._discrete,
+                                            self._continuous)
+                if len(result) < 1 or (isinstance(result[0], str) and "unknown" in result[0]):
+                    return ["unknown-single-wrapper"]
+                else:
+                    if 'unknown' not in str(result[0]):
+                        return [self._output_type(result[0])]
+                    else:
+                        return [result[0]]
+            return results
+        return ["unknown" for _ in range(len(X))] if not isinstance(X, dict) else ["unknown"]
 
     def get_counterfactual(self, input_data,  restricted_features=None):
         if restricted_features is None:
